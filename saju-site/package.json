@@ -1,20 +1,14 @@
 {
-  "name": "saju-site",
+  "name": "cheongi-sonyeo",
   "version": "1.0.0",
-  "description": "AI 사주 분석 서비스 — 사주한잔",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "start": "next start"
   },
   "dependencies": {
-    "next": "^14.0.0",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0"
-  },
-  "devDependencies": {
-    "eslint": "^8.0.0",
-    "eslint-config-next": "^14.0.0"
+    "next": "13.5.6",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
   }
 }
