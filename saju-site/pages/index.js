@@ -3,18 +3,18 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 
 const HOURS = [
-  { label: '자시 (子時)', desc: '23:00 ~ 01:00', value: '자시' },
-  { label: '축시 (丑時)', desc: '01:00 ~ 03:00', value: '축시' },
-  { label: '인시 (寅時)', desc: '03:00 ~ 05:00', value: '인시' },
-  { label: '묘시 (卯時)', desc: '05:00 ~ 07:00', value: '묘시' },
-  { label: '진시 (辰時)', desc: '07:00 ~ 09:00', value: '진시' },
-  { label: '사시 (巳時)', desc: '09:00 ~ 11:00', value: '사시' },
-  { label: '오시 (午時)', desc: '11:00 ~ 13:00', value: '오시' },
-  { label: '미시 (未時)', desc: '13:00 ~ 15:00', value: '미시' },
-  { label: '신시 (申時)', desc: '15:00 ~ 17:00', value: '신시' },
-  { label: '유시 (酉時)', desc: '17:00 ~ 19:00', value: '유시' },
-  { label: '술시 (戌時)', desc: '19:00 ~ 21:00', value: '술시' },
-  { label: '해시 (亥時)', desc: '21:00 ~ 23:00', value: '해시' },
+  { label: '자시 (子時)', desc: '23:30 ~ 01:30', value: '자시' },
+  { label: '축시 (丑時)', desc: '01:30 ~ 03:30', value: '축시' },
+  { label: '인시 (寅時)', desc: '03:30 ~ 05:30', value: '인시' },
+  { label: '묘시 (卯時)', desc: '05:30 ~ 07:30', value: '묘시' },
+  { label: '진시 (辰時)', desc: '07:30 ~ 09:30', value: '진시' },
+  { label: '사시 (巳時)', desc: '09:30 ~ 11:30', value: '사시' },
+  { label: '오시 (午時)', desc: '11:30 ~ 13:30', value: '오시' },
+  { label: '미시 (未時)', desc: '13:30 ~ 15:30', value: '미시' },
+  { label: '신시 (申時)', desc: '15:30 ~ 17:30', value: '신시' },
+  { label: '유시 (酉時)', desc: '17:30 ~ 19:30', value: '유시' },
+  { label: '술시 (戌時)', desc: '19:30 ~ 21:30', value: '술시' },
+  { label: '해시 (亥時)', desc: '21:30 ~ 23:30', value: '해시' },
   { label: '모름', desc: '시간을 모를 경우', value: '모름' },
 ];
 
