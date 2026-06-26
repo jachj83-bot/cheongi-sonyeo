@@ -1,239 +1,224 @@
-import { useState } from 'react';
-import { useRouter } from 'next/router';
-import Head from 'next/head';
+import { calculateSaju } from '@fullstackfamily/manseryeok';
 
-const HOURS = [
-  { label: '자시', sub: '子時', desc: '23:30~01:30', value: '자시' },
-  { label: '축시', sub: '丑時', desc: '01:30~03:30', value: '축시' },
-  { label: '인시', sub: '寅時', desc: '03:30~05:30', value: '인시' },
-  { label: '묘시', sub: '卯時', desc: '05:30~07:30', value: '묘시' },
-  { label: '진시', sub: '辰時', desc: '07:30~09:30', value: '진시' },
-  { label: '사시', sub: '巳時', desc: '09:30~11:30', value: '사시' },
-  { label: '오시', sub: '午時', desc: '11:30~13:30', value: '오시' },
-  { label: '미시', sub: '未時', desc: '13:30~15:30', value: '미시' },
-  { label: '신시', sub: '申時', desc: '15:30~17:30', value: '신시' },
-  { label: '유시', sub: '酉時', desc: '17:30~19:30', value: '유시' },
-  { label: '술시', sub: '戌時', desc: '19:30~21:30', value: '술시' },
-  { label: '해시', sub: '亥時', desc: '21:30~23:30', value: '해시' },
-  { label: '모름', sub: '', desc: '시간 불명', value: '모름' },
-];
-
-const S = {
-  wrap: { background: '#1a0a00', minHeight: '100vh', color: '#f0e6d3', fontFamily: "'Noto Sans KR', -apple-system, sans-serif" },
-  header: { position: 'sticky', top: 0, zIndex: 100, background: 'rgba(26,10,0,0.97)', backdropFilter: 'blur(10px)', borderBottom: '1px solid #3d1500', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  logo: { color: '#e8c97a', fontSize: '18px', fontWeight: '900', letterSpacing: '2px', fontFamily: 'serif' },
-  badge: { display: 'inline-block', background: '#8b2e00', color: '#e8c97a', fontSize: '12px', padding: '5px 16px', borderRadius: '20px', marginBottom: '20px', letterSpacing: '1px', border: '1px solid #c4712a' },
-  heroTitle: { fontSize: '34px', fontWeight: '900', lineHeight: '1.4', marginBottom: '12px', fontFamily: 'serif', color: '#f0e6d3' },
-  divider: { width: '60px', height: '2px', background: '#8b2e00', margin: '16px auto' },
-  ctaBtn: { width: '100%', maxWidth: '320px', background: '#8b2e00', color: '#e8c97a', padding: '16px', border: '1.5px solid #c4712a', borderRadius: '4px', fontSize: '16px', fontWeight: '800', cursor: 'pointer', letterSpacing: '1px', fontFamily: 'serif' },
-  label: { display: 'block', fontSize: '12px', color: 'rgba(240,230,211,0.5)', marginBottom: '8px', letterSpacing: '1px' },
-  selectBtn: (active) => ({ padding: '10px 6px', background: active ? 'rgba(139,46,0,0.3)' : 'rgba(255,255,255,0.03)', border: `1.5px solid ${active ? '#c4712a' : 'rgba(255,255,255,0.08)'}`, borderRadius: '6px', color: active ? '#e8c97a' : 'rgba(240,230,211,0.6)', cursor: 'pointer', textAlign: 'center', fontSize: '13px', fontWeight: active ? '700' : '400' }),
-  input: { width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid #3d1500', borderRadius: '6px', padding: '14px 16px', color: '#f0e6d3', fontSize: '15px', outline: 'none' },
+const CHEONGAN_OHAENG = {
+  '갑':'목','을':'목','병':'화','정':'화','무':'토',
+  '기':'토','경':'금','신':'금','임':'수','계':'수'
+};
+const JIJI_OHAENG = {
+  '자':'수','축':'토','인':'목','묘':'목','진':'토','사':'화',
+  '오':'화','미':'토','신':'금','유':'금','술':'토','해':'수'
+};
+const JIJI_JIJANGGAN = {
+  '자':['임','계'],'축':['기','신','계'],'인':['무','병','갑'],
+  '묘':['갑','을'],'진':['을','계','무'],'사':['무','경','병'],
+  '오':['병','기'],'미':['기','을','정'],'신':['무','임','경'],
+  '유':['경','신'],'술':['신','정','무'],'해':['무','갑','임']
+};
+const CHEONGAN_UMYANG = {
+  '갑':'양','을':'음','병':'양','정':'음','무':'양',
+  '기':'음','경':'양','신':'음','임':'양','계':'음'
 };
 
-export default function Home() {
-  const router = useRouter();
-  const [step, setStep] = useState('landing');
-  const [form, setForm] = useState({ name: '', year: '', month: '', day: '', hour: '', gender: '', calendar: '양력' });
-  const [error, setError] = useState('');
+function getSipsin(ilgan, target) {
+  const ohaengOrder = ['목','화','토','금','수'];
+  const ilOhaeng = CHEONGAN_OHAENG[ilgan];
+  const targetOhaeng = CHEONGAN_OHAENG[target] || JIJI_OHAENG[target];
+  if (!ilOhaeng || !targetOhaeng) return '';
+  const ilIdx = ohaengOrder.indexOf(ilOhaeng);
+  const targetIdx = ohaengOrder.indexOf(targetOhaeng);
+  const diff = (targetIdx - ilIdx + 5) % 5;
+  const sameUmyang = CHEONGAN_UMYANG[ilgan] === CHEONGAN_UMYANG[target];
+  if (diff === 0) return sameUmyang ? '비견' : '겁재';
+  if (diff === 1) return sameUmyang ? '식신' : '상관';
+  if (diff === 2) return sameUmyang ? '편재' : '정재';
+  if (diff === 3) return sameUmyang ? '편관' : '정관';
+  if (diff === 4) return sameUmyang ? '편인' : '정인';
+  return '';
+}
 
-  const handleSubmit = () => {
-    if (!form.name || !form.year || !form.month || !form.day || !form.gender || !form.hour) {
-      setError('모든 항목을 입력해주세요.');
-      return;
-    }
-    router.push('/result?' + new URLSearchParams(form).toString());
+function calcOhaengStrength(pillars) {
+  const strength = { '목':0, '화':0, '토':0, '금':0, '수':0 };
+  pillars.forEach(p => {
+    if (!p || p.length < 2) return;
+    const gan = p[0];
+    const ji = p[1];
+    if (CHEONGAN_OHAENG[gan]) strength[CHEONGAN_OHAENG[gan]] += 1.0;
+    if (JIJI_OHAENG[ji]) strength[JIJI_OHAENG[ji]] += 0.7;
+    const jijanggan = JIJI_JIJANGGAN[ji] || [];
+    jijanggan.forEach(jj => {
+      if (CHEONGAN_OHAENG[jj]) strength[CHEONGAN_OHAENG[jj]] += 0.3;
+    });
+  });
+  Object.keys(strength).forEach(k => {
+    strength[k] = Math.round(strength[k] * 10) / 10;
+  });
+  return strength;
+}
+
+function getIlgan(dayPillar) {
+  return dayPillar ? dayPillar[0] : '';
+}
+
+function getHourNumber(hourLabel) {
+  const map = {
+    '자시':0,'축시':2,'인시':4,'묘시':6,'진시':8,'사시':10,
+    '오시':12,'미시':14,'신시':16,'유시':18,'술시':20,'해시':22
   };
+  return map[hourLabel] ?? 12;
+}
 
-  return (
-    <>
-      <Head>
-        <title>천기소녀 — AI 사주 분석</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-        <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
-        <style>{`
-          * { box-sizing: border-box; margin: 0; padding: 0; }
-          body { background: #1a0a00; color: #f0e6d3; font-family: 'Noto Sans KR', -apple-system, sans-serif; }
-          input, button { font-family: inherit; }
-          input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
-        `}</style>
-      </Head>
+export default async function handler(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-      <div style={S.wrap}>
-        {/* 헤더 */}
-        <div style={S.header}>
-          <div style={S.logo}>🔮 천기소녀</div>
-          <div style={{display:'flex',gap:'8px'}}>
-            <a href="/gunghap" style={{color:'#c4956a',textDecoration:'none',fontSize:'13px',background:'rgba(139,46,0,0.2)',padding:'6px 12px',borderRadius:'4px',border:'1px solid #3d1500'}}>💑 궁합</a>
-            <a href="/tarot" style={{color:'#c49ae8',textDecoration:'none',fontSize:'13px',background:'rgba(61,21,96,0.2)',padding:'6px 12px',borderRadius:'4px',border:'1px solid #3d1560'}}>🃏 타로</a>
-          </div>
-        </div>
+  const { name, year, month, day, hour, gender, type, me, partner, card, cardEn, reversed, question } = req.body;
 
-        {/* 랜딩 */}
-        {step === 'landing' && (
-          <div>
-            {/* 히어로 */}
-            <div style={{textAlign:'center',padding:'48px 20px 32px',background:'linear-gradient(180deg,#1a0a00 0%,#2d0f00 100%)',position:'relative',overflow:'hidden'}}>
-              <div style={{position:'absolute',top:0,left:0,right:0,bottom:0,backgroundImage:'repeating-linear-gradient(0deg,transparent,transparent 40px,rgba(139,46,0,0.06) 40px,rgba(139,46,0,0.06) 41px),repeating-linear-gradient(90deg,transparent,transparent 40px,rgba(139,46,0,0.06) 40px,rgba(139,46,0,0.06) 41px)',pointerEvents:'none'}} />
-              <div style={S.badge}>✦ 2026 병오년 무료 사주 ✦</div>
-              <h1 style={S.heroTitle}>하늘의 기운을<br/><span style={{color:'#e8c97a'}}>천기소녀</span>가<br/>읽어드립니다</h1>
-              <div style={S.divider} />
-              <p style={{fontSize:'14px',color:'#c4956a',lineHeight:'1.8',marginBottom:'8px'}}>생년월일 하나로 알 수 있는<br/>나의 타고난 운명과 올해의 흐름</p>
-              <p style={{fontSize:'13px',color:'#a07050',fontStyle:'italic',marginBottom:'28px'}}>"이 페이지를 찾아온 것도 인연입니다"</p>
-              <button onClick={()=>setStep('input')} style={S.ctaBtn}>무료로 사주 보기 →</button>
-            </div>
+  try {
 
-            {/* 신뢰 지표 */}
-            <div style={{display:'flex',justifyContent:'center',gap:'28px',padding:'16px 20px',background:'#120600',borderBottom:'1px solid #2d0f00'}}>
-              {[['3,200+','누적 상담'],['4.9★','평균 별점'],['98%','재방문율']].map(([n,l])=>(
-                <div key={l} style={{textAlign:'center'}}>
-                  <div style={{fontFamily:'serif',fontSize:'20px',color:'#e8c97a',fontWeight:'900'}}>{n}</div>
-                  <div style={{fontSize:'11px',color:'#7a5030',marginTop:'2px'}}>{l}</div>
-                </div>
-              ))}
-            </div>
+    // 타로 분석
+    if (type === 'tarot') {
+      const prompt = `당신은 20년 경력의 타로 마스터이자 신비로운 점술가입니다.
 
-            {/* 후기 */}
-            <div style={{background:'#120600',padding:'24px 20px',borderBottom:'1px solid #2d0f00'}}>
-              <div style={{textAlign:'center',fontSize:'13px',color:'#c4956a',marginBottom:'16px',letterSpacing:'2px'}}>✦ 실제 후기 ✦</div>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px'}}>
-                {[
-                  {text:'"이렇게 맞을 수가... 올해 이직 얘기까지 다 맞췄어요"',name:'김*연 · 32세'},
-                  {text:'"궁합 봤는데 소름이었어요. 덕분에 화해했거든요"',name:'박*현 · 28세'},
-                ].map((r,i)=>(
-                  <div key={i} style={{background:'#1f0a00',border:'1px solid #3d1500',borderRadius:'4px',padding:'14px'}}>
-                    <div style={{color:'#e8c97a',fontSize:'12px',marginBottom:'6px'}}>★★★★★</div>
-                    <div style={{fontSize:'12px',color:'#c4956a',lineHeight:'1.7'}}>{r.text}</div>
-                    <div style={{fontSize:'11px',color:'#7a5030',marginTop:'8px'}}>{r.name}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
+오늘 뽑힌 카드: ${card} (${cardEn})${reversed ? ' — 역방향' : ' — 정방향'}
+질문/주제: ${question || '오늘 하루의 흐름'}
 
-            {/* 사주 메뉴 */}
-            <div style={{padding:'28px 20px',background:'#1a0a00'}}>
-              <div style={{textAlign:'center',fontFamily:'serif',fontSize:'16px',color:'#e8c97a',marginBottom:'20px',letterSpacing:'2px'}}>✦ 천기소녀 메뉴 ✦</div>
+아래 형식으로 해석해주세요:
 
-              <div style={{fontSize:'11px',color:'#c4956a',background:'#2d0f00',border:'1px solid #3d1500',padding:'3px 10px',borderRadius:'10px',display:'inline-block',marginBottom:'14px',letterSpacing:'1px'}}>🪐 사주 · 운세</div>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px',marginBottom:'10px'}}>
-                {[
-                  {icon:'🪐',tag:'무료 기본 포함',name:'일주 분석',desc:'타고난 기질과\n올해 흐름 분석',price:'₩9,900',onClick:()=>setStep('input')},
-                  {icon:'💑',tag:'두 사람 비교',name:'궁합 분석',desc:'연인·배우자·친구\n궁합 점수 공개',price:'₩14,900',onClick:()=>router.push('/gunghap')}
-                ].map((p,i)=>(
-                  <div key={i} onClick={p.onClick} style={{background:'#1f0a00',border:'1px solid #3d1500',borderRadius:'4px',padding:'18px 14px',textAlign:'center',cursor:'pointer'}}>
-                    <div style={{fontSize:'28px',marginBottom:'10px'}}>{p.icon}</div>
-                    <div style={{fontSize:'10px',color:'#8b2e00',background:'#2d0f00',padding:'2px 8px',borderRadius:'10px',display:'inline-block',marginBottom:'6px',border:'1px solid #3d1500'}}>{p.tag}</div>
-                    <div style={{fontSize:'14px',color:'#f0e6d3',fontWeight:'700',marginBottom:'4px'}}>{p.name}</div>
-                    <div style={{fontSize:'11px',color:'#7a5030',marginBottom:'10px',lineHeight:'1.6',whiteSpace:'pre'}}>{p.desc}</div>
-                    <div style={{fontSize:'15px',color:'#e8c97a',fontWeight:'700'}}>{p.price}</div>
-                  </div>
-                ))}
-              </div>
-              <div style={{background:'#1f0a00',border:'1px solid #3d1500',borderRadius:'4px',padding:'18px 14px',textAlign:'center',marginBottom:'24px',cursor:'pointer'}}>
-                <div style={{fontSize:'28px',marginBottom:'10px'}}>📜</div>
-                <div style={{fontSize:'14px',color:'#f0e6d3',fontWeight:'700',marginBottom:'4px'}}>AI 리포트 PDF</div>
-                <div style={{fontSize:'11px',color:'#7a5030',marginBottom:'10px'}}>30페이지 분량의 정밀 사주 리포트 · 이메일 발송</div>
-                <div style={{fontSize:'15px',color:'#e8c97a',fontWeight:'700'}}>₩29,900</div>
-                <div style={{fontSize:'11px',color:'#5a3020',marginTop:'6px'}}>준비중</div>
-              </div>
+🃏 ${card}${reversed ? ' (역방향)' : ''}
 
-              <div style={{fontSize:'11px',color:'#c49ae8',background:'#1a0a2a',border:'1px solid #3d1560',padding:'3px 10px',borderRadius:'10px',display:'inline-block',marginBottom:'14px',letterSpacing:'1px'}}>🃏 타로</div>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px',marginBottom:'10px'}}>
-                {[
-                  {icon:'🃏',tag:'오늘의 한 장',name:'오늘의 타로',desc:'지금 이 순간\n나에게 필요한 메시지',price:'무료',onClick:()=>router.push('/tarot')},
-                  {icon:'💜',tag:'연애·관계',name:'연애 타로',desc:'그 사람의 마음과\n우리의 앞날',price:'₩7,900',onClick:null}
-                ].map((p,i)=>(
-                  <div key={i} onClick={p.onClick} style={{background:'#1a0a2a',border:'1px solid #3d1560',borderRadius:'4px',padding:'18px 14px',textAlign:'center',cursor:p.onClick?'pointer':'default',opacity:p.onClick?1:0.6}}>
-                    <div style={{fontSize:'28px',marginBottom:'10px'}}>{p.icon}</div>
-                    <div style={{fontSize:'10px',color:'#7b3fa0',background:'#1a0a2a',padding:'2px 8px',borderRadius:'10px',display:'inline-block',marginBottom:'6px',border:'1px solid #3d1560'}}>{p.tag}</div>
-                    <div style={{fontSize:'14px',color:'#f0e6d3',fontWeight:'700',marginBottom:'4px'}}>{p.name}</div>
-                    <div style={{fontSize:'11px',color:'#9070a0',marginBottom:'10px',lineHeight:'1.6',whiteSpace:'pre'}}>{p.desc}</div>
-                    <div style={{fontSize:'15px',color:'#c49ae8',fontWeight:'700'}}>{p.price}</div>
-                    {!p.onClick && <div style={{fontSize:'11px',color:'#5a3060',marginTop:'6px'}}>준비중</div>}
-                  </div>
-                ))}
-              </div>
-              <div style={{background:'#1a0a2a',border:'1px solid #3d1560',borderRadius:'4px',padding:'18px 14px',textAlign:'center',opacity:0.6}}>
-                <div style={{fontSize:'28px',marginBottom:'10px'}}>✨</div>
-                <div style={{fontSize:'14px',color:'#f0e6d3',fontWeight:'700',marginBottom:'4px'}}>사주 + 타로 통합 분석</div>
-                <div style={{fontSize:'11px',color:'#9070a0',marginBottom:'10px'}}>사주로 흐름을 보고 타로로 현재를 짚는 · 가장 정밀한 분석</div>
-                <div style={{fontSize:'15px',color:'#c49ae8',fontWeight:'700'}}>₩19,900</div>
-                <div style={{fontSize:'11px',color:'#5a3060',marginTop:'6px'}}>준비중</div>
-              </div>
-            </div>
-          </div>
-        )}
+✨ 카드의 의미
+(이 카드가 상징하는 것, ${reversed ? '역방향일 때의 의미' : '정방향일 때의 의미'})
 
-        {/* 입력폼 */}
-        {step === 'input' && (
-          <div style={{padding:'20px 20px 80px',maxWidth:'480px',margin:'0 auto'}}>
-            <button onClick={()=>setStep('landing')} style={{background:'none',border:'none',color:'#c4956a',cursor:'pointer',fontSize:'14px',marginBottom:'20px',padding:'4px 0'}}>← 뒤로</button>
-            <h2 style={{fontFamily:'serif',fontSize:'24px',fontWeight:'900',marginBottom:'6px',color:'#e8c97a'}}>생년월일시를<br/>알려주세요</h2>
-            <p style={{fontSize:'13px',color:'#7a5030',marginBottom:'28px'}}>하늘의 기운을 정확히 읽기 위해 필요합니다</p>
+💫 지금 당신에게 전하는 메시지
+(질문/주제와 연결해서 구체적으로, 2-3문단)
 
-            {/* 이름 */}
-            <div style={{marginBottom:'18px'}}>
-              <label style={S.label}>이름</label>
-              <input type="text" placeholder="홍길동" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} style={S.input}/>
-            </div>
+🌟 오늘 하루 조언
+(이 카드를 받은 사람이 오늘 어떻게 행동하면 좋을지)
 
-            {/* 양력/음력 */}
-            <div style={{marginBottom:'18px'}}>
-              <label style={S.label}>양력 / 음력</label>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
-                {['양력','음력'].map(c=>(
-                  <button key={c} onClick={()=>setForm({...form,calendar:c})} style={S.selectBtn(form.calendar===c)}>{c}</button>
-                ))}
-              </div>
-            </div>
+🔮 한 줄 핵심
+(카드의 핵심 메시지를 한 문장으로)
 
-            {/* 생년월일 */}
-            <div style={{marginBottom:'18px'}}>
-              <label style={S.label}>생년월일</label>
-              <div style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr',gap:'8px'}}>
-                {[['year','년','1995'],['month','월','07'],['day','일','21']].map(([k,l,p])=>(
-                  <div key={k} style={{position:'relative'}}>
-                    <input type="number" placeholder={p} value={form[k]} onChange={e=>setForm({...form,[k]:e.target.value})} style={S.input}/>
-                    <span style={{position:'absolute',right:'12px',top:'50%',transform:'translateY(-50%)',fontSize:'12px',color:'#7a5030'}}>{l}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+신비롭고 따뜻한 톤으로, 마치 오랜 지혜를 가진 점술가가 직접 말해주듯이 한국어로 작성해주세요.`;
 
-            {/* 시간 */}
-            <div style={{marginBottom:'18px'}}>
-              <label style={S.label}>태어난 시간</label>
-              <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'6px'}}>
-                {HOURS.map(h=>(
-                  <button key={h.value} onClick={()=>setForm({...form,hour:h.value})} style={{...S.selectBtn(form.hour===h.value),padding:'10px 6px'}}>
-                    <div style={{fontSize:'13px'}}>{h.label}</div>
-                    {h.sub && <div style={{fontSize:'10px',opacity:0.6,marginTop:'1px'}}>{h.sub}</div>}
-                    <div style={{fontSize:'10px',opacity:0.5,marginTop:'1px'}}>{h.desc}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
+        body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 2000, messages: [{ role: 'user', content: prompt }] })
+      });
+      const data = await response.json();
+      return res.status(200).json({ result: data.content?.[0]?.text || '카드의 메시지를 읽을 수 없습니다.' });
+    }
 
-            {/* 성별 */}
-            <div style={{marginBottom:'28px'}}>
-              <label style={S.label}>성별</label>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
-                {['남','여'].map(g=>(
-                  <button key={g} onClick={()=>setForm({...form,gender:g})} style={{...S.selectBtn(form.gender===g),padding:'13px'}}>{g}자</button>
-                ))}
-              </div>
-            </div>
+    // 궁합 분석
+    if (type === 'gunghap') {
+      const meSaju = calculateSaju(parseInt(me.year), parseInt(me.month), parseInt(me.day), 12);
+      const partnerSaju = calculateSaju(parseInt(partner.year), parseInt(partner.month), parseInt(partner.day), 12);
+      const mePillars = [meSaju.yearPillar, meSaju.monthPillar, meSaju.dayPillar, meSaju.hourPillar];
+      const partnerPillars = [partnerSaju.yearPillar, partnerSaju.monthPillar, partnerSaju.dayPillar, partnerSaju.hourPillar];
+      const meStrength = calcOhaengStrength(mePillars);
+      const partnerStrength = calcOhaengStrength(partnerPillars);
+      const meIlgan = getIlgan(meSaju.dayPillar);
+      const partnerIlgan = getIlgan(partnerSaju.dayPillar);
 
-            {error && <p style={{color:'#ff6b6b',fontSize:'13px',marginBottom:'16px',padding:'10px 14px',background:'rgba(255,107,107,0.08)',borderRadius:'8px'}}>⚠️ {error}</p>}
+      const prompt = `당신은 30년 경력의 명리학 전문가입니다.
 
-            <button onClick={handleSubmit} style={{width:'100%',background:'#8b2e00',color:'#e8c97a',padding:'16px',border:'1.5px solid #c4712a',borderRadius:'4px',fontSize:'16px',fontWeight:'800',cursor:'pointer',letterSpacing:'1px',fontFamily:'serif'}}>
-              사주 분석 시작하기 🔮
-            </button>
-          </div>
-        )}
+[나의 사주팔자]
+년주: ${meSaju.yearPillar} / 월주: ${meSaju.monthPillar} / 일주: ${meSaju.dayPillar} / 시주: ${meSaju.hourPillar}
+일간: ${meIlgan}(${CHEONGAN_OHAENG[meIlgan]})
+오행: 목${meStrength['목']} 화${meStrength['화']} 토${meStrength['토']} 금${meStrength['금']} 수${meStrength['수']}
 
-        <div style={{textAlign:'center',padding:'24px 20px',borderTop:'1px solid #2d0f00',color:'#5a3020',fontSize:'12px'}}>© 2026 천기소녀 · AI 사주 분석</div>
-      </div>
-    </>
-  );
+[상대방 사주팔자]
+년주: ${partnerSaju.yearPillar} / 월주: ${partnerSaju.monthPillar} / 일주: ${partnerSaju.dayPillar} / 시주: ${partnerSaju.hourPillar}
+일간: ${partnerIlgan}(${CHEONGAN_OHAENG[partnerIlgan]})
+오행: 목${partnerStrength['목']} 화${partnerStrength['화']} 토${partnerStrength['토']} 금${partnerStrength['금']} 수${partnerStrength['수']}
+
+아래 형식으로 분석해주세요:
+
+⭐ 궁합 총점: /100점
+
+🔥 오행 관계 분석
+
+💛 잘 맞는 부분 (3가지)
+
+⚠️ 주의해야 할 부분 (극복 방법 포함)
+
+🌿 2026 병오년 두 사람에게
+
+장점과 단점을 6:4로 균형있게, 따뜻한 톤으로 한국어로 작성해주세요.`;
+
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
+        body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 4096, messages: [{ role: 'user', content: prompt }] })
+      });
+      const data = await response.json();
+      return res.status(200).json({ result: data.content?.[0]?.text || '분석 결과를 가져올 수 없습니다.' });
+    }
+
+    // 사주 분석
+    const hourNum = hour === '모름' ? 12 : getHourNumber(hour);
+    const saju = calculateSaju(parseInt(year), parseInt(month), parseInt(day), hourNum);
+    const ilgan = getIlgan(saju.dayPillar);
+    const pillars = [saju.yearPillar, saju.monthPillar, saju.dayPillar, saju.hourPillar];
+    const strength = calcOhaengStrength(pillars);
+
+    const sipsinData = pillars.map(p => {
+      if (!p || p.length < 2) return null;
+      return { pillar: p, ganSipsin: getSipsin(ilgan, p[0]), jiSipsin: getSipsin(ilgan, p[1]) };
+    });
+
+    const ilganOhaeng = CHEONGAN_OHAENG[ilgan];
+    const inseongOhaeng = { '목':'수', '화':'목', '토':'화', '금':'토', '수':'금' }[ilganOhaeng];
+    const bigyeopScore = (strength[ilganOhaeng] || 0) + (strength[inseongOhaeng] || 0);
+    const singang = bigyeopScore >= 3.0 ? '신강' : '신약';
+    const sorted = Object.entries(strength).sort((a, b) => b[1] - a[1]);
+    const strongest = sorted[0][0];
+    const weakest = sorted[sorted.length - 1][0];
+
+    const prompt = `당신은 30년 경력의 명리학 전문가입니다.
+
+[${name || '의뢰인'}님 사주팔자]
+년주: ${saju.yearPillar} / 월주: ${saju.monthPillar} / 일주: ${saju.dayPillar} / 시주: ${saju.hourPillar}
+성별: ${gender}자 / 일간: ${ilgan}(${ilganOhaeng}) / ${singang} 사주
+
+오행 강약:
+목 ${strength['목']} / 화 ${strength['화']} / 토 ${strength['토']} / 금 ${strength['금']} / 수 ${strength['수']}
+→ 가장 강한 오행: ${strongest} / 가장 약한 오행: ${weakest}
+
+십신:
+${sipsinData.map(s => s ? `${s.pillar}: 천간(${s.ganSipsin}) 지지(${s.jiSipsin})` : '').join('\n')}
+
+첫 문장은 반드시 "하늘의 기운을 읽었습니다."로 시작하고 아래 형식으로 분석해주세요:
+
+🌟 일주 분석 (${saju.dayPillar})
+🔥 오행 에너지
+💫 십신으로 본 성격과 재능
+💰 재물운
+❤️ 연애·결혼운
+⚡ 2026 병오년 운세
+⚠️ 조언
+
+${singang} 사주 특성에 맞게, 장점과 단점을 6:4로 균형있게, 따뜻하고 신비로운 톤으로 한국어로 작성해주세요.`;
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 4096, messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await response.json();
+
+    return res.status(200).json({
+      result: data.content?.[0]?.text || '분석 결과를 가져올 수 없습니다.',
+      sajuData: {
+        pillars: { year: saju.yearPillar, month: saju.monthPillar, day: saju.dayPillar, hour: saju.hourPillar },
+        sipsin: sipsinData,
+        strength,
+        singang,
+        ilgan
+      }
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: '서버 오류가 발생했습니다.' });
+  }
 }
