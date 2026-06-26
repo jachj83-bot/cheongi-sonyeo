@@ -18,10 +18,6 @@ const HOURS = [
   { label: '모름', sub: '', desc: '시간 불명', value: '모름' },
 ];
 
-const YEARS = Array.from({length: 80}, (_, i) => 2005 - i);
-const MONTHS = Array.from({length: 12}, (_, i) => i + 1);
-const DAYS = Array.from({length: 31}, (_, i) => i + 1);
-
 const S = {
   wrap: { background: '#1a0a00', minHeight: '100vh', color: '#f0e6d3', fontFamily: "'Noto Sans KR', -apple-system, sans-serif" },
   header: { position: 'sticky', top: 0, zIndex: 100, background: 'rgba(26,10,0,0.97)', backdropFilter: 'blur(10px)', borderBottom: '1px solid #3d1500', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
@@ -32,6 +28,7 @@ const S = {
   ctaBtn: { width: '100%', maxWidth: '320px', background: '#8b2e00', color: '#e8c97a', padding: '16px', border: '1.5px solid #c4712a', borderRadius: '4px', fontSize: '16px', fontWeight: '800', cursor: 'pointer', letterSpacing: '1px', fontFamily: 'serif' },
   label: { display: 'block', fontSize: '12px', color: 'rgba(240,230,211,0.5)', marginBottom: '8px', letterSpacing: '1px' },
   selectBtn: (active) => ({ padding: '10px 6px', background: active ? 'rgba(139,46,0,0.3)' : 'rgba(255,255,255,0.03)', border: `1.5px solid ${active ? '#c4712a' : 'rgba(255,255,255,0.08)'}`, borderRadius: '6px', color: active ? '#e8c97a' : 'rgba(240,230,211,0.6)', cursor: 'pointer', textAlign: 'center', fontSize: '13px', fontWeight: active ? '700' : '400' }),
+  input: { width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid #3d1500', borderRadius: '6px', padding: '14px 16px', color: '#f0e6d3', fontSize: '15px', outline: 'none' },
 };
 
 export default function Home() {
@@ -58,7 +55,7 @@ export default function Home() {
           * { box-sizing: border-box; margin: 0; padding: 0; }
           body { background: #1a0a00; color: #f0e6d3; font-family: 'Noto Sans KR', -apple-system, sans-serif; }
           input, button { font-family: inherit; }
-          ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: #1a0a00; } ::-webkit-scrollbar-thumb { background: #3d1500; }
+          input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
         `}</style>
       </Head>
 
@@ -75,7 +72,6 @@ export default function Home() {
         {/* 랜딩 */}
         {step === 'landing' && (
           <div>
-            {/* 히어로 */}
             <div style={{textAlign:'center',padding:'48px 20px 32px',background:'linear-gradient(180deg,#1a0a00 0%,#2d0f00 100%)',position:'relative',overflow:'hidden'}}>
               <div style={{position:'absolute',top:0,left:0,right:0,bottom:0,backgroundImage:'repeating-linear-gradient(0deg,transparent,transparent 40px,rgba(139,46,0,0.06) 40px,rgba(139,46,0,0.06) 41px),repeating-linear-gradient(90deg,transparent,transparent 40px,rgba(139,46,0,0.06) 40px,rgba(139,46,0,0.06) 41px)',pointerEvents:'none'}} />
               <div style={S.badge}>✦ 2026 병오년 무료 사주 ✦</div>
@@ -86,7 +82,6 @@ export default function Home() {
               <button onClick={()=>setStep('input')} style={S.ctaBtn}>무료로 사주 보기 →</button>
             </div>
 
-            {/* 신뢰 지표 */}
             <div style={{display:'flex',justifyContent:'center',gap:'28px',padding:'16px 20px',background:'#120600',borderBottom:'1px solid #2d0f00'}}>
               {[['3,200+','누적 상담'],['4.9★','평균 별점'],['98%','재방문율']].map(([n,l])=>(
                 <div key={l} style={{textAlign:'center'}}>
@@ -96,7 +91,6 @@ export default function Home() {
               ))}
             </div>
 
-            {/* 후기 */}
             <div style={{background:'#120600',padding:'24px 20px',borderBottom:'1px solid #2d0f00'}}>
               <div style={{textAlign:'center',fontSize:'13px',color:'#c4956a',marginBottom:'16px',letterSpacing:'2px'}}>✦ 실제 후기 ✦</div>
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px'}}>
@@ -113,13 +107,16 @@ export default function Home() {
               </div>
             </div>
 
-            {/* 사주 메뉴 */}
             <div style={{padding:'28px 20px',background:'#1a0a00'}}>
-              <div style={{textAlign:'center',fontFamily:'serif',fontSize:'16px',color:'#e8c97a',marginBottom:'20px',letterSpacing:'2px'}}>✦ 사주 메뉴 ✦</div>
+              <div style={{textAlign:'center',fontFamily:'serif',fontSize:'16px',color:'#e8c97a',marginBottom:'20px',letterSpacing:'2px'}}>✦ 천기소녀 메뉴 ✦</div>
+
               <div style={{fontSize:'11px',color:'#c4956a',background:'#2d0f00',border:'1px solid #3d1500',padding:'3px 10px',borderRadius:'10px',display:'inline-block',marginBottom:'14px',letterSpacing:'1px'}}>🪐 사주 · 운세</div>
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px',marginBottom:'10px'}}>
-                {[{icon:'🪐',tag:'무료 기본 포함',name:'일주 분석',desc:'타고난 기질과\n올해 흐름 분석',price:'₩9,900'},{icon:'💑',tag:'두 사람 비교',name:'궁합 분석',desc:'연인·배우자·친구\n궁합 점수 공개',price:'₩14,900'}].map((p,i)=>(
-                  <div key={i} style={{background:'#1f0a00',border:'1px solid #3d1500',borderRadius:'4px',padding:'18px 14px',textAlign:'center',cursor:'pointer'}}>
+                {[
+                  {icon:'🪐',tag:'무료 기본 포함',name:'일주 분석',desc:'타고난 기질과\n올해 흐름 분석',price:'₩9,900',onClick:()=>setStep('input')},
+                  {icon:'💑',tag:'두 사람 비교',name:'궁합 분석',desc:'연인·배우자·친구\n궁합 점수 공개',price:'₩14,900',onClick:()=>router.push('/gunghap')}
+                ].map((p,i)=>(
+                  <div key={i} onClick={p.onClick} style={{background:'#1f0a00',border:'1px solid #3d1500',borderRadius:'4px',padding:'18px 14px',textAlign:'center',cursor:'pointer'}}>
                     <div style={{fontSize:'28px',marginBottom:'10px'}}>{p.icon}</div>
                     <div style={{fontSize:'10px',color:'#8b2e00',background:'#2d0f00',padding:'2px 8px',borderRadius:'10px',display:'inline-block',marginBottom:'6px',border:'1px solid #3d1500'}}>{p.tag}</div>
                     <div style={{fontSize:'14px',color:'#f0e6d3',fontWeight:'700',marginBottom:'4px'}}>{p.name}</div>
@@ -128,31 +125,36 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-              <div style={{background:'#1f0a00',border:'1px solid #3d1500',borderRadius:'4px',padding:'18px 14px',textAlign:'center',marginBottom:'24px',cursor:'pointer'}}>
+              <div style={{background:'#1f0a00',border:'1px solid #3d1500',borderRadius:'4px',padding:'18px 14px',textAlign:'center',marginBottom:'24px'}}>
                 <div style={{fontSize:'28px',marginBottom:'10px'}}>📜</div>
                 <div style={{fontSize:'14px',color:'#f0e6d3',fontWeight:'700',marginBottom:'4px'}}>AI 리포트 PDF</div>
                 <div style={{fontSize:'11px',color:'#7a5030',marginBottom:'10px'}}>30페이지 분량의 정밀 사주 리포트 · 이메일 발송</div>
                 <div style={{fontSize:'15px',color:'#e8c97a',fontWeight:'700'}}>₩29,900</div>
+                <div style={{fontSize:'11px',color:'#5a3020',marginTop:'6px'}}>준비중</div>
               </div>
 
-              {/* 타로 */}
               <div style={{fontSize:'11px',color:'#c49ae8',background:'#1a0a2a',border:'1px solid #3d1560',padding:'3px 10px',borderRadius:'10px',display:'inline-block',marginBottom:'14px',letterSpacing:'1px'}}>🃏 타로</div>
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px',marginBottom:'10px'}}>
-                {[{icon:'🃏',tag:'오늘의 한 장',name:'오늘의 타로',desc:'지금 이 순간\n나에게 필요한 메시지',price:'무료'},{icon:'💜',tag:'연애·관계',name:'연애 타로',desc:'그 사람의 마음과\n우리의 앞날',price:'₩7,900'}].map((p,i)=>(
-                  <div key={i} style={{background:'#1a0a2a',border:'1px solid #3d1560',borderRadius:'4px',padding:'18px 14px',textAlign:'center',cursor:'pointer'}}>
+                {[
+                  {icon:'🃏',tag:'오늘의 한 장',name:'오늘의 타로',desc:'지금 이 순간\n나에게 필요한 메시지',price:'무료',onClick:()=>router.push('/tarot')},
+                  {icon:'💜',tag:'연애·관계',name:'연애 타로',desc:'그 사람의 마음과\n우리의 앞날',price:'₩7,900',onClick:null}
+                ].map((p,i)=>(
+                  <div key={i} onClick={p.onClick||undefined} style={{background:'#1a0a2a',border:'1px solid #3d1560',borderRadius:'4px',padding:'18px 14px',textAlign:'center',cursor:p.onClick?'pointer':'default',opacity:p.onClick?1:0.6}}>
                     <div style={{fontSize:'28px',marginBottom:'10px'}}>{p.icon}</div>
                     <div style={{fontSize:'10px',color:'#7b3fa0',background:'#1a0a2a',padding:'2px 8px',borderRadius:'10px',display:'inline-block',marginBottom:'6px',border:'1px solid #3d1560'}}>{p.tag}</div>
                     <div style={{fontSize:'14px',color:'#f0e6d3',fontWeight:'700',marginBottom:'4px'}}>{p.name}</div>
                     <div style={{fontSize:'11px',color:'#9070a0',marginBottom:'10px',lineHeight:'1.6',whiteSpace:'pre'}}>{p.desc}</div>
                     <div style={{fontSize:'15px',color:'#c49ae8',fontWeight:'700'}}>{p.price}</div>
+                    {!p.onClick && <div style={{fontSize:'11px',color:'#5a3060',marginTop:'6px'}}>준비중</div>}
                   </div>
                 ))}
               </div>
-              <div style={{background:'#1a0a2a',border:'1px solid #3d1560',borderRadius:'4px',padding:'18px 14px',textAlign:'center',cursor:'pointer'}}>
+              <div style={{background:'#1a0a2a',border:'1px solid #3d1560',borderRadius:'4px',padding:'18px 14px',textAlign:'center',opacity:0.6}}>
                 <div style={{fontSize:'28px',marginBottom:'10px'}}>✨</div>
                 <div style={{fontSize:'14px',color:'#f0e6d3',fontWeight:'700',marginBottom:'4px'}}>사주 + 타로 통합 분석</div>
                 <div style={{fontSize:'11px',color:'#9070a0',marginBottom:'10px'}}>사주로 흐름을 보고 타로로 현재를 짚는 · 가장 정밀한 분석</div>
                 <div style={{fontSize:'15px',color:'#c49ae8',fontWeight:'700'}}>₩19,900</div>
+                <div style={{fontSize:'11px',color:'#5a3060',marginTop:'6px'}}>준비중</div>
               </div>
             </div>
           </div>
@@ -165,14 +167,11 @@ export default function Home() {
             <h2 style={{fontFamily:'serif',fontSize:'24px',fontWeight:'900',marginBottom:'6px',color:'#e8c97a'}}>생년월일시를<br/>알려주세요</h2>
             <p style={{fontSize:'13px',color:'#7a5030',marginBottom:'28px'}}>하늘의 기운을 정확히 읽기 위해 필요합니다</p>
 
-            {/* 이름 */}
             <div style={{marginBottom:'18px'}}>
               <label style={S.label}>이름</label>
-              <input type="text" placeholder="홍길동" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}
-                style={{width:'100%',background:'rgba(255,255,255,0.05)',border:'1px solid #3d1500',borderRadius:'6px',padding:'14px 16px',color:'#f0e6d3',fontSize:'15px',outline:'none'}}/>
+              <input type="text" placeholder="홍길동" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} style={S.input}/>
             </div>
 
-            {/* 양력/음력 */}
             <div style={{marginBottom:'18px'}}>
               <label style={S.label}>양력 / 음력</label>
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
@@ -182,43 +181,18 @@ export default function Home() {
               </div>
             </div>
 
-            {/* 연도 선택 */}
             <div style={{marginBottom:'18px'}}>
-              <label style={S.label}>태어난 해</label>
-              <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'6px',maxHeight:'180px',overflowY:'auto',padding:'4px'}}>
-                {YEARS.map(y=>(
-                  <button key={y} onClick={()=>setForm({...form,year:String(y)})} style={{...S.selectBtn(form.year===String(y)),padding:'10px 4px',fontSize:'13px'}}>
-                    {y}
-                  </button>
+              <label style={S.label}>생년월일</label>
+              <div style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr',gap:'8px'}}>
+                {[['year','년','1995'],['month','월','07'],['day','일','21']].map(([k,l,p])=>(
+                  <div key={k} style={{position:'relative'}}>
+                    <input type="number" placeholder={p} value={form[k]} onChange={e=>setForm({...form,[k]:e.target.value})} style={S.input}/>
+                    <span style={{position:'absolute',right:'12px',top:'50%',transform:'translateY(-50%)',fontSize:'12px',color:'#7a5030'}}>{l}</span>
+                  </div>
                 ))}
               </div>
             </div>
 
-            {/* 월 선택 */}
-            <div style={{marginBottom:'18px'}}>
-              <label style={S.label}>태어난 월</label>
-              <div style={{display:'grid',gridTemplateColumns:'repeat(6,1fr)',gap:'6px'}}>
-                {MONTHS.map(m=>(
-                  <button key={m} onClick={()=>setForm({...form,month:String(m)})} style={{...S.selectBtn(form.month===String(m)),padding:'10px 4px'}}>
-                    {m}월
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* 일 선택 */}
-            <div style={{marginBottom:'18px'}}>
-              <label style={S.label}>태어난 일</label>
-              <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:'4px'}}>
-                {DAYS.map(d=>(
-                  <button key={d} onClick={()=>setForm({...form,day:String(d)})} style={{...S.selectBtn(form.day===String(d)),padding:'10px 2px',fontSize:'12px'}}>
-                    {d}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* 시간 */}
             <div style={{marginBottom:'18px'}}>
               <label style={S.label}>태어난 시간</label>
               <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'6px'}}>
@@ -232,7 +206,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* 성별 */}
             <div style={{marginBottom:'28px'}}>
               <label style={S.label}>성별</label>
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
