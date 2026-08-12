@@ -57,7 +57,6 @@ export default function Tarot() {
     setFlipped(card.id);
     setLoading(true);
     setStep('result');
-
     try {
       const res = await fetch('/api/saju', {
         method: 'POST',
@@ -111,18 +110,11 @@ export default function Tarot() {
               <div style={{width:'40px',height:'2px',background:'#6030a0',margin:'16px auto'}} />
               <p style={{fontSize:'14px',color:'#9070b0',lineHeight:'1.8',marginBottom:'8px'}}>마음을 고요히 하고<br/>궁금한 것을 떠올려보세요</p>
               <p style={{fontSize:'13px',color:'#6040a0',fontStyle:'italic',marginBottom:'32px'}}>"카드는 이미 당신을 알고 있습니다"</p>
-
               <div style={{marginBottom:'24px',textAlign:'left'}}>
                 <label style={{display:'block',fontSize:'12px',color:'rgba(200,180,240,0.5)',marginBottom:'8px',letterSpacing:'1px'}}>궁금한 것이 있다면 적어보세요 (선택)</label>
-                <input
-                  type="text"
-                  placeholder="예: 이번 달 연애운이 궁금해요"
-                  value={question}
-                  onChange={e=>setQuestion(e.target.value)}
-                  style={{width:'100%',background:'rgba(120,50,200,0.1)',border:'1px solid #3d1560',borderRadius:'6px',padding:'14px 16px',color:'#f0e6d3',fontSize:'14px',outline:'none'}}
-                />
+                <input type="text" placeholder="예: 이번 달 연애운이 궁금해요" value={question} onChange={e=>setQuestion(e.target.value)}
+                  style={{width:'100%',background:'rgba(120,50,200,0.1)',border:'1px solid #3d1560',borderRadius:'6px',padding:'14px 16px',color:'#f0e6d3',fontSize:'14px',outline:'none'}}/>
               </div>
-
               <button onClick={startReading} style={{width:'100%',background:'linear-gradient(135deg,#3d1560,#6030a0)',color:'#e8c97a',padding:'16px',border:'1.5px solid #9060d0',borderRadius:'6px',fontSize:'16px',fontWeight:'800',cursor:'pointer',letterSpacing:'1px',fontFamily:'serif'}}>
                 카드 펼치기 🃏
               </button>
@@ -135,4 +127,55 @@ export default function Tarot() {
                 <h2 style={{fontFamily:'serif',fontSize:'22px',color:'#c49ae8',marginBottom:'8px'}}>끌리는 카드를 하나 선택하세요</h2>
                 <p style={{fontSize:'13px',color:'#6040a0'}}>직감을 믿으세요 · 마음이 가는 카드가 당신의 카드입니다</p>
               </div>
-              <div style={{display:'grid',gridTem
+              <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'12px'}}>
+                {cards.map((card, idx) => (
+                  <div key={card.id} className="card-item" onClick={() => pickCard(card)}
+                    style={{background:'linear-gradient(135deg,#1a0a2a,#2d1060)',border:'1.5px solid #3d1560',borderRadius:'10px',padding:'20px 10px',textAlign:'center'}}>
+                    <div style={{fontSize:'32px',marginBottom:'8px'}}>🎴</div>
+                    <div style={{fontSize:'11px',color:'#6040a0',letterSpacing:'1px'}}>CARD {idx + 1}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {step === 'result' && (
+            <div className="fade-in">
+              {loading ? (
+                <div style={{textAlign:'center',padding:'60px 0'}}>
+                  <div style={{fontSize:'48px',marginBottom:'20px'}} className="float">🔮</div>
+                  <p style={{fontSize:'16px',color:'#c49ae8'}}>카드의 메시지를 읽고 있어요...</p>
+                </div>
+              ) : (
+                <>
+                  {(() => {
+                    const card = cards.find(c => c.id === flipped);
+                    return card ? (
+                      <div style={{textAlign:'center',marginBottom:'24px'}}>
+                        <div style={{fontSize:'72px',marginBottom:'16px'}} className="float">{card.emoji}</div>
+                        <div style={{fontFamily:'serif',fontSize:'24px',color:'#c49ae8',fontWeight:'900',marginBottom:'4px'}}>
+                          {card.name}{card.reversed ? ' (역방향)' : ''}
+                        </div>
+                        <div style={{fontSize:'13px',color:'#6040a0',marginBottom:'8px'}}>{card.nameEn}</div>
+                        {card.reversed && (
+                          <div style={{fontSize:'12px',color:'#9060d0',background:'rgba(120,50,200,0.1)',padding:'3px 12px',borderRadius:'10px',display:'inline-block',border:'1px solid #3d1560'}}>역방향 카드</div>
+                        )}
+                      </div>
+                    ) : null;
+                  })()}
+                  <div style={{background:'#1a0a2a',border:'1px solid #3d1560',borderRadius:'8px',padding:'24px',marginBottom:'20px',lineHeight:'1.9',fontSize:'15px',whiteSpace:'pre-wrap',color:'#f0e6d3'}}>
+                    {result}
+                  </div>
+                  <button onClick={()=>{setStep('intro');setQuestion('');}} style={{width:'100%',background:'linear-gradient(135deg,#3d1560,#6030a0)',color:'#e8c97a',padding:'14px',border:'1.5px solid #9060d0',borderRadius:'6px',fontSize:'15px',fontWeight:'700',cursor:'pointer',fontFamily:'serif',marginBottom:'12px'}}>
+                    다시 뽑기 🃏
+                  </button>
+                  <a href="/" style={{display:'block',textAlign:'center',color:'#6040a0',fontSize:'13px',textDecoration:'none',padding:'10px'}}>← 처음으로</a>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
