@@ -76,28 +76,54 @@ export default async function handler(req, res) {
 
     // 타로 분석
     if (type === 'tarot') {
-      const prompt = `당신은 20년 경력의 타로 마스터이자 신비로운 점술가입니다.
+      const { spread, positions, cards: tarotCards, question: tarotQuestion } = req.body;
 
-오늘 뽑힌 카드: ${card} (${cardEn})${reversed ? ' — 역방향' : ' — 정방향'}
-질문/주제: ${question || '오늘 하루의 흐름'}
+      let prompt = '';
+
+      if (spread === 'daily' || !spread) {
+        // 1장
+        const card = tarotCards[0];
+        prompt = `당신은 20년 경력의 타로 마스터입니다.
+
+오늘 뽑힌 카드: ${card.name} (${card.nameEn}) — ${card.reversed ? '역방향' : '정방향'}
+질문/주제: ${tarotQuestion || '오늘 하루의 흐름'}
 
 아래 형식으로 해석해주세요:
 
-🃏 ${card}${reversed ? ' (역방향)' : ''}
+🃏 ${card.name}${card.reversed ? ' (역방향)' : ''}
 
 ✨ 카드의 의미
-(이 카드가 상징하는 것, ${reversed ? '역방향일 때의 의미' : '정방향일 때의 의미'})
-
 💫 지금 당신에게 전하는 메시지
-(질문/주제와 연결해서 구체적으로, 2-3문단)
-
 🌟 오늘 하루 조언
-(이 카드를 받은 사람이 오늘 어떻게 행동하면 좋을지)
-
 🔮 한 줄 핵심
-(카드의 핵심 메시지를 한 문장으로)
 
-신비롭고 따뜻한 톤으로, 마치 오랜 지혜를 가진 점술가가 직접 말해주듯이 한국어로 작성해주세요.`;
+신비롭고 따뜻한 톤으로 한국어로 작성해주세요.`;
+
+      } else {
+        // 3장 스프레드
+        const cardList = tarotCards.map(c =>
+          `${c.position}: ${c.name} (${c.nameEn}) — ${c.reversed ? '역방향' : '정방향'}`
+        ).join('\n');
+
+        prompt = `당신은 20년 경력의 타로 마스터입니다.
+
+질문/주제: ${tarotQuestion || '오늘 하루의 흐름'}
+
+뽑힌 카드:
+${cardList}
+
+아래 형식으로 각 카드를 해석하고 전체 흐름을 읽어주세요:
+
+${tarotCards.map(c => `🃏 ${c.position} — ${c.name}${c.reversed ? ' (역방향)' : ''}
+(이 카드가 ${c.position} 자리에서 말하는 것)`).join('\n\n')}
+
+🔮 세 카드가 전하는 전체 메시지
+(세 카드의 흐름을 연결해서 종합 해석)
+
+💫 지금 당신에게 가장 중요한 조언
+
+신비롭고 따뜻한 톤으로 한국어로 작성해주세요.`;
+      }
 
       const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
