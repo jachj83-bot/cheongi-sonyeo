@@ -48,14 +48,17 @@ const PersonForm = ({ title, color, data, setter }) => (
 
     <div>
       <label style={{display:'block',fontSize:'12px',color:'rgba(232,224,208,0.5)',marginBottom:'8px',letterSpacing:'0.5px'}}>태어난 시간</label>
-      <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'6px'}}>
-        {HOURS.map(h=>(
-          <button key={h.value} onClick={()=>setter({...data,hour:h.value})}
-            style={{padding:'10px 6px',background:data.hour===h.value?`${color}20`:'rgba(255,255,255,0.04)',border:`1.5px solid ${data.hour===h.value?color:'rgba(255,255,255,0.08)'}`,borderRadius:'10px',color:data.hour===h.value?color:'rgba(232,224,208,0.65)',cursor:'pointer',textAlign:'center'}}>
-            <div style={{fontSize:'13px',fontWeight:data.hour===h.value?'700':'400'}}>{h.label}</div>
-            <div style={{fontSize:'10px',color:data.hour===h.value?`${color}90`:'rgba(232,224,208,0.3)',marginTop:'2px'}}>{h.desc}</div>
-          </button>
-        ))}
+      <div style={{position:'relative'}}>
+        <select value={data.hour} onChange={e=>setter({...data,hour:e.target.value})}
+          style={{width:'100%',background:'rgba(255,255,255,0.07)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'12px',padding:'14px 16px',color:'#e8e0d0',fontSize:'14px',outline:'none',cursor:'pointer',appearance:'none',WebkitAppearance:'none'}}>
+          <option value="" style={{background:'#080b14'}}>시간을 선택하세요</option>
+          {HOURS.map(h=>(
+            <option key={h.value} value={h.value} style={{background:'#080b14',color:'#e8e0d0'}}>
+              {h.label} · {h.desc}
+            </option>
+          ))}
+        </select>
+        <span style={{position:'absolute',right:'14px',top:'50%',transform:'translateY(-50%)',color:'rgba(232,224,208,0.4)',pointerEvents:'none',fontSize:'12px'}}>▼</span>
       </div>
     </div>
   </div>
