@@ -98,7 +98,7 @@ export default function Gunghap() {
       </Head>
 
       <div style={{position:'sticky',top:0,zIndex:100,background:'rgba(8,11,20,0.95)',backdropFilter:'blur(10px)',borderBottom:'1px solid rgba(255,255,255,0.06)',padding:'14px 20px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-        <a href="/" style={{color:'#FFE000',fontSize:'18px',fontWeight:'bold',textDecoration:'none'}}>🔮 천기소녀</a>
+        <a href="/" style={{display:'flex',alignItems:'center',gap:'8px',color:'#FFE000',fontSize:'18px',fontWeight:'bold',textDecoration:'none'}}><img src="/logo_symbol.png" alt="" style={{width:'24px',height:'24px',objectFit:'contain'}} />천기소녀</a>
         <div style={{fontSize:'14px',color:'rgba(232,224,208,0.5)'}}>💑 궁합</div>
       </div>
 

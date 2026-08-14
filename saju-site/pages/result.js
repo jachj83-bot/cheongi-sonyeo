@@ -79,7 +79,7 @@ export default function Result() {
       <div style={{minHeight:'100vh',background:'#1a0a00'}}>
         {/* 헤더 */}
         <div style={{position:'sticky',top:0,zIndex:100,background:'rgba(26,10,0,0.97)',backdropFilter:'blur(10px)',borderBottom:'1px solid #3d1500',padding:'14px 20px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-          <a href="/" style={{color:'#e8c97a',fontSize:'18px',fontWeight:'900',textDecoration:'none',fontFamily:'serif',letterSpacing:'2px'}}>🔮 천기소녀</a>
+          <a href="/" style={{display:'flex',alignItems:'center',gap:'8px',color:'#e8c97a',fontSize:'18px',fontWeight:'900',textDecoration:'none',fontFamily:'serif',letterSpacing:'2px'}}><img src="/logo_symbol.png" alt="" style={{width:'24px',height:'24px',objectFit:'contain'}} />천기소녀</a>
         </div>
 
         <div style={{maxWidth:'600px',margin:'0 auto',padding:'28px 20px 80px'}}>
