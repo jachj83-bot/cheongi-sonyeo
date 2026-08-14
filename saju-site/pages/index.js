@@ -57,7 +57,7 @@ export default function Home() {
 
       <div style={{position:'fixed',top:0,left:0,right:0,zIndex:100,background:'rgba(11,10,31,0.85)',backdropFilter:'blur(12px)',borderBottom:'1px solid rgba(232,200,126,0.1)',padding:'16px 24px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
         <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
-          <img src="/logo_symbol.png.png" alt="천기소녀" style={{width:'28px',height:'28px',objectFit:'contain'}} />
+          <img src="/logo_symbol.png" alt="천기소녀" style={{width:'28px',height:'28px',objectFit:'contain'}} />
           <div>
             <div style={{fontFamily:"'Cormorant Garamond', 'Noto Serif KR', serif",fontSize:'18px',color:'#E8C87E',fontWeight:'600',letterSpacing:'2px',lineHeight:'1'}}>천기소녀</div>
             <div style={{fontSize:'9px',color:'rgba(232,200,126,0.4)',letterSpacing:'3px',marginTop:'2px'}}>CHEONGI SONYEO</div>
@@ -72,7 +72,7 @@ export default function Home() {
       {step === 'landing' && (
         <>
           <div style={{position:'relative',minHeight:'100vh',display:'flex',alignItems:'center',overflow:'hidden'}}>
-            <div style={{position:'absolute',top:0,left:0,right:0,bottom:0,backgroundImage:'url(/hero_cosmos.png.png)',backgroundSize:'cover',backgroundPosition:'center right'}} />
+            <div style={{position:'absolute',top:0,left:0,right:0,bottom:0,backgroundImage:'url(/hero_cosmos.jpg)',backgroundSize:'cover',backgroundPosition:'center right'}} />
             <div style={{position:'absolute',top:0,left:0,right:0,bottom:0,background:'linear-gradient(90deg, rgba(11,10,31,0.92) 0%, rgba(11,10,31,0.75) 50%, rgba(11,10,31,0.3) 100%)'}} />
             <div style={{position:'relative',zIndex:5,display:'grid',gridTemplateColumns:'1fr 1fr',maxWidth:'1100px',margin:'0 auto',padding:'100px 32px 60px',alignItems:'center',gap:'40px',width:'100%'}}>
               <div className="fade-up">
@@ -95,7 +95,7 @@ export default function Home() {
                 </button>
               </div>
               <div style={{display:'flex',justifyContent:'center',alignItems:'center'}} className="fade-up">
-                <img src="/oracle_girl.png.png" alt="천기소녀" style={{width:'100%',maxWidth:'360px',borderRadius:'4px',border:'1px solid rgba(232,200,126,0.15)'}} />
+                <img src="/oracle_girl.jpg" alt="천기소녀" style={{width:'100%',maxWidth:'360px',borderRadius:'4px',border:'1px solid rgba(232,200,126,0.15)'}} />
               </div>
             </div>
           </div>
