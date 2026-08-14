@@ -154,20 +154,22 @@ ${theme.tone} 톤으로 한국어로 작성해주세요.`;
       const partnerStrength = calcOhaengStrength(partnerPillars);
       const meIlgan = getIlgan(meSaju.dayPillar);
       const partnerIlgan = getIlgan(partnerSaju.dayPillar);
+      const meName = me.name || '나';
+      const partnerName = partner.name || '상대방';
 
       const prompt = `당신은 30년 경력의 명리학 전문가입니다.
 
-[나의 사주팔자]
+[${meName}님의 사주팔자]
 년주: ${meSaju.yearPillar} / 월주: ${meSaju.monthPillar} / 일주: ${meSaju.dayPillar} / 시주: ${meSaju.hourPillar}
 일간: ${meIlgan}(${CHEONGAN_OHAENG[meIlgan]})
 오행: 목${meStrength['목']} 화${meStrength['화']} 토${meStrength['토']} 금${meStrength['금']} 수${meStrength['수']}
 
-[상대방 사주팔자]
+[${partnerName}님의 사주팔자]
 년주: ${partnerSaju.yearPillar} / 월주: ${partnerSaju.monthPillar} / 일주: ${partnerSaju.dayPillar} / 시주: ${partnerSaju.hourPillar}
 일간: ${partnerIlgan}(${CHEONGAN_OHAENG[partnerIlgan]})
 오행: 목${partnerStrength['목']} 화${partnerStrength['화']} 토${partnerStrength['토']} 금${partnerStrength['금']} 수${partnerStrength['수']}
 
-아래 형식으로 분석해주세요:
+${meName}님과 ${partnerName}님, 두 분의 궁합을 봐주세요. 아래 형식으로 분석해주세요:
 
 ⭐ 궁합 총점: /100점
 
@@ -179,12 +181,12 @@ ${theme.tone} 톤으로 한국어로 작성해주세요.`;
 
 🌿 2026 병오년 두 사람에게
 
-장점과 단점을 6:4로 균형있게, 따뜻한 톤으로 한국어로 작성해주세요.`;
+두 분의 이름을 자연스럽게 불러가며, 장점과 단점을 6:4로 균형있게, 따뜻한 톤으로 한국어로 작성해주세요.`;
 
       const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 4096, messages: [{ role: 'user', content: prompt }] })
+        body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 2800, messages: [{ role: 'user', content: prompt }] })
       });
       const data = await response.json();
       return res.status(200).json({ result: data.content?.[0]?.text || '분석 결과를 가져올 수 없습니다.' });
@@ -224,7 +226,7 @@ ${theme.tone} 톤으로 한국어로 작성해주세요.`;
       const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 4096, messages: [{ role: 'user', content: prompt }] })
+        body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 2800, messages: [{ role: 'user', content: prompt }] })
       });
       const data = await response.json();
       return res.status(200).json({
@@ -276,7 +278,7 @@ ${theme.tone} 톤으로 한국어로 작성해주세요.`;
       const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 4096, messages: [{ role: 'user', content: prompt }] })
+        body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 2800, messages: [{ role: 'user', content: prompt }] })
       });
       const data = await response.json();
       return res.status(200).json({
@@ -324,7 +326,7 @@ ${card} (${cardEn || ''}) — ${reversed ? '역방향' : '정방향'}
       const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 4096, messages: [{ role: 'user', content: prompt }] })
+        body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 2800, messages: [{ role: 'user', content: prompt }] })
       });
       const data = await response.json();
       return res.status(200).json({
@@ -384,7 +386,7 @@ ${singang} 사주 특성에 맞게, 장점과 단점을 6:4로 균형있게, 따
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 4096, messages: [{ role: 'user', content: prompt }] })
+      body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 2800, messages: [{ role: 'user', content: prompt }] })
     });
     const data = await response.json();
 
