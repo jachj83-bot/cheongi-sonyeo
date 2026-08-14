@@ -42,6 +42,12 @@ function shuffle(arr) {
   return a;
 }
 
+const LOADING_MESSAGES = [
+  '카드의 메시지를 읽고 있어요...',
+  '카드에 담긴 상징을 풀어내는 중이에요...',
+  '거의 다 왔어요, 조금만 기다려주세요...',
+];
+
 export default function Tarot() {
   const router = useRouter();
   const [step, setStep] = useState('intro');
@@ -50,6 +56,7 @@ export default function Tarot() {
   const [picked, setPicked] = useState([]);
   const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -57,6 +64,14 @@ export default function Tarot() {
     const found = CATEGORIES.find(c => c.id === cat);
     if (found) setCategory(found);
   }, [router.isReady, router.query.cat]);
+
+  useEffect(() => {
+    if (!loading) { setLoadingMsgIdx(0); return; }
+    const timer = setInterval(() => {
+      setLoadingMsgIdx(i => Math.min(i + 1, LOADING_MESSAGES.length - 1));
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [loading]);
 
   const startReading = () => {
     const shuffled = shuffle(TAROT_CARDS).map(c => ({ ...c, reversed: Math.random() > 0.7 }));
@@ -204,25 +219,25 @@ export default function Tarot() {
 
           {step === 'result' && (
             <div className="fade-in">
+              {/* 뽑힌 카드들 — 로딩 여부와 상관없이 바로 보여줌 */}
+              <div style={{display:'flex',gap:'8px',marginBottom:'24px'}}>
+                {picked.map((card, i) => (
+                  <div key={card.id} style={{flex:1,textAlign:'center',background:'rgba(120,50,200,0.15)',border:'1.5px solid #6030a0',borderRadius:'10px',padding:'12px 8px'}}>
+                    <img src={card.img} alt={card.name} className="float" style={{width:'100%',aspectRatio:'2/3',objectFit:'cover',borderRadius:'6px',marginBottom:'8px',border:'1px solid rgba(232,200,126,0.2)',transform:card.reversed?'rotate(180deg)':'none'}} />
+                    <div style={{fontSize:'10px',color:'#9060d0',marginBottom:'2px'}}>{category.positions[i]}</div>
+                    <div style={{fontSize:'12px',color:'#c49ae8',fontWeight:'700'}}>{card.name}</div>
+                    {card.reversed && <div style={{fontSize:'10px',color:'#6040a0',marginTop:'2px'}}>역방향</div>}
+                  </div>
+                ))}
+              </div>
+
               {loading ? (
-                <div style={{textAlign:'center',padding:'60px 0'}}>
-                  <div style={{fontSize:'48px',marginBottom:'20px'}} className="float">🔮</div>
-                  <p style={{fontSize:'16px',color:'#c49ae8'}}>카드의 메시지를 읽고 있어요...</p>
+                <div style={{textAlign:'center',padding:'40px 0'}}>
+                  <div style={{fontSize:'40px',marginBottom:'16px'}} className="float">🔮</div>
+                  <p style={{fontSize:'16px',color:'#c49ae8'}}>{LOADING_MESSAGES[loadingMsgIdx]}</p>
                 </div>
               ) : (
                 <>
-                  {/* 뽑힌 카드들 */}
-                  <div style={{display:'flex',gap:'8px',marginBottom:'24px'}}>
-                    {picked.map((card, i) => (
-                      <div key={card.id} style={{flex:1,textAlign:'center',background:'rgba(120,50,200,0.15)',border:'1.5px solid #6030a0',borderRadius:'10px',padding:'12px 8px'}}>
-                        <img src={card.img} alt={card.name} className="float" style={{width:'100%',aspectRatio:'2/3',objectFit:'cover',borderRadius:'6px',marginBottom:'8px',border:'1px solid rgba(232,200,126,0.2)',transform:card.reversed?'rotate(180deg)':'none'}} />
-                        <div style={{fontSize:'10px',color:'#9060d0',marginBottom:'2px'}}>{category.positions[i]}</div>
-                        <div style={{fontSize:'12px',color:'#c49ae8',fontWeight:'700'}}>{card.name}</div>
-                        {card.reversed && <div style={{fontSize:'10px',color:'#6040a0',marginTop:'2px'}}>역방향</div>}
-                      </div>
-                    ))}
-                  </div>
-
                   {/* 해석 */}
                   <div style={{background:'#1a0a2a',border:'1px solid #3d1560',borderRadius:'8px',padding:'24px',marginBottom:'20px',lineHeight:'1.9',fontSize:'15px',whiteSpace:'pre-wrap',color:'#f0e6d3'}}>
                     {result}

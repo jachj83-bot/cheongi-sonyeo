@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Head from 'next/head';
 
 const HOURS = [
@@ -17,12 +17,27 @@ const HOURS = [
   { label: '모름', desc: '시간 불명', value: '모름' },
 ];
 
+const LOADING_MESSAGES = [
+  '천기소녀가 2026년의 기운을 읽고 있어요...',
+  '병오년 세운과 사주를 맞춰보는 중이에요...',
+  '거의 다 왔어요, 조금만 기다려주세요...',
+];
+
 export default function Sinnyeon() {
   const [step, setStep] = useState('input');
   const [form, setForm] = useState({ name: '', year: '', month: '', day: '', hour: '', gender: '', calendar: '양력' });
   const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
+
+  useEffect(() => {
+    if (!loading) { setLoadingMsgIdx(0); return; }
+    const timer = setInterval(() => {
+      setLoadingMsgIdx(i => Math.min(i + 1, LOADING_MESSAGES.length - 1));
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [loading]);
 
   const S = {
     input: { width: '100%', background: 'rgba(232,200,126,0.06)', border: '1px solid rgba(232,200,126,0.2)', borderRadius: '4px', padding: '14px 16px', color: '#EDE9F2', fontSize: '15px', outline: 'none', fontFamily: 'inherit' },
@@ -150,7 +165,7 @@ export default function Sinnyeon() {
             {loading ? (
               <div style={{textAlign:'center',padding:'60px 0'}}>
                 <div style={{fontSize:'44px',marginBottom:'20px'}}>🐎</div>
-                <p style={{fontSize:'15px',color:'rgba(232,200,126,0.6)'}}>천기소녀가 2026년의 기운을 읽고 있어요...</p>
+                <p style={{fontSize:'15px',color:'rgba(232,200,126,0.6)'}}>{LOADING_MESSAGES[loadingMsgIdx]}</p>
               </div>
             ) : (
               <>

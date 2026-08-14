@@ -16,11 +16,18 @@ const JIJI_OHAENG = {
   '오':'화','미':'토','신':'금','유':'금','술':'토','해':'수'
 };
 
+const LOADING_MESSAGES = [
+  '천기소녀가 하늘의 기운을 읽고 있어요...',
+  '사주팔자를 하나하나 짚어보는 중이에요...',
+  '거의 다 왔어요, 조금만 기다려주세요...',
+];
+
 export default function Result() {
   const router = useRouter();
   const [result, setResult] = useState('');
   const [sajuData, setSajuData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -42,6 +49,14 @@ export default function Result() {
         setLoading(false);
       });
   }, [router.isReady]);
+
+  useEffect(() => {
+    if (!loading) { setLoadingMsgIdx(0); return; }
+    const timer = setInterval(() => {
+      setLoadingMsgIdx(i => Math.min(i + 1, LOADING_MESSAGES.length - 1));
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [loading]);
 
   const { name, year, month, day } = router.query;
 
@@ -93,8 +108,7 @@ export default function Result() {
           {loading ? (
             <div style={{textAlign:'center',padding:'60px 0'}}>
               <div style={{fontSize:'48px',marginBottom:'20px'}}>🔮</div>
-              <p style={{fontSize:'16px',color:'#c4956a'}}>천기소녀가 하늘의 기운을 읽고 있어요...</p>
-              <p style={{fontSize:'13px',color:'#7a5030',marginTop:'8px'}}>잠시만 기다려주세요</p>
+              <p style={{fontSize:'16px',color:'#c4956a'}}>{LOADING_MESSAGES[loadingMsgIdx]}</p>
             </div>
           ) : (
             <>

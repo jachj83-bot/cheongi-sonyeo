@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Head from 'next/head';
 
 const HOURS = [
@@ -20,6 +20,12 @@ const HOURS = [
 const PersonForm = ({ title, color, data, setter }) => (
   <div style={{background:'rgba(255,255,255,0.03)',border:`1.5px solid ${color}30`,borderRadius:'16px',padding:'20px',marginBottom:'12px'}}>
     <div style={{fontSize:'13px',fontWeight:'700',marginBottom:'16px',color}}>{title}</div>
+
+    <div style={{marginBottom:'14px'}}>
+      <label style={{display:'block',fontSize:'12px',color:'rgba(232,224,208,0.5)',marginBottom:'8px',letterSpacing:'0.5px'}}>이름</label>
+      <input type="text" placeholder="홍길동" value={data.name} onChange={e=>setter({...data,name:e.target.value})}
+        style={{width:'100%',background:'rgba(255,255,255,0.07)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'12px',padding:'14px 16px',color:'#e8e0d0',fontSize:'15px',outline:'none'}}/>
+    </div>
 
     <div style={{marginBottom:'14px'}}>
       <label style={{display:'block',fontSize:'12px',color:'rgba(232,224,208,0.5)',marginBottom:'8px',letterSpacing:'0.5px'}}>양력 / 음력</label>
@@ -64,16 +70,31 @@ const PersonForm = ({ title, color, data, setter }) => (
   </div>
 );
 
+const LOADING_MESSAGES = [
+  '천기소녀가 두 사람의 기운을 읽고 있어요...',
+  '두 사주의 오행을 맞춰보는 중이에요...',
+  '거의 다 왔어요, 조금만 기다려주세요...',
+];
+
 export default function Gunghap() {
-  const [me, setMe] = useState({ year:'', month:'', day:'', hour:'', calendar:'양력' });
-  const [partner, setPartner] = useState({ year:'', month:'', day:'', hour:'', calendar:'양력' });
+  const [me, setMe] = useState({ name:'', year:'', month:'', day:'', hour:'', calendar:'양력' });
+  const [partner, setPartner] = useState({ name:'', year:'', month:'', day:'', hour:'', calendar:'양력' });
   const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
+
+  useEffect(() => {
+    if (!loading) { setLoadingMsgIdx(0); return; }
+    const timer = setInterval(() => {
+      setLoadingMsgIdx(i => Math.min(i + 1, LOADING_MESSAGES.length - 1));
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [loading]);
 
   const handleSubmit = async () => {
-    if (!me.year||!me.month||!me.day||!partner.year||!partner.month||!partner.day) {
-      setError('생년월일을 모두 입력해주세요.');
+    if (!me.name||!partner.name||!me.year||!me.month||!me.day||!partner.year||!partner.month||!partner.day) {
+      setError('이름과 생년월일을 모두 입력해주세요.');
       return;
     }
     setError(''); setLoading(true); setResult('');
@@ -119,14 +140,22 @@ export default function Gunghap() {
         {loading && (
           <div style={{textAlign:'center',padding:'40px 0'}}>
             <div style={{fontSize:'48px',marginBottom:'16px'}}>🔮</div>
-            <p style={{fontSize:'16px',color:'rgba(232,224,208,0.6)'}}>천기소녀가 두 사람의 기운을 읽고 있어요...</p>
+            <p style={{fontSize:'16px',color:'rgba(232,224,208,0.6)'}}>{LOADING_MESSAGES[loadingMsgIdx]}</p>
           </div>
         )}
 
         {result && !loading && (
-          <div style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'16px',padding:'24px',lineHeight:'1.9',fontSize:'15px',whiteSpace:'pre-wrap'}}>
-            {result}
-          </div>
+          <>
+            <div style={{textAlign:'center',fontSize:'15px',color:'rgba(232,224,208,0.6)',marginBottom:'12px'}}>
+              <span style={{color:'#FFE000',fontWeight:'700'}}>{me.name}</span>
+              {' '}♥{' '}
+              <span style={{color:'#9b7ee8',fontWeight:'700'}}>{partner.name}</span>
+              {' '}님의 궁합
+            </div>
+            <div style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'16px',padding:'24px',lineHeight:'1.9',fontSize:'15px',whiteSpace:'pre-wrap'}}>
+              {result}
+            </div>
+          </>
         )}
       </div>
 
