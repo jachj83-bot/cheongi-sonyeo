@@ -142,8 +142,10 @@ export default function Home() {
                 <div style={{fontSize:'10px',letterSpacing:'3px',color:'rgba(232,200,126,0.4)',marginBottom:'14px'}}>사주 · 운세</div>
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px',marginBottom:'12px'}}>
                   {[
-                    {icon:'🪐',tag:'무료 기본 포함',name:'일주 분석',desc:'타고난 기질과 올해 흐름 분석',price:'₩9,900',onClick:()=>setStep('input')},
-                    {icon:'💑',tag:'두 사람 비교',name:'궁합 분석',desc:'연인·배우자·친구 궁합 점수 공개',price:'₩14,900',onClick:()=>router.push('/gunghap')}
+                    {icon:'🪐',tag:'완전 무료',name:'나의 운세',desc:'타고난 기질과 올해 흐름 분석',price:'무료',onClick:()=>setStep('input')},
+                    {icon:'💑',tag:'두 사람 비교',name:'궁합 분석',desc:'연인·배우자·친구 궁합 점수 공개',price:'₩14,900',onClick:()=>router.push('/gunghap')},
+                    {icon:'🐎',tag:'2026 병오년',name:'신년운세',desc:'상반기·하반기 흐름을 자세히 풀이',price:'₩9,900',onClick:()=>router.push('/sinnyeon')},
+                    {icon:'📜',tag:'전통 방식',name:'토정비결',desc:'괘를 뽑아 계절별 신수를 풀이',price:'₩9,900',onClick:()=>router.push('/tojeong')}
                   ].map((p,i)=>(
                     <div key={i} onClick={p.onClick} style={{background:'linear-gradient(180deg,rgba(40,34,72,.4),rgba(24,20,46,.5))',border:'1px solid rgba(232,200,126,0.1)',borderRadius:'4px',padding:'24px',cursor:'pointer',backdropFilter:'blur(10px)'}}>
                       <div style={{fontSize:'24px',marginBottom:'12px'}}>{p.icon}</div>
@@ -172,29 +174,39 @@ export default function Home() {
                 <div style={{fontSize:'10px',letterSpacing:'3px',color:'rgba(155,109,214,0.5)',marginBottom:'14px'}}>타로</div>
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px',marginBottom:'12px'}}>
                   {[
-                    {icon:'🃏',tag:'오늘의 한 장',name:'오늘의 타로',desc:'지금 이 순간 나에게 필요한 메시지',price:'무료',onClick:()=>router.push('/tarot')},
-                    {icon:'💜',tag:'연애·관계',name:'연애 타로',desc:'그 사람의 마음과 우리의 앞날',price:'₩7,900',onClick:null}
+                    {icon:'🃏',tag:'오늘의 한 장 · 무료',name:'오늘의 운세',desc:'지금 이 순간 나에게 필요한 메시지',price:'무료',onClick:()=>router.push('/tarot?cat=daily')},
+                    {icon:'💜',tag:'연애·관계',name:'연애 타로',desc:'그 사람의 마음과 우리의 앞날',price:'₩7,900',onClick:()=>router.push('/tarot?cat=love')}
                   ].map((p,i)=>(
-                    <div key={i} onClick={p.onClick||undefined} style={{background:'linear-gradient(180deg,rgba(60,34,100,.4),rgba(36,20,60,.5))',border:'1px solid rgba(155,109,214,0.15)',borderRadius:'4px',padding:'24px',cursor:p.onClick?'pointer':'default',opacity:p.onClick?1:0.6,backdropFilter:'blur(10px)'}}>
+                    <div key={i} onClick={p.onClick} style={{background:'linear-gradient(180deg,rgba(60,34,100,.4),rgba(36,20,60,.5))',border:'1px solid rgba(155,109,214,0.15)',borderRadius:'4px',padding:'24px',cursor:'pointer',backdropFilter:'blur(10px)'}}>
                       <div style={{fontSize:'24px',marginBottom:'12px'}}>{p.icon}</div>
                       <div style={{fontSize:'10px',color:'rgba(155,109,214,0.5)',letterSpacing:'2px',marginBottom:'8px'}}>{p.tag}</div>
                       <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:'18px',color:'#EDE9F2',marginBottom:'6px'}}>{p.name}</div>
                       <div style={{fontSize:'12px',color:'rgba(237,233,242,0.4)',marginBottom:'14px',fontWeight:'300'}}>{p.desc}</div>
                       <div style={{fontSize:'16px',color:'#c49ae8',fontWeight:'600'}}>{p.price}</div>
-                      {!p.onClick && <div style={{fontSize:'11px',color:'rgba(155,109,214,0.3)',letterSpacing:'1px',marginTop:'4px'}}>준비중</div>}
                     </div>
                   ))}
                 </div>
-                <div style={{background:'linear-gradient(180deg,rgba(60,34,100,.4),rgba(36,20,60,.5))',border:'1px solid rgba(155,109,214,0.15)',borderRadius:'4px',padding:'24px',backdropFilter:'blur(10px)',opacity:0.6}}>
+                <div onClick={()=>router.push('/tarot?cat=wealth')} style={{background:'linear-gradient(180deg,rgba(60,34,100,.4),rgba(36,20,60,.5))',border:'1px solid rgba(155,109,214,0.15)',borderRadius:'4px',padding:'24px',backdropFilter:'blur(10px)',marginBottom:'32px',cursor:'pointer'}}>
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
                     <div>
-                      <div style={{fontSize:'10px',color:'rgba(155,109,214,0.5)',letterSpacing:'2px',marginBottom:'8px'}}>통합 분석</div>
+                      <div style={{fontSize:'10px',color:'rgba(155,109,214,0.5)',letterSpacing:'2px',marginBottom:'8px'}}>재물 · 투자</div>
+                      <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:'18px',color:'#EDE9F2',marginBottom:'6px'}}>재물 타로</div>
+                      <div style={{fontSize:'12px',color:'rgba(237,233,242,0.4)',fontWeight:'300'}}>지금 흐름과 다가올 재물운을 세 장으로 짚어드려요</div>
+                    </div>
+                    <div style={{textAlign:'right'}}>
+                      <div style={{fontSize:'16px',color:'#c49ae8',fontWeight:'600'}}>₩7,900</div>
+                    </div>
+                  </div>
+                </div>
+                <div onClick={()=>router.push('/tonghap')} style={{background:'linear-gradient(180deg,rgba(60,34,100,.4),rgba(36,20,60,.5))',border:'1px solid rgba(155,109,214,0.15)',borderRadius:'4px',padding:'24px',backdropFilter:'blur(10px)',cursor:'pointer'}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                    <div>
+                      <div style={{fontSize:'10px',color:'rgba(155,109,214,0.5)',letterSpacing:'2px',marginBottom:'8px'}}>통합 분석 · 가장 정밀</div>
                       <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:'18px',color:'#EDE9F2',marginBottom:'6px'}}>사주 + 타로 통합 분석</div>
                       <div style={{fontSize:'12px',color:'rgba(237,233,242,0.4)',fontWeight:'300'}}>사주로 흐름을 보고 타로로 현재를 짚는 가장 정밀한 분석</div>
                     </div>
                     <div style={{textAlign:'right'}}>
-                      <div style={{fontSize:'16px',color:'#c49ae8',fontWeight:'600',marginBottom:'4px'}}>₩19,900</div>
-                      <div style={{fontSize:'11px',color:'rgba(155,109,214,0.3)',letterSpacing:'1px'}}>준비중</div>
+                      <div style={{fontSize:'16px',color:'#c49ae8',fontWeight:'600'}}>₩24,900</div>
                     </div>
                   </div>
                 </div>

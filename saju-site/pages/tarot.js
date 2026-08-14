@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import Head from 'next/head';
 
 const TAROT_CARDS = [
@@ -26,10 +27,10 @@ const TAROT_CARDS = [
   { id: 21, name: '세계', nameEn: 'The World', emoji: '🌍', img: '/cheongi_tarot_21_world.png' },
 ];
 
-const SPREAD_TYPES = [
-  { id: 'daily', label: '오늘의 한 장', count: 1, positions: ['현재'] },
-  { id: 'past_present_future', label: '과거 · 현재 · 미래', count: 3, positions: ['과거', '현재', '미래'] },
-  { id: 'situation', label: '상황 · 장애물 · 조언', count: 3, positions: ['상황', '장애물', '조언'] },
+const CATEGORIES = [
+  { id: 'daily', label: '오늘의 운세', desc: '지금 이 순간 나에게 필요한 메시지', price: '무료', count: 1, positions: ['현재'] },
+  { id: 'love', label: '연애 타로', desc: '그 사람의 마음과 우리의 앞날', price: '₩7,900', count: 3, positions: ['그 사람의 마음', '나의 마음', '우리의 앞날'] },
+  { id: 'wealth', label: '재물 타로', desc: '지금 흐름과 다가올 재물운', price: '₩7,900', count: 3, positions: ['현재 재물 상황', '다가올 기회', '조언'] },
 ];
 
 function shuffle(arr) {
@@ -42,13 +43,20 @@ function shuffle(arr) {
 }
 
 export default function Tarot() {
+  const router = useRouter();
   const [step, setStep] = useState('intro');
-  const [spreadType, setSpreadType] = useState(SPREAD_TYPES[0]);
+  const [category, setCategory] = useState(CATEGORIES[0]);
   const [cards, setCards] = useState([]);
   const [picked, setPicked] = useState([]);
   const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);
-  const [question, setQuestion] = useState('');
+
+  useEffect(() => {
+    if (!router.isReady) return;
+    const cat = router.query.cat;
+    const found = CATEGORIES.find(c => c.id === cat);
+    if (found) setCategory(found);
+  }, [router.isReady, router.query.cat]);
 
   const startReading = () => {
     const shuffled = shuffle(TAROT_CARDS).map(c => ({ ...c, reversed: Math.random() > 0.7 }));
@@ -60,12 +68,12 @@ export default function Tarot() {
 
   const pickCard = async (card) => {
     if (picked.find(p => p.id === card.id)) return;
-    if (picked.length >= spreadType.count) return;
+    if (picked.length >= category.count) return;
 
     const newPicked = [...picked, card];
     setPicked(newPicked);
 
-    if (newPicked.length === spreadType.count) {
+    if (newPicked.length === category.count) {
       setLoading(true);
       setStep('result');
       try {
@@ -74,15 +82,14 @@ export default function Tarot() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             type: 'tarot',
-            spread: spreadType.id,
-            positions: spreadType.positions,
+            category: category.id,
+            positions: category.positions,
             cards: newPicked.map((c, i) => ({
-              position: spreadType.positions[i],
+              position: category.positions[i],
               name: c.name,
               nameEn: c.nameEn,
               reversed: c.reversed
-            })),
-            question: question || '오늘 하루의 흐름'
+            }))
           })
         });
         const data = await res.json();
@@ -97,7 +104,7 @@ export default function Tarot() {
   return (
     <>
       <Head>
-        <title>오늘의 타로 — 천기소녀</title>
+        <title>타로 — 천기소녀</title>
         <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
         <style>{`
           * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -130,25 +137,21 @@ export default function Tarot() {
               <div style={{width:'40px',height:'2px',background:'#6030a0',margin:'16px auto'}} />
               <p style={{fontSize:'13px',color:'#6040a0',fontStyle:'italic',marginBottom:'28px'}}>"카드는 이미 당신을 알고 있습니다"</p>
 
-              {/* 스프레드 선택 */}
-              <div style={{marginBottom:'24px',textAlign:'left'}}>
-                <label style={{display:'block',fontSize:'12px',color:'rgba(200,180,240,0.5)',marginBottom:'10px',letterSpacing:'1px'}}>스프레드 선택</label>
+              {/* 카테고리 선택 */}
+              <div style={{marginBottom:'28px',textAlign:'left'}}>
+                <label style={{display:'block',fontSize:'12px',color:'rgba(200,180,240,0.5)',marginBottom:'10px',letterSpacing:'1px'}}>타로 종류 선택</label>
                 <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
-                  {SPREAD_TYPES.map(s => (
-                    <button key={s.id} onClick={() => setSpreadType(s)}
-                      style={{padding:'12px 16px',background:spreadType.id===s.id?'rgba(120,50,200,0.3)':'rgba(120,50,200,0.08)',border:`1.5px solid ${spreadType.id===s.id?'#9060d0':'#2d1560'}`,borderRadius:'8px',color:spreadType.id===s.id?'#e8c97a':'#9070b0',cursor:'pointer',textAlign:'left',fontSize:'14px',fontWeight:spreadType.id===s.id?'700':'400',display:'flex',alignItems:'center',gap:'10px'}}>
-                      <span style={{display:'inline-flex',alignItems:'center',justifyContent:'center',minWidth:'34px',height:'22px',borderRadius:'4px',fontSize:'11px',fontWeight:'700',letterSpacing:'0.5px',background:spreadType.id===s.id?'rgba(232,200,126,0.18)':'rgba(144,96,208,0.15)',color:spreadType.id===s.id?'#e8c97a':'#9070b0',border:`1px solid ${spreadType.id===s.id?'rgba(232,200,126,0.4)':'rgba(144,96,208,0.3)'}`}}>{s.count}장</span>
-                      {s.label}
+                  {CATEGORIES.map(c => (
+                    <button key={c.id} onClick={() => setCategory(c)}
+                      style={{padding:'14px 16px',background:category.id===c.id?'rgba(120,50,200,0.3)':'rgba(120,50,200,0.08)',border:`1.5px solid ${category.id===c.id?'#9060d0':'#2d1560'}`,borderRadius:'8px',color:category.id===c.id?'#e8c97a':'#9070b0',cursor:'pointer',textAlign:'left',display:'flex',alignItems:'center',justifyContent:'space-between',gap:'10px'}}>
+                      <div>
+                        <div style={{fontSize:'14px',fontWeight:category.id===c.id?'700':'400',marginBottom:'3px'}}>{c.label}</div>
+                        <div style={{fontSize:'11px',color:category.id===c.id?'rgba(232,200,126,0.6)':'rgba(144,112,176,0.6)'}}>{c.desc}</div>
+                      </div>
+                      <div style={{fontSize:'13px',fontWeight:'700',color:category.id===c.id?'#e8c97a':'#9070b0',whiteSpace:'nowrap'}}>{c.price}</div>
                     </button>
                   ))}
                 </div>
-              </div>
-
-              {/* 질문 입력 */}
-              <div style={{marginBottom:'24px',textAlign:'left'}}>
-                <label style={{display:'block',fontSize:'12px',color:'rgba(200,180,240,0.5)',marginBottom:'8px',letterSpacing:'1px'}}>궁금한 것이 있다면 적어보세요 (선택)</label>
-                <input type="text" placeholder="예: 이번 달 연애운이 궁금해요" value={question} onChange={e=>setQuestion(e.target.value)}
-                  style={{width:'100%',background:'rgba(120,50,200,0.1)',border:'1px solid #3d1560',borderRadius:'6px',padding:'14px 16px',color:'#f0e6d3',fontSize:'14px',outline:'none'}}/>
               </div>
 
               <button onClick={startReading} style={{width:'100%',background:'linear-gradient(135deg,#3d1560,#6030a0)',color:'#e8c97a',padding:'16px',border:'1.5px solid #9060d0',borderRadius:'6px',fontSize:'16px',fontWeight:'800',cursor:'pointer',letterSpacing:'1px',fontFamily:'serif'}}>
@@ -161,12 +164,12 @@ export default function Tarot() {
             <div className="fade-in">
               <div style={{textAlign:'center',marginBottom:'20px'}}>
                 <h2 style={{fontFamily:'serif',fontSize:'20px',color:'#c49ae8',marginBottom:'8px'}}>
-                  {picked.length < spreadType.count
-                    ? `${spreadType.positions[picked.length]} 카드를 선택하세요`
+                  {picked.length < category.count
+                    ? `${category.positions[picked.length]} 카드를 선택하세요`
                     : '카드를 모두 선택했어요'}
                 </h2>
                 <p style={{fontSize:'13px',color:'#6040a0'}}>
-                  {picked.length} / {spreadType.count} 장 선택됨
+                  {picked.length} / {category.count} 장 선택됨
                 </p>
               </div>
 
@@ -176,7 +179,7 @@ export default function Tarot() {
                   {picked.map((card, i) => (
                     <div key={card.id} style={{textAlign:'center',background:'rgba(120,50,200,0.2)',border:'1.5px solid #9060d0',borderRadius:'8px',padding:'8px',flex:1}}>
                       <img src={card.img} alt={card.name} style={{width:'100%',aspectRatio:'2/3',objectFit:'cover',borderRadius:'4px',marginBottom:'6px',transform:card.reversed?'rotate(180deg)':'none'}} />
-                      <div style={{fontSize:'10px',color:'#c49ae8'}}>{spreadType.positions[i]}</div>
+                      <div style={{fontSize:'10px',color:'#c49ae8'}}>{category.positions[i]}</div>
                       <div style={{fontSize:'11px',color:'#9070b0',marginTop:'2px'}}>{card.name}</div>
                     </div>
                   ))}
@@ -213,7 +216,7 @@ export default function Tarot() {
                     {picked.map((card, i) => (
                       <div key={card.id} style={{flex:1,textAlign:'center',background:'rgba(120,50,200,0.15)',border:'1.5px solid #6030a0',borderRadius:'10px',padding:'12px 8px'}}>
                         <img src={card.img} alt={card.name} className="float" style={{width:'100%',aspectRatio:'2/3',objectFit:'cover',borderRadius:'6px',marginBottom:'8px',border:'1px solid rgba(232,200,126,0.2)',transform:card.reversed?'rotate(180deg)':'none'}} />
-                        <div style={{fontSize:'10px',color:'#9060d0',marginBottom:'2px'}}>{spreadType.positions[i]}</div>
+                        <div style={{fontSize:'10px',color:'#9060d0',marginBottom:'2px'}}>{category.positions[i]}</div>
                         <div style={{fontSize:'12px',color:'#c49ae8',fontWeight:'700'}}>{card.name}</div>
                         {card.reversed && <div style={{fontSize:'10px',color:'#6040a0',marginTop:'2px'}}>역방향</div>}
                       </div>
@@ -225,7 +228,7 @@ export default function Tarot() {
                     {result}
                   </div>
 
-                  <button onClick={()=>{setStep('intro');setQuestion('');setPicked([]);}} style={{width:'100%',background:'linear-gradient(135deg,#3d1560,#6030a0)',color:'#e8c97a',padding:'14px',border:'1.5px solid #9060d0',borderRadius:'6px',fontSize:'15px',fontWeight:'700',cursor:'pointer',fontFamily:'serif',marginBottom:'12px'}}>
+                  <button onClick={()=>{setStep('intro');setPicked([]);}} style={{width:'100%',background:'linear-gradient(135deg,#3d1560,#6030a0)',color:'#e8c97a',padding:'14px',border:'1.5px solid #9060d0',borderRadius:'6px',fontSize:'15px',fontWeight:'700',cursor:'pointer',fontFamily:'serif',marginBottom:'12px'}}>
                     다시 뽑기 🃏
                   </button>
                   <a href="/" style={{display:'block',textAlign:'center',color:'#6040a0',fontSize:'13px',textDecoration:'none',padding:'10px'}}>← 처음으로</a>
