@@ -121,7 +121,11 @@ export default function Tarot() {
 
           {step === 'intro' && (
             <div style={{textAlign:'center'}} className="fade-in">
-              <div style={{fontSize:'72px',marginBottom:'24px'}} className="float">🃏</div>
+              <div style={{position:'relative',height:'140px',marginBottom:'28px',display:'flex',justifyContent:'center',alignItems:'center'}} className="float">
+                <img src="/cheongi_tarot_18_moon.png" alt="" style={{position:'absolute',width:'78px',borderRadius:'8px',border:'1px solid rgba(232,200,126,0.35)',boxShadow:'0 8px 24px rgba(0,0,0,0.5)',transform:'rotate(-16deg) translateX(-46px)',opacity:0.85}} />
+                <img src="/cheongi_tarot_00_fool.png" alt="" style={{position:'relative',width:'92px',borderRadius:'8px',border:'1px solid rgba(232,200,126,0.6)',boxShadow:'0 10px 30px rgba(0,0,0,0.6)',zIndex:2}} />
+                <img src="/cheongi_tarot_17_star.png" alt="" style={{position:'absolute',width:'78px',borderRadius:'8px',border:'1px solid rgba(232,200,126,0.35)',boxShadow:'0 8px 24px rgba(0,0,0,0.5)',transform:'rotate(16deg) translateX(46px)',opacity:0.85}} />
+              </div>
               <h1 style={{fontFamily:'serif',fontSize:'28px',fontWeight:'900',color:'#f0e6d3',marginBottom:'12px',lineHeight:'1.4'}}>오늘 당신에게<br/><span style={{color:'#c49ae8'}}>어떤 카드</span>가 올까요?</h1>
               <div style={{width:'40px',height:'2px',background:'#6030a0',margin:'16px auto'}} />
               <p style={{fontSize:'13px',color:'#6040a0',fontStyle:'italic',marginBottom:'28px'}}>"카드는 이미 당신을 알고 있습니다"</p>
@@ -132,8 +136,9 @@ export default function Tarot() {
                 <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
                   {SPREAD_TYPES.map(s => (
                     <button key={s.id} onClick={() => setSpreadType(s)}
-                      style={{padding:'12px 16px',background:spreadType.id===s.id?'rgba(120,50,200,0.3)':'rgba(120,50,200,0.08)',border:`1.5px solid ${spreadType.id===s.id?'#9060d0':'#2d1560'}`,borderRadius:'8px',color:spreadType.id===s.id?'#e8c97a':'#9070b0',cursor:'pointer',textAlign:'left',fontSize:'14px',fontWeight:spreadType.id===s.id?'700':'400'}}>
-                      {s.count === 1 ? '🃏' : '🃏🃏🃏'} {s.label}
+                      style={{padding:'12px 16px',background:spreadType.id===s.id?'rgba(120,50,200,0.3)':'rgba(120,50,200,0.08)',border:`1.5px solid ${spreadType.id===s.id?'#9060d0':'#2d1560'}`,borderRadius:'8px',color:spreadType.id===s.id?'#e8c97a':'#9070b0',cursor:'pointer',textAlign:'left',fontSize:'14px',fontWeight:spreadType.id===s.id?'700':'400',display:'flex',alignItems:'center',gap:'10px'}}>
+                      <span style={{display:'inline-flex',alignItems:'center',justifyContent:'center',minWidth:'34px',height:'22px',borderRadius:'4px',fontSize:'11px',fontWeight:'700',letterSpacing:'0.5px',background:spreadType.id===s.id?'rgba(232,200,126,0.18)':'rgba(144,96,208,0.15)',color:spreadType.id===s.id?'#e8c97a':'#9070b0',border:`1px solid ${spreadType.id===s.id?'rgba(232,200,126,0.4)':'rgba(144,96,208,0.3)'}`}}>{s.count}장</span>
+                      {s.label}
                     </button>
                   ))}
                 </div>
