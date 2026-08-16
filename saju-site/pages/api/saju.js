@@ -371,22 +371,18 @@ ${card} (${cardEn || ''}) — ${reversed ? '역방향' : '정방향'}
 십신:
 ${sipsinData.map(s => s ? `${s.pillar}: 천간(${s.ganSipsin}) 지지(${s.jiSipsin})` : '').join('\n')}
 
-첫 문장은 반드시 "하늘의 기운을 읽었습니다."로 시작하고 아래 형식으로 분석해주세요:
+첫 문장은 반드시 "하늘의 기운을 읽었습니다."로 시작하고 아래 형식으로, 짧고 임팩트 있게 분석해주세요. 이건 무료로 제공되는 맛보기 리포트이니 전체적으로 간결하게 써주세요:
 
 🌟 일주 분석 (${saju.dayPillar})
 🔥 오행 에너지
 💫 십신으로 본 성격과 재능
-💰 재물운
-❤️ 연애·결혼운
-⚡ 2026 병오년 운세
-⚠️ 조언
 
-${singang} 사주 특성에 맞게, 장점과 단점을 6:4로 균형있게, 따뜻하고 신비로운 톤으로 한국어로 작성해주세요.`;
+${singang} 사주 특성에 맞게, 장점과 단점을 6:4로 균형있게, 따뜻하고 신비로운 톤으로 한국어로 작성해주세요. 각 항목은 3~4문장 정도로 짧게 써주세요. 마지막에 줄바꿈 후 "✨" 로 시작하는 한 줄로, 재물운·연애운·2026년 병오년 운세는 더 자세한 유료 콘텐츠에서 확인할 수 있다는 걸 자연스럽게 궁금증을 자아내는 문장으로 안내해주세요 (예: "재물운과 연애운, 2026년의 흐름은 신년운세에서 훨씬 자세히 만나볼 수 있어요").`;
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 2800, messages: [{ role: 'user', content: prompt }] })
+      body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 1400, messages: [{ role: 'user', content: prompt }] })
     });
     const data = await response.json();
 
