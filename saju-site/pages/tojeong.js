@@ -59,13 +59,43 @@ export default function Tojeong() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'tojeong', ...form })
       });
-      const data = await res.json();
-      setResult(data.result || '분석 결과를 불러올 수 없습니다.');
-      setGwae(data.gwae || null);
+
+      const gwaeHeader = res.headers.get('X-Gwae-Data');
+      if (gwaeHeader) {
+        try { setGwae(JSON.parse(decodeURIComponent(gwaeHeader))); } catch {}
+      }
+
+      const contentType = res.headers.get('Content-Type') || '';
+      if (contentType.includes('application/json')) {
+        const data = await res.json();
+        setResult(data.result || '분석 결과를 불러올 수 없습니다.');
+        setGwae(data.gwae || null);
+        setLoading(false);
+        return;
+      }
+
+      if (!res.body) {
+        setResult('잠시 후 다시 시도해주세요.');
+        setLoading(false);
+        return;
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let acc = '';
+      let first = true;
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        acc += decoder.decode(value, { stream: true });
+        setResult(acc);
+        if (first) { setLoading(false); first = false; }
+      }
+      setLoading(false);
     } catch {
       setResult('잠시 후 다시 시도해주세요.');
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
