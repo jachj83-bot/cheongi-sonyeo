@@ -142,8 +142,8 @@ export default function Home() {
                 <div style={{fontSize:'10px',letterSpacing:'3px',color:'rgba(232,200,126,0.4)',marginBottom:'14px'}}>사주 · 운세</div>
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px',marginBottom:'12px'}}>
                   {[
-                    {icon:'🪐',tag:'완전 무료',name:'나의 운세',desc:'타고난 기질과 올해 흐름 분석',price:'무료',onClick:()=>setStep('input')},
-                    {icon:'💑',tag:'두 사람 비교',name:'궁합 분석',desc:'연인·배우자·친구 궁합 점수 공개',price:'₩14,900',onClick:()=>router.push('/gunghap')},
+                    {icon:'🪐',tag:'완전 무료',name:'나의 운세',desc:'타고난 기질과 오행 에너지 분석',price:'무료',onClick:()=>setStep('input')},
+                    {icon:'💑',tag:'완전 무료',name:'궁합 분석',desc:'연인·배우자·친구 궁합 점수 공개',price:'무료',onClick:()=>router.push('/gunghap')},
                     {icon:'🐎',tag:'2026 병오년',name:'신년운세',desc:'상반기·하반기 흐름을 자세히 풀이',price:'₩9,900',onClick:()=>router.push('/sinnyeon')},
                     {icon:'📜',tag:'전통 방식',name:'토정비결',desc:'괘를 뽑아 계절별 신수를 풀이',price:'₩9,900',onClick:()=>router.push('/tojeong')}
                   ].map((p,i)=>(
