@@ -67,6 +67,49 @@ function getHourNumber(hourLabel) {
   return map[hourLabel] ?? 12;
 }
 
+// AI 응답을 실시간 스트리밍으로 전송 (체감 속도 개선). extraHeader가 있으면
+// 사이드카 데이터(사주원국, 괘 등)를 헤더로 함께 실어 보낸다.
+async function streamAnthropic(res, { prompt, maxTokens = 2000, fallback = '분석 결과를 가져올 수 없습니다.', extraHeader }) {
+  const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
+    body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: maxTokens, stream: true, messages: [{ role: 'user', content: prompt }] })
+  });
+
+  if (!anthropicRes.ok || !anthropicRes.body) {
+    const fallbackBody = { result: fallback };
+    if (extraHeader) fallbackBody[extraHeader.jsonKey] = extraHeader.payload;
+    res.status(200).json(fallbackBody);
+    return;
+  }
+
+  const headers = { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-cache' };
+  if (extraHeader) headers[extraHeader.name] = encodeURIComponent(JSON.stringify(extraHeader.payload));
+  res.writeHead(200, headers);
+
+  const reader = anthropicRes.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop();
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      try {
+        const evt = JSON.parse(line.slice(6));
+        if (evt.type === 'content_block_delta' && evt.delta?.type === 'text_delta') {
+          res.write(evt.delta.text);
+        }
+      } catch {}
+    }
+  }
+  res.end();
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -135,13 +178,8 @@ ${tarotCards.map(c => `🃏 ${c.position} — ${c.name}${c.reversed ? ' (역방�
 ${theme.tone} 톤으로 한국어로 작성해주세요.`;
       }
 
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 2000, messages: [{ role: 'user', content: prompt }] })
-      });
-      const data = await response.json();
-      return res.status(200).json({ result: data.content?.[0]?.text || '카드의 메시지를 읽을 수 없습니다.' });
+      await streamAnthropic(res, { prompt, maxTokens: 2000, fallback: '카드의 메시지를 읽을 수 없습니다.' });
+      return;
     }
 
     // 궁합 분석
@@ -183,13 +221,8 @@ ${meName}님과 ${partnerName}님, 두 분의 궁합을 봐주세요. 아래 형
 
 두 분의 이름을 자연스럽게 불러가며, 장점과 단점을 6:4로 균형있게, 따뜻한 톤으로 한국어로 작성해주세요.`;
 
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 2800, messages: [{ role: 'user', content: prompt }] })
-      });
-      const data = await response.json();
-      return res.status(200).json({ result: data.content?.[0]?.text || '분석 결과를 가져올 수 없습니다.' });
+      await streamAnthropic(res, { prompt, maxTokens: 2800, fallback: '분석 결과를 가져올 수 없습니다.' });
+      return;
     }
 
     // 신년운세 (2026 병오년)
@@ -223,19 +256,8 @@ ${meName}님과 ${partnerName}님, 두 분의 궁합을 봐주세요. 아래 형
 
 장점과 단점을 6:4로 균형있게, 따뜻하고 신비로운 톤으로 한국어로 작성해주세요.`;
 
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 2800, messages: [{ role: 'user', content: prompt }] })
-      });
-      const data = await response.json();
-      return res.status(200).json({
-        result: data.content?.[0]?.text || '분석 결과를 가져올 수 없습니다.',
-        sajuData: {
-          pillars: { year: saju.yearPillar, month: saju.monthPillar, day: saju.dayPillar, hour: saju.hourPillar },
-          strength, ilgan
-        }
-      });
+      await streamAnthropic(res, { prompt, maxTokens: 2800, fallback: '분석 결과를 가져올 수 없습니다.' });
+      return;
     }
 
     // 토정비결
@@ -275,16 +297,11 @@ ${meName}님과 ${partnerName}님, 두 분의 궁합을 봐주세요. 아래 형
 
 전통적이고 담백한 옛 어투를 살짝 섞되 이해하기 쉽게, 한국어로 작성해주세요.`;
 
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 2800, messages: [{ role: 'user', content: prompt }] })
+      await streamAnthropic(res, {
+        prompt, maxTokens: 2800, fallback: '분석 결과를 가져올 수 없습니다.',
+        extraHeader: { name: 'X-Gwae-Data', jsonKey: 'gwae', payload: { sanggwae, junggwae, hagwae } }
       });
-      const data = await response.json();
-      return res.status(200).json({
-        result: data.content?.[0]?.text || '분석 결과를 가져올 수 없습니다.',
-        gwae: { sanggwae, junggwae, hagwae }
-      });
+      return;
     }
 
     // 사주 + 타로 통합 분석
@@ -323,19 +340,8 @@ ${card} (${cardEn || ''}) — ${reversed ? '역방향' : '정방향'}
 
 사주(장기 흐름)와 타로(현재 기운)가 서로를 어떻게 뒷받침하거나 다른 신호를 주는지 명확히 짚어주면서, 따뜻하고 신비로운 톤으로 한국어로 작성해주세요.`;
 
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 2800, messages: [{ role: 'user', content: prompt }] })
-      });
-      const data = await response.json();
-      return res.status(200).json({
-        result: data.content?.[0]?.text || '분석 결과를 가져올 수 없습니다.',
-        sajuData: {
-          pillars: { year: saju.yearPillar, month: saju.monthPillar, day: saju.dayPillar, hour: saju.hourPillar },
-          strength, singang: singangCheck, ilgan
-        }
-      });
+      await streamAnthropic(res, { prompt, maxTokens: 2800, fallback: '분석 결과를 가져올 수 없습니다.' });
+      return;
     }
 
     // 사주 분석
