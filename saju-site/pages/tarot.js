@@ -29,8 +29,8 @@ const TAROT_CARDS = [
 
 const CATEGORIES = [
   { id: 'daily', label: '오늘의 운세', desc: '지금 이 순간 나에게 필요한 메시지', price: '무료', count: 1, positions: ['현재'] },
-  { id: 'love', label: '연애 타로', desc: '그 사람의 마음과 우리의 앞날', price: '₩7,900', count: 3, positions: ['그 사람의 마음', '나의 마음', '우리의 앞날'] },
-  { id: 'wealth', label: '재물 타로', desc: '지금 흐름과 다가올 재물운', price: '₩7,900', count: 3, positions: ['현재 재물 상황', '다가올 기회', '조언'] },
+  { id: 'love', label: '연애 타로', desc: '그 사람의 마음과 우리의 앞날', price: '무료', count: 3, positions: ['그 사람의 마음', '나의 마음', '우리의 앞날'] },
+  { id: 'wealth', label: '재물 타로', desc: '지금 흐름과 다가올 재물운', price: '무료', count: 3, positions: ['현재 재물 상황', '다가올 기회', '조언'] },
 ];
 
 function shuffle(arr) {

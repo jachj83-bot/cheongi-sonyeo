@@ -175,7 +175,7 @@ export default function Home() {
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px',marginBottom:'12px'}}>
                   {[
                     {icon:'🃏',tag:'오늘의 한 장 · 무료',name:'오늘의 운세',desc:'지금 이 순간 나에게 필요한 메시지',price:'무료',onClick:()=>router.push('/tarot?cat=daily')},
-                    {icon:'💜',tag:'연애·관계',name:'연애 타로',desc:'그 사람의 마음과 우리의 앞날',price:'₩7,900',onClick:()=>router.push('/tarot?cat=love')}
+                    {icon:'💜',tag:'연애·관계 · 무료',name:'연애 타로',desc:'그 사람의 마음과 우리의 앞날',price:'무료',onClick:()=>router.push('/tarot?cat=love')}
                   ].map((p,i)=>(
                     <div key={i} onClick={p.onClick} style={{background:'linear-gradient(180deg,rgba(60,34,100,.4),rgba(36,20,60,.5))',border:'1px solid rgba(155,109,214,0.15)',borderRadius:'4px',padding:'24px',cursor:'pointer',backdropFilter:'blur(10px)'}}>
                       <div style={{fontSize:'24px',marginBottom:'12px'}}>{p.icon}</div>
@@ -189,12 +189,12 @@ export default function Home() {
                 <div onClick={()=>router.push('/tarot?cat=wealth')} style={{background:'linear-gradient(180deg,rgba(60,34,100,.4),rgba(36,20,60,.5))',border:'1px solid rgba(155,109,214,0.15)',borderRadius:'4px',padding:'24px',backdropFilter:'blur(10px)',marginBottom:'32px',cursor:'pointer'}}>
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
                     <div>
-                      <div style={{fontSize:'10px',color:'rgba(155,109,214,0.5)',letterSpacing:'2px',marginBottom:'8px'}}>재물 · 투자</div>
+                      <div style={{fontSize:'10px',color:'rgba(155,109,214,0.5)',letterSpacing:'2px',marginBottom:'8px'}}>재물 · 투자 · 무료</div>
                       <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:'18px',color:'#EDE9F2',marginBottom:'6px'}}>재물 타로</div>
                       <div style={{fontSize:'12px',color:'rgba(237,233,242,0.4)',fontWeight:'300'}}>지금 흐름과 다가올 재물운을 세 장으로 짚어드려요</div>
                     </div>
                     <div style={{textAlign:'right'}}>
-                      <div style={{fontSize:'16px',color:'#c49ae8',fontWeight:'600'}}>₩7,900</div>
+                      <div style={{fontSize:'16px',color:'#c49ae8',fontWeight:'600'}}>무료</div>
                     </div>
                   </div>
                 </div>
