@@ -33,21 +33,53 @@ export default function Result() {
     if (!router.isReady) return;
     const { name, year, month, day, hour, gender, calendar } = router.query;
     if (!name) return;
-    fetch('/api/saju', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, year, month, day, hour, gender, calendar })
-    })
-      .then(r => r.json())
-      .then(data => {
-        setResult(data.result || '분석 결과를 불러올 수 없습니다.');
-        setSajuData(data.sajuData || null);
+
+    (async () => {
+      try {
+        const res = await fetch('/api/saju', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, year, month, day, hour, gender, calendar })
+        });
+
+        const sajuHeader = res.headers.get('X-Saju-Data');
+        if (sajuHeader) {
+          try { setSajuData(JSON.parse(decodeURIComponent(sajuHeader))); } catch {}
+        }
+
+        // 스트리밍 응답이 아니면(에러 등) 기존 방식대로 JSON 처리
+        const contentType = res.headers.get('Content-Type') || '';
+        if (contentType.includes('application/json')) {
+          const data = await res.json();
+          setResult(data.result || '분석 결과를 불러올 수 없습니다.');
+          setSajuData(data.sajuData || null);
+          setLoading(false);
+          return;
+        }
+
+        if (!res.body) {
+          setResult('잠시 후 다시 시도해주세요.');
+          setLoading(false);
+          return;
+        }
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let acc = '';
+        let first = true;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          acc += decoder.decode(value, { stream: true });
+          setResult(acc);
+          if (first) { setLoading(false); first = false; }
+        }
         setLoading(false);
-      })
-      .catch(() => {
+      } catch {
         setResult('잠시 후 다시 시도해주세요.');
         setLoading(false);
-      });
+      }
+    })();
   }, [router.isReady]);
 
   useEffect(() => {
