@@ -22,6 +22,26 @@ const LOADING_MESSAGES = [
   '거의 다 왔어요, 조금만 기다려주세요...',
 ];
 
+// 스트리밍되는 해석 텍스트를 섹션(이모지로 시작하는 줄) 단위로 잘라
+// 카톡처럼 말풍선이 하나씩 툭툭 나타나는 형태로 보여주기 위한 헬퍼
+const SECTION_EMOJI = /^[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u;
+function splitIntoBubbles(text) {
+  if (!text) return [];
+  const lines = text.split('\n');
+  const bubbles = [];
+  let current = '';
+  lines.forEach(line => {
+    if (SECTION_EMOJI.test(line.trim()) && current.trim()) {
+      bubbles.push(current.trim());
+      current = line + '\n';
+    } else {
+      current += line + '\n';
+    }
+  });
+  if (current.trim()) bubbles.push(current.trim());
+  return bubbles;
+}
+
 export default function Result() {
   const router = useRouter();
   const [result, setResult] = useState('');
@@ -120,7 +140,12 @@ export default function Result() {
       <Head>
         <title>사주 결과 — 천기소녀</title>
         <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
-        <style>{`* {box-sizing:border-box;margin:0;padding:0;} body {background:#1a0a00;color:#f0e6d3;font-family:'Noto Sans KR',sans-serif;}`}</style>
+        <style>{`
+          * {box-sizing:border-box;margin:0;padding:0;}
+          body {background:#1a0a00;color:#f0e6d3;font-family:'Noto Sans KR',sans-serif;}
+          @keyframes bubbleIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+          .chat-bubble { animation: bubbleIn 0.4s ease forwards; }
+        `}</style>
       </Head>
 
       <div style={{minHeight:'100vh',background:'#1a0a00'}}>
@@ -187,9 +212,19 @@ export default function Result() {
                 </div>
               )}
 
-              {/* 분석 결과 */}
-              <div style={{background:'#1f0a00',border:'1px solid #3d1500',borderRadius:'6px',padding:'24px',marginBottom:'20px',lineHeight:'1.9',fontSize:'15px',whiteSpace:'pre-wrap',color:'#f0e6d3'}}>
-                {result}
+              {/* 분석 결과 — 카톡처럼 말풍선으로 하나씩 */}
+              <div style={{display:'flex',flexDirection:'column',gap:'16px',marginBottom:'20px'}}>
+                {splitIntoBubbles(result).map((bubble, i) => (
+                  <div key={i} className="chat-bubble" style={{display:'flex',gap:'10px',alignItems:'flex-start'}}>
+                    <img src="/logo_symbol.png" alt="" style={{width:'30px',height:'30px',borderRadius:'50%',border:'1px solid #3d1500',background:'#2d1500',objectFit:'contain',padding:'4px',flexShrink:0,marginTop:'2px'}} />
+                    <div style={{minWidth:0}}>
+                      <div style={{fontSize:'11px',color:'#7a5030',marginBottom:'4px',paddingLeft:'2px'}}>천기소녀</div>
+                      <div style={{background:'#2d1500',border:'1px solid #3d1500',borderRadius:'4px 14px 14px 14px',padding:'14px 16px',color:'#f0e6d3',fontSize:'15px',lineHeight:'1.8',whiteSpace:'pre-wrap'}}>
+                        {bubble}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
 
               {/* 유료 CTA */}
