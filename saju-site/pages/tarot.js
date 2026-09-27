@@ -73,8 +73,10 @@ export default function Tarot() {
     return () => clearInterval(timer);
   }, [loading]);
 
-  const startReading = () => {
+  const startReading = (cat) => {
+    const target = cat || category;
     const shuffled = shuffle(TAROT_CARDS).map(c => ({ ...c, reversed: Math.random() > 0.7 }));
+    setCategory(target);
     setCards(shuffled);
     setPicked([]);
     setResult('');
@@ -182,7 +184,7 @@ export default function Tarot() {
                 <label style={{display:'block',fontSize:'12px',color:'rgba(200,180,240,0.5)',marginBottom:'10px',letterSpacing:'1px'}}>타로 종류 선택</label>
                 <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
                   {CATEGORIES.map(c => (
-                    <button key={c.id} onClick={() => setCategory(c)}
+                    <button key={c.id} onClick={() => startReading(c)}
                       style={{padding:'14px 16px',background:category.id===c.id?'rgba(120,50,200,0.3)':'rgba(120,50,200,0.08)',border:`1.5px solid ${category.id===c.id?'#9060d0':'#2d1560'}`,borderRadius:'8px',color:category.id===c.id?'#e8c97a':'#9070b0',cursor:'pointer',textAlign:'left',display:'flex',alignItems:'center',justifyContent:'space-between',gap:'10px'}}>
                       <div>
                         <div style={{fontSize:'14px',fontWeight:category.id===c.id?'700':'400',marginBottom:'3px'}}>{c.label}</div>
@@ -194,8 +196,8 @@ export default function Tarot() {
                 </div>
               </div>
 
-              <button onClick={startReading} style={{width:'100%',background:'linear-gradient(135deg,#3d1560,#6030a0)',color:'#e8c97a',padding:'16px',border:'1.5px solid #9060d0',borderRadius:'6px',fontSize:'16px',fontWeight:'800',cursor:'pointer',letterSpacing:'1px',fontFamily:'serif'}}>
-                카드 펼치기 🃏
+              <button onClick={() => startReading()} style={{width:'100%',background:'linear-gradient(135deg,#3d1560,#6030a0)',color:'#e8c97a',padding:'16px',border:'1.5px solid #9060d0',borderRadius:'6px',fontSize:'16px',fontWeight:'800',cursor:'pointer',letterSpacing:'1px',fontFamily:'serif'}}>
+                {category.label} 카드 펼치기 🃏
               </button>
             </div>
           )}
