@@ -42,12 +42,29 @@ function splitIntoBubbles(text) {
   return bubbles;
 }
 
+const QUESTION_CHIPS = [
+  '오늘 하루 어떻게 보내면 좋을까요?',
+  '저랑 잘 맞는 사람은 어떤 타입이에요?',
+  '제가 제일 조심해야 할 건 뭐예요?',
+];
+
 export default function Result() {
   const router = useRouter();
   const [result, setResult] = useState('');
   const [sajuData, setSajuData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatLoading, setChatLoading] = useState(false);
+  const [freeUsed, setFreeUsed] = useState(false);
+
+  useEffect(() => {
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      if (localStorage.getItem('cheongi_chat_free_date') === today) setFreeUsed(true);
+    } catch {}
+  }, []);
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -111,6 +128,68 @@ export default function Result() {
   }, [loading]);
 
   const { name, year, month, day } = router.query;
+
+  const markFreeUsed = () => {
+    setFreeUsed(true);
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      localStorage.setItem('cheongi_chat_free_date', today);
+    } catch {}
+  };
+
+  const sendChatQuestion = async (q) => {
+    if (!q || !q.trim() || chatLoading || freeUsed) return;
+    setChatMessages(prev => [...prev, { role: 'user', text: q }]);
+    setChatInput('');
+    setChatLoading(true);
+    try {
+      const res = await fetch('/api/saju', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'chat', sajuData, question: q })
+      });
+
+      const contentType = res.headers.get('Content-Type') || '';
+      if (contentType.includes('application/json')) {
+        const data = await res.json();
+        setChatMessages(prev => [...prev, { role: 'char', text: data.result || '지금은 답하기 어려워요.' }]);
+        setChatLoading(false);
+        markFreeUsed();
+        return;
+      }
+
+      if (!res.body) {
+        setChatMessages(prev => [...prev, { role: 'char', text: '잠시 후 다시 시도해주세요.' }]);
+        setChatLoading(false);
+        return;
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let acc = '';
+      setChatMessages(prev => [...prev, { role: 'char', text: '' }]);
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        acc += decoder.decode(value, { stream: true });
+        setChatMessages(prev => {
+          const next = [...prev];
+          next[next.length - 1] = { role: 'char', text: acc };
+          return next;
+        });
+      }
+      setChatLoading(false);
+      markFreeUsed();
+    } catch {
+      setChatMessages(prev => [...prev, { role: 'char', text: '오류가 발생했어요. 잠시 후 다시 시도해주세요.' }]);
+      setChatLoading(false);
+    }
+  };
+
+  const strongestOhaeng = sajuData ? Object.entries(sajuData.strength).sort((a, b) => b[1] - a[1])[0][0] : null;
+  const openingLine = sajuData
+    ? `${name || '의뢰인'}님은 오행 중 ${strongestOhaeng} 기운이 유독 강한 ${sajuData.singang} 사주예요. 오늘은 뭐가 제일 궁금해요?`
+    : '';
 
   const PillarCard = ({ label, pillar, sipsin }) => {
     if (!pillar) return null;
@@ -226,6 +305,72 @@ export default function Result() {
                   </div>
                 ))}
               </div>
+
+              {/* 천기소녀와 대화하기 */}
+              {sajuData && (
+                <div style={{background:'#1f0a00',border:'1px solid #3d1500',borderRadius:'6px',padding:'20px',marginBottom:'20px'}}>
+                  <div style={{textAlign:'center',fontFamily:'serif',fontSize:'14px',color:'#e8c97a',marginBottom:'16px',letterSpacing:'2px'}}>✦ 천기소녀와 대화하기 ✦</div>
+
+                  <div className="chat-bubble" style={{display:'flex',gap:'10px',alignItems:'flex-start',marginBottom:'14px'}}>
+                    <img src="/logo_symbol.png" alt="" style={{width:'30px',height:'30px',borderRadius:'50%',border:'1px solid #3d1500',background:'#2d1500',objectFit:'contain',padding:'4px',flexShrink:0,marginTop:'2px'}} />
+                    <div style={{minWidth:0}}>
+                      <div style={{fontSize:'11px',color:'#7a5030',marginBottom:'4px',paddingLeft:'2px'}}>천기소녀</div>
+                      <div style={{background:'#2d1500',border:'1px solid #3d1500',borderRadius:'4px 14px 14px 14px',padding:'14px 16px',color:'#f0e6d3',fontSize:'15px',lineHeight:'1.8'}}>
+                        {openingLine}
+                      </div>
+                    </div>
+                  </div>
+
+                  {chatMessages.map((m, i) => (
+                    <div key={i} className="chat-bubble" style={{display:'flex',gap:'10px',alignItems:'flex-start',marginBottom:'14px',flexDirection:m.role==='user'?'row-reverse':'row'}}>
+                      {m.role==='char' && <img src="/logo_symbol.png" alt="" style={{width:'30px',height:'30px',borderRadius:'50%',border:'1px solid #3d1500',background:'#2d1500',objectFit:'contain',padding:'4px',flexShrink:0,marginTop:'2px'}} />}
+                      <div style={{minWidth:0,maxWidth:'80%'}}>
+                        {m.role==='char' && <div style={{fontSize:'11px',color:'#7a5030',marginBottom:'4px',paddingLeft:'2px'}}>천기소녀</div>}
+                        <div style={{background:m.role==='user'?'#8b2e00':'#2d1500',border:'1px solid #3d1500',borderRadius:m.role==='user'?'14px 4px 14px 14px':'4px 14px 14px 14px',padding:'14px 16px',color:'#f0e6d3',fontSize:'15px',lineHeight:'1.8',whiteSpace:'pre-wrap'}}>
+                          {m.text}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {chatLoading && (
+                    <div style={{fontSize:'13px',color:'#7a5030',paddingLeft:'40px',marginBottom:'10px'}}>천기소녀가 답하는 중...</div>
+                  )}
+
+                  {!freeUsed ? (
+                    <>
+                      {chatMessages.length === 0 && (
+                        <div style={{display:'flex',flexWrap:'wrap',gap:'8px',marginBottom:'14px'}}>
+                          {QUESTION_CHIPS.map((q, i) => (
+                            <button key={i} onClick={()=>sendChatQuestion(q)} disabled={chatLoading} style={{background:'rgba(232,200,126,0.08)',border:'1px solid rgba(232,200,126,0.3)',color:'#e8c97a',borderRadius:'16px',padding:'8px 14px',fontSize:'13px',cursor:'pointer',fontFamily:'inherit'}}>
+                              {q}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      <div style={{display:'flex',gap:'8px'}}>
+                        <input
+                          type="text"
+                          value={chatInput}
+                          onChange={e=>setChatInput(e.target.value)}
+                          onKeyDown={e=>{ if (e.key === 'Enter' && !chatLoading) sendChatQuestion(chatInput); }}
+                          placeholder="궁금한 걸 물어보세요"
+                          disabled={chatLoading}
+                          style={{flex:1,background:'rgba(232,200,126,0.06)',border:'1px solid rgba(232,200,126,0.2)',borderRadius:'6px',padding:'12px 14px',color:'#f0e6d3',fontSize:'14px',outline:'none',fontFamily:'inherit'}}
+                        />
+                        <button onClick={()=>sendChatQuestion(chatInput)} disabled={chatLoading || !chatInput.trim()} style={{background:'#8b2e00',color:'#e8c97a',border:'1.5px solid #c4712a',borderRadius:'6px',padding:'0 18px',fontSize:'14px',fontWeight:'700',cursor:'pointer'}}>
+                          전송
+                        </button>
+                      </div>
+                      <div style={{fontSize:'11px',color:'#7a5030',marginTop:'8px',textAlign:'center'}}>오늘 무료 질문 1회</div>
+                    </>
+                  ) : (
+                    <div style={{textAlign:'center',padding:'12px',fontSize:'13px',color:'#7a5030'}}>
+                      오늘의 무료 질문을 다 쓰셨어요. 내일 다시 찾아와 주세요.
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* 유료 CTA */}
               <div style={{background:'#2d0f00',border:'1px solid #8b2e00',borderRadius:'6px',padding:'24px',textAlign:'center',marginBottom:'16px'}}>
