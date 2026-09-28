@@ -48,6 +48,13 @@ const QUESTION_CHIPS = [
   '제가 제일 조심해야 할 건 뭐예요?',
 ];
 
+const CHAT_EXTRA_PRICE = 1000;
+
+function makeOrderId() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+  return 'ord-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
+}
+
 export default function Result() {
   const router = useRouter();
   const [result, setResult] = useState('');
@@ -58,6 +65,10 @@ export default function Result() {
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
   const [freeUsed, setFreeUsed] = useState(false);
+  const [payPhone, setPayPhone] = useState('');
+  const [paying, setPaying] = useState(false);
+  const [payError, setPayError] = useState('');
+  const [chatPayProcessed, setChatPayProcessed] = useState(false);
 
   useEffect(() => {
     try {
@@ -65,6 +76,33 @@ export default function Result() {
       if (localStorage.getItem('cheongi_chat_free_date') === today) setFreeUsed(true);
     } catch {}
   }, []);
+
+  // 추가 질문 결제 후 돌아왔을 때 — 결제 확인되면 미리 저장해둔 질문을 자동으로 전송
+  useEffect(() => {
+    if (!router.isReady || chatPayProcessed) return;
+    const oid = router.query.chatOrderId;
+    if (!oid || !sajuData) return;
+    setChatPayProcessed(true);
+    pollChatReveal(oid, 0);
+  }, [router.isReady, sajuData, chatPayProcessed]);
+
+  const pollChatReveal = async (oid, attempt) => {
+    try {
+      const res = await fetch('/api/payapp/reveal?orderId=' + encodeURIComponent(oid));
+      if (res.status === 200) {
+        const data = await res.json();
+        if (data.paid && data.stash?.question) {
+          sendChatQuestion(data.stash.question, true);
+          return;
+        }
+      }
+    } catch {}
+    if (attempt < 20) {
+      setTimeout(() => pollChatReveal(oid, attempt + 1), 1500);
+    } else {
+      setPayError('결제 확인이 늦어지고 있어요. 잠시 후 새로고침 해주세요.');
+    }
+  };
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -137,8 +175,9 @@ export default function Result() {
     } catch {}
   };
 
-  const sendChatQuestion = async (q) => {
-    if (!q || !q.trim() || chatLoading || freeUsed) return;
+  const sendChatQuestion = async (q, skipFreeCheck) => {
+    if (!q || !q.trim() || chatLoading) return;
+    if (freeUsed && !skipFreeCheck) return;
     setChatMessages(prev => [...prev, { role: 'user', text: q }]);
     setChatInput('');
     setChatLoading(true);
@@ -183,6 +222,43 @@ export default function Result() {
     } catch {
       setChatMessages(prev => [...prev, { role: 'char', text: '오류가 발생했어요. 잠시 후 다시 시도해주세요.' }]);
       setChatLoading(false);
+    }
+  };
+
+  const startChatPayment = async () => {
+    if (!chatInput.trim()) return;
+    const phoneDigits = payPhone.replace(/[^0-9]/g, '');
+    if (phoneDigits.length < 9) {
+      setPayError('휴대폰번호를 정확히 입력해주세요.');
+      return;
+    }
+    setPaying(true); setPayError('');
+    try {
+      const oid = makeOrderId();
+      const qs = new URLSearchParams(router.query).toString();
+      const returnPath = `/result?${qs}${qs ? '&' : ''}chatOrderId=${oid}`;
+      const res = await fetch('/api/payapp/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId: oid,
+          goodname: '천기소녀 추가 질문',
+          price: CHAT_EXTRA_PRICE,
+          recvphone: phoneDigits,
+          returnPath,
+          stash: { question: chatInput.trim() },
+        })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.payurl) {
+        setPayError(data.error || '결제 요청에 실패했어요.');
+        setPaying(false);
+        return;
+      }
+      window.location.href = data.payurl;
+    } catch {
+      setPayError('결제 요청 중 오류가 발생했어요.');
+      setPaying(false);
     }
   };
 
@@ -337,36 +413,49 @@ export default function Result() {
                     <div style={{fontSize:'13px',color:'#7a5030',paddingLeft:'40px',marginBottom:'10px'}}>천기소녀가 답하는 중...</div>
                   )}
 
-                  {!freeUsed ? (
-                    <>
-                      {chatMessages.length === 0 && (
-                        <div style={{display:'flex',flexWrap:'wrap',gap:'8px',marginBottom:'14px'}}>
-                          {QUESTION_CHIPS.map((q, i) => (
-                            <button key={i} onClick={()=>sendChatQuestion(q)} disabled={chatLoading} style={{background:'rgba(232,200,126,0.08)',border:'1px solid rgba(232,200,126,0.3)',color:'#e8c97a',borderRadius:'16px',padding:'8px 14px',fontSize:'13px',cursor:'pointer',fontFamily:'inherit'}}>
-                              {q}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                      <div style={{display:'flex',gap:'8px'}}>
-                        <input
-                          type="text"
-                          value={chatInput}
-                          onChange={e=>setChatInput(e.target.value)}
-                          onKeyDown={e=>{ if (e.key === 'Enter' && !chatLoading) sendChatQuestion(chatInput); }}
-                          placeholder="궁금한 걸 물어보세요"
-                          disabled={chatLoading}
-                          style={{flex:1,background:'rgba(232,200,126,0.06)',border:'1px solid rgba(232,200,126,0.2)',borderRadius:'6px',padding:'12px 14px',color:'#f0e6d3',fontSize:'14px',outline:'none',fontFamily:'inherit'}}
-                        />
-                        <button onClick={()=>sendChatQuestion(chatInput)} disabled={chatLoading || !chatInput.trim()} style={{background:'#8b2e00',color:'#e8c97a',border:'1.5px solid #c4712a',borderRadius:'6px',padding:'0 18px',fontSize:'14px',fontWeight:'700',cursor:'pointer'}}>
-                          전송
+                  {!freeUsed && chatMessages.length === 0 && (
+                    <div style={{display:'flex',flexWrap:'wrap',gap:'8px',marginBottom:'14px'}}>
+                      {QUESTION_CHIPS.map((q, i) => (
+                        <button key={i} onClick={()=>sendChatQuestion(q)} disabled={chatLoading} style={{background:'rgba(232,200,126,0.08)',border:'1px solid rgba(232,200,126,0.3)',color:'#e8c97a',borderRadius:'16px',padding:'8px 14px',fontSize:'13px',cursor:'pointer',fontFamily:'inherit'}}>
+                          {q}
                         </button>
-                      </div>
-                      <div style={{fontSize:'11px',color:'#7a5030',marginTop:'8px',textAlign:'center'}}>오늘 무료 질문 1회</div>
-                    </>
+                      ))}
+                    </div>
+                  )}
+
+                  <div style={{display:'flex',gap:'8px'}}>
+                    <input
+                      type="text"
+                      value={chatInput}
+                      onChange={e=>setChatInput(e.target.value)}
+                      onKeyDown={e=>{ if (e.key === 'Enter' && !chatLoading && !freeUsed) sendChatQuestion(chatInput); }}
+                      placeholder="궁금한 걸 물어보세요"
+                      disabled={chatLoading}
+                      style={{flex:1,background:'rgba(232,200,126,0.06)',border:'1px solid rgba(232,200,126,0.2)',borderRadius:'6px',padding:'12px 14px',color:'#f0e6d3',fontSize:'14px',outline:'none',fontFamily:'inherit'}}
+                    />
+                    {!freeUsed && (
+                      <button onClick={()=>sendChatQuestion(chatInput)} disabled={chatLoading || !chatInput.trim()} style={{background:'#8b2e00',color:'#e8c97a',border:'1.5px solid #c4712a',borderRadius:'6px',padding:'0 18px',fontSize:'14px',fontWeight:'700',cursor:'pointer'}}>
+                        전송
+                      </button>
+                    )}
+                  </div>
+
+                  {!freeUsed ? (
+                    <div style={{fontSize:'11px',color:'#7a5030',marginTop:'8px',textAlign:'center'}}>오늘 무료 질문 1회</div>
                   ) : (
-                    <div style={{textAlign:'center',padding:'12px',fontSize:'13px',color:'#7a5030'}}>
-                      오늘의 무료 질문을 다 쓰셨어요. 내일 다시 찾아와 주세요.
+                    <div style={{marginTop:'12px',padding:'14px',background:'rgba(232,200,126,0.04)',border:'1px solid #3d1500',borderRadius:'6px'}}>
+                      <div style={{fontSize:'12px',color:'#7a5030',marginBottom:'10px',textAlign:'center'}}>오늘 무료 질문은 다 썼어요 · 추가 질문은 1건당 ₩{CHAT_EXTRA_PRICE.toLocaleString()}이에요</div>
+                      <input
+                        type="tel"
+                        value={payPhone}
+                        onChange={e=>setPayPhone(e.target.value)}
+                        placeholder="결제 알림 받을 휴대폰번호 (- 없이 숫자만)"
+                        style={{width:'100%',background:'rgba(232,200,126,0.06)',border:'1px solid rgba(232,200,126,0.2)',borderRadius:'6px',padding:'12px 14px',color:'#f0e6d3',fontSize:'14px',outline:'none',fontFamily:'inherit',marginBottom:'8px'}}
+                      />
+                      {payError && <div style={{color:'#ff6b6b',fontSize:'12px',marginBottom:'8px',textAlign:'center'}}>{payError}</div>}
+                      <button onClick={startChatPayment} disabled={paying || !chatInput.trim()} style={{width:'100%',background:'#8b2e00',color:'#e8c97a',border:'1.5px solid #c4712a',borderRadius:'6px',padding:'12px',fontSize:'14px',fontWeight:'700',cursor:paying?'default':'pointer',opacity:paying?0.6:1,fontFamily:'inherit'}}>
+                        {paying ? '결제창 여는 중...' : `₩${CHAT_EXTRA_PRICE.toLocaleString()} 결제하고 질문하기`}
+                      </button>
                     </div>
                   )}
                 </div>

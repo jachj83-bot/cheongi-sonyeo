@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import Head from 'next/head';
 
 const HOURS = [
@@ -57,15 +58,30 @@ const LOADING_MESSAGES = [
   '거의 다 왔어요, 조금만 기다려주세요...',
 ];
 
+const PRICE = 24900;
+
+function makeOrderId() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+  return 'ord-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
+}
+
 export default function Tonghap() {
+  const router = useRouter();
   const [step, setStep] = useState('input');
   const [form, setForm] = useState({ name: '', year: '', month: '', day: '', hour: '', gender: '', calendar: '양력' });
   const [error, setError] = useState('');
   const [deck, setDeck] = useState([]);
   const [picked, setPicked] = useState(null);
   const [result, setResult] = useState('');
+  const [preview, setPreview] = useState('');
+  const [locked, setLocked] = useState(false);
+  const [orderId, setOrderId] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [restoring, setRestoring] = useState(false);
   const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
+  const [phone, setPhone] = useState('');
+  const [paying, setPaying] = useState(false);
+  const [payError, setPayError] = useState('');
 
   useEffect(() => {
     if (!loading) { setLoadingMsgIdx(0); return; }
@@ -74,6 +90,43 @@ export default function Tonghap() {
     }, 3000);
     return () => clearInterval(timer);
   }, [loading]);
+
+  // 결제창에서 돌아왔을 때 결제 확인 폴링
+  useEffect(() => {
+    if (!router.isReady) return;
+    const oid = router.query.orderId;
+    if (!oid) return;
+    setOrderId(oid);
+    setStep('result');
+    setRestoring(true);
+    pollReveal(oid, 0);
+  }, [router.isReady]);
+
+  const pollReveal = async (oid, attempt) => {
+    try {
+      const res = await fetch('/api/payapp/reveal?orderId=' + encodeURIComponent(oid));
+      if (res.status === 200) {
+        const data = await res.json();
+        if (data.paid && data.stash) {
+          setResult(data.stash.full || '');
+          setLocked(false);
+          if (data.stash.meta) {
+            setForm(f => ({ ...f, name: data.stash.meta.name, year: data.stash.meta.year, month: data.stash.meta.month, day: data.stash.meta.day }));
+            const matched = TAROT_CARDS.find(c => c.name === data.stash.meta.card);
+            if (matched) setPicked({ ...matched, reversed: !!data.stash.meta.reversed });
+          }
+          setRestoring(false);
+          return;
+        }
+      }
+    } catch {}
+    if (attempt < 20) {
+      setTimeout(() => pollReveal(oid, attempt + 1), 1500);
+    } else {
+      setRestoring(false);
+      setPayError('결제 확인이 늦어지고 있어요. 잠시 후 새로고침 해주세요.');
+    }
+  };
 
   const S = {
     input: { width: '100%', background: 'rgba(232,200,126,0.06)', border: '1px solid rgba(232,200,126,0.2)', borderRadius: '4px', padding: '14px 16px', color: '#EDE9F2', fontSize: '15px', outline: 'none', fontFamily: 'inherit' },
@@ -96,6 +149,8 @@ export default function Tonghap() {
     setPicked(card);
     setStep('result');
     setLoading(true);
+    const oid = makeOrderId();
+    setOrderId(oid);
     try {
       const res = await fetch('/api/saju', {
         method: 'POST',
@@ -105,39 +160,54 @@ export default function Tonghap() {
           ...form,
           card: card.name,
           cardEn: card.nameEn,
-          reversed: card.reversed
+          reversed: card.reversed,
+          orderId: oid
         })
       });
-
-      const contentType = res.headers.get('Content-Type') || '';
-      if (contentType.includes('application/json')) {
-        const data = await res.json();
-        setResult(data.result || '분석 결과를 불러올 수 없습니다.');
-        setLoading(false);
-        return;
-      }
-
-      if (!res.body) {
-        setResult('잠시 후 다시 시도해주세요.');
-        setLoading(false);
-        return;
-      }
-
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let acc = '';
-      let first = true;
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        acc += decoder.decode(value, { stream: true });
-        setResult(acc);
-        if (first) { setLoading(false); first = false; }
+      const data = await res.json();
+      if (data.locked) {
+        setPreview(data.preview || '');
+        setLocked(true);
+      } else {
+        setResult(data.full || data.preview || '분석 결과를 불러올 수 없습니다.');
+        setLocked(false);
       }
       setLoading(false);
     } catch {
       setResult('잠시 후 다시 시도해주세요.');
       setLoading(false);
+    }
+  };
+
+  const startPayment = async () => {
+    const phoneDigits = phone.replace(/[^0-9]/g, '');
+    if (phoneDigits.length < 9) {
+      setPayError('휴대폰번호를 정확히 입력해주세요.');
+      return;
+    }
+    setPaying(true); setPayError('');
+    try {
+      const res = await fetch('/api/payapp/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId,
+          goodname: '사주+타로 통합분석 전체보기',
+          price: PRICE,
+          recvphone: phoneDigits,
+          returnPath: `/tonghap?orderId=${orderId}`,
+        })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.payurl) {
+        setPayError(data.error || '결제 요청에 실패했어요.');
+        setPaying(false);
+        return;
+      }
+      window.location.href = data.payurl;
+    } catch {
+      setPayError('결제 요청 중 오류가 발생했어요.');
+      setPaying(false);
     }
   };
 
@@ -266,11 +336,39 @@ export default function Tonghap() {
               <p style={{color:'rgba(237,233,242,0.4)',fontSize:'13px'}}>{form.year}년 {form.month}월 {form.day}일생</p>
             </div>
 
-            {loading ? (
+            {(loading || restoring) ? (
               <div style={{textAlign:'center',padding:'60px 0'}}>
                 <div style={{fontSize:'44px',marginBottom:'20px'}}>✦</div>
-                <p style={{fontSize:'15px',color:'rgba(232,200,126,0.6)'}}>{LOADING_MESSAGES[loadingMsgIdx]}</p>
+                <p style={{fontSize:'15px',color:'rgba(232,200,126,0.6)'}}>{restoring ? '결제를 확인하고 있어요...' : LOADING_MESSAGES[loadingMsgIdx]}</p>
               </div>
+            ) : locked ? (
+              <>
+                <div style={{background:'rgba(255,255,255,0.03)',border:'1px solid rgba(232,200,126,0.1)',borderRadius:'4px',padding:'24px',marginBottom:'4px',lineHeight:'1.9',fontSize:'15px',whiteSpace:'pre-wrap',color:'#EDE9F2'}}>
+                  {preview}
+                </div>
+                <div style={{position:'relative',background:'linear-gradient(180deg,rgba(11,10,31,0) 0%,rgba(11,10,31,0.97) 60%)',height:'80px',marginTop:'-80px',marginBottom:'8px',pointerEvents:'none'}} />
+
+                <div style={{background:'rgba(196,154,232,0.06)',border:'1px solid rgba(196,154,232,0.35)',borderRadius:'6px',padding:'24px',marginBottom:'20px',textAlign:'center'}}>
+                  <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:'17px',color:'#c49ae8',marginBottom:'6px'}}>뽑힌 카드가 말하는 것부터 재물·연애·2026년 흐름까지</div>
+                  <div style={{fontSize:'12px',color:'rgba(237,233,242,0.4)',marginBottom:'18px'}}>나머지 내용은 결제 후 바로 확인하실 수 있어요</div>
+
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={e=>setPhone(e.target.value)}
+                    placeholder="결제 알림 받을 휴대폰번호 (- 없이 숫자만)"
+                    style={{...S.input,marginBottom:'10px',textAlign:'center'}}
+                  />
+                  {payError && <p style={{color:'#ff6b6b',fontSize:'12px',marginBottom:'10px'}}>{payError}</p>}
+                  <button onClick={startPayment} disabled={paying} style={{width:'100%',background:'linear-gradient(135deg,#8b2e00,#5a2a8b)',color:'#E8C87E',padding:'16px',border:'1.5px solid #c49ae8',borderRadius:'4px',fontSize:'15px',fontWeight:'700',cursor:paying?'default':'pointer',opacity:paying?0.6:1,fontFamily:'inherit'}}>
+                    {paying ? '결제창 여는 중...' : `₩${PRICE.toLocaleString()} 결제하고 전체 보기`}
+                  </button>
+                </div>
+
+                <a href="/" style={{display:'block',textAlign:'center',background:'none',color:'rgba(237,233,242,0.4)',padding:'14px',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'4px',fontSize:'14px',textDecoration:'none'}}>
+                  처음으로
+                </a>
+              </>
             ) : (
               <>
                 <div style={{background:'rgba(255,255,255,0.03)',border:'1px solid rgba(232,200,126,0.1)',borderRadius:'4px',padding:'24px',marginBottom:'20px',lineHeight:'1.9',fontSize:'15px',whiteSpace:'pre-wrap',color:'#EDE9F2'}}>
@@ -278,7 +376,7 @@ export default function Tonghap() {
                 </div>
 
                 <div style={{display:'flex',gap:'10px'}}>
-                  <button onClick={()=>{setStep('input');setResult('');setPicked(null);}} style={{flex:1,background:'rgba(232,200,126,0.1)',color:'#E8C87E',padding:'14px',border:'1px solid rgba(232,200,126,0.3)',borderRadius:'4px',fontSize:'14px',cursor:'pointer'}}>
+                  <button onClick={()=>{setStep('input');setResult('');setPreview('');setLocked(false);setOrderId(null);setPicked(null);router.replace('/tonghap');}} style={{flex:1,background:'rgba(232,200,126,0.1)',color:'#E8C87E',padding:'14px',border:'1px solid rgba(232,200,126,0.3)',borderRadius:'4px',fontSize:'14px',cursor:'pointer'}}>
                     다시 보기
                   </button>
                   <a href="/" style={{flex:1,textAlign:'center',background:'none',color:'rgba(237,233,242,0.4)',padding:'14px',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'4px',fontSize:'14px',textDecoration:'none'}}>
