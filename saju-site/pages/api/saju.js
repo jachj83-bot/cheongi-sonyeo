@@ -1,4 +1,5 @@
 import { calculateSaju } from '@fullstackfamily/manseryeok';
+import { setJSON } from '../../lib/redis';
 
 const CHEONGAN_OHAENG = {
   '갑':'목','을':'목','병':'화','정':'화','무':'토',
@@ -110,10 +111,52 @@ async function streamAnthropic(res, { prompt, maxTokens = 2000, fallback = '분�
   res.end();
 }
 
+// 결제 게이트가 걸린 페이지(신년운세, 통합분석)용 — 스트리밍 없이 전체 텍스트를
+// 한 번에 받아온다. 결제 전에 미리보기/잠금 구간을 나눠야 하므로 전체가 다
+// 만들어진 뒤에 잘라야 한다.
+async function generateFullText({ prompt, maxTokens = 2000, fallback = '분석 결과를 가져올 수 없습니다.' }) {
+  try {
+    const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: maxTokens, messages: [{ role: 'user', content: prompt }] })
+    });
+    if (!anthropicRes.ok) return fallback;
+    const data = await anthropicRes.json();
+    const text = (data?.content || []).map(c => c.text || '').join('');
+    return text || fallback;
+  } catch (e) {
+    console.error('generateFullText error', e);
+    return fallback;
+  }
+}
+
+// 이모지로 시작하는 줄을 섹션 구분으로 보고, 앞의 previewSections개 섹션만
+// 무료 미리보기로 돌려준다. (result.js의 splitIntoBubbles와 동일한 규칙)
+const SECTION_EMOJI_RE = /^[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u;
+function splitPreview(fullText, previewSections = 2) {
+  const lines = (fullText || '').split('\n');
+  const sections = [];
+  let current = '';
+  lines.forEach(line => {
+    if (SECTION_EMOJI_RE.test(line.trim()) && current.trim()) {
+      sections.push(current.trim());
+      current = line + '\n';
+    } else {
+      current += line + '\n';
+    }
+  });
+  if (current.trim()) sections.push(current.trim());
+
+  const locked = sections.length > previewSections;
+  const preview = locked ? sections.slice(0, previewSections).join('\n\n') : fullText;
+  return { preview, locked };
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { name, year, month, day, hour, gender, type, me, partner, card, cardEn, reversed, question } = req.body;
+  const { name, year, month, day, hour, gender, type, me, partner, card, cardEn, reversed, question, orderId } = req.body;
 
   try {
 
@@ -256,7 +299,14 @@ ${meName}님과 ${partnerName}님, 두 분의 궁합을 봐주세요. 아래 형
 
 장점과 단점을 6:4로 균형있게, 따뜻하고 신비로운 톤으로 한국어로 작성해주세요.`;
 
-      await streamAnthropic(res, { prompt, maxTokens: 2800, fallback: '분석 결과를 가져올 수 없습니다.' });
+      const fullText = await generateFullText({ prompt, maxTokens: 2800, fallback: '분석 결과를 가져올 수 없습니다.' });
+      const { preview, locked } = splitPreview(fullText, 2);
+
+      if (locked && orderId) {
+        await setJSON(`payapp:stash:${orderId}`, { full: fullText, meta: { name, year, month, day } }, 60 * 60 * 24);
+      }
+
+      res.status(200).json({ preview, full: (locked && orderId) ? null : fullText, locked: !!(locked && orderId) });
       return;
     }
 
@@ -340,7 +390,14 @@ ${card} (${cardEn || ''}) — ${reversed ? '역방향' : '정방향'}
 
 사주(장기 흐름)와 타로(현재 기운)가 서로를 어떻게 뒷받침하거나 다른 신호를 주는지 명확히 짚어주면서, 따뜻하고 신비로운 톤으로 한국어로 작성해주세요.`;
 
-      await streamAnthropic(res, { prompt, maxTokens: 2800, fallback: '분석 결과를 가져올 수 없습니다.' });
+      const fullText = await generateFullText({ prompt, maxTokens: 2800, fallback: '분석 결과를 가져올 수 없습니다.' });
+      const { preview, locked } = splitPreview(fullText, 2);
+
+      if (locked && orderId) {
+        await setJSON(`payapp:stash:${orderId}`, { full: fullText, meta: { name, year, month, day, card, cardEn, reversed } }, 60 * 60 * 24);
+      }
+
+      res.status(200).json({ preview, full: (locked && orderId) ? null : fullText, locked: !!(locked && orderId) });
       return;
     }
 
