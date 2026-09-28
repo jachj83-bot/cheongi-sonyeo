@@ -344,6 +344,27 @@ ${card} (${cardEn || ''}) — ${reversed ? '역방향' : '정방향'}
       return;
     }
 
+    // 천기소녀와의 자유 대화 (결과 페이지의 "더 물어보기" 기능)
+    if (type === 'chat') {
+      const { sajuData: sd, question } = req.body;
+      const ilgan = sd?.ilgan || '';
+      const strength = sd?.strength || {};
+      const singang = sd?.singang || '';
+
+      const prompt = `당신은 '천기소녀'라는 다정하고 신비로운 AI 사주 상담사입니다. 지금 카카오톡으로 상담자와 대화하는 중입니다.
+
+[상담자 사주 요약]
+일간: ${ilgan} / ${singang} 사주
+오행 강약: 목${strength['목'] ?? ''} 화${strength['화'] ?? ''} 토${strength['토'] ?? ''} 금${strength['금'] ?? ''} 수${strength['수'] ?? ''}
+
+상담자가 방금 물었습니다: "${question}"
+
+이 사주 정보를 자연스럽게 근거로 삼아 대답해주세요. 보고서처럼 항목을 나누지 말고, 진짜 카톡 메시지처럼 2~4문장으로 짧고 편하게 답해주세요. 이모지나 이모티콘은 쓰지 마세요.`;
+
+      await streamAnthropic(res, { prompt, maxTokens: 500, fallback: '지금은 답하기 어려워요. 잠시 후 다시 물어봐주세요.' });
+      return;
+    }
+
     // 사주 분석
     const hourNum = hour === '모름' ? 12 : getHourNumber(hour);
     const saju = calculateSaju(parseInt(year), parseInt(month), parseInt(day), hourNum);
