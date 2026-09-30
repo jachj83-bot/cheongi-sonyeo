@@ -429,7 +429,7 @@ export default function Result() {
                       value={chatInput}
                       onChange={e=>setChatInput(e.target.value)}
                       onKeyDown={e=>{ if (e.key === 'Enter' && !chatLoading && !freeUsed) sendChatQuestion(chatInput); }}
-                      placeholder="궁금한 걸 물어보세요"
+                      placeholder={freeUsed ? "결제하고 물어볼 새 질문을 적어주세요" : "궁금한 걸 물어보세요"}
                       disabled={chatLoading}
                       style={{flex:1,background:'rgba(232,200,126,0.06)',border:'1px solid rgba(232,200,126,0.2)',borderRadius:'6px',padding:'12px 14px',color:'#f0e6d3',fontSize:'14px',outline:'none',fontFamily:'inherit'}}
                     />
@@ -444,7 +444,14 @@ export default function Result() {
                     <div style={{fontSize:'11px',color:'#7a5030',marginTop:'8px',textAlign:'center'}}>오늘 무료 질문 1회</div>
                   ) : (
                     <div style={{marginTop:'12px',padding:'14px',background:'rgba(232,200,126,0.04)',border:'1px solid #3d1500',borderRadius:'6px'}}>
-                      <div style={{fontSize:'12px',color:'#7a5030',marginBottom:'10px',textAlign:'center'}}>오늘 무료 질문은 다 썼어요 · 추가 질문은 1건당 ₩{CHAT_EXTRA_PRICE.toLocaleString()}이에요</div>
+                      <div style={{fontSize:'12px',color:'#7a5030',marginBottom:'10px',textAlign:'center'}}>오늘 무료 질문은 다 썼어요 · 위 입력창에 새 질문을 적으시면 1건당 ₩{CHAT_EXTRA_PRICE.toLocaleString()}에 답변받을 수 있어요</div>
+                      <div style={{display:'flex',flexWrap:'wrap',gap:'8px',marginBottom:'12px',justifyContent:'center'}}>
+                        {QUESTION_CHIPS.map((q, i) => (
+                          <button key={i} onClick={()=>setChatInput(q)} style={{background:'rgba(232,200,126,0.08)',border:'1px solid rgba(232,200,126,0.3)',color:'#e8c97a',borderRadius:'16px',padding:'7px 12px',fontSize:'12px',cursor:'pointer',fontFamily:'inherit'}}>
+                            {q}
+                          </button>
+                        ))}
+                      </div>
                       <input
                         type="tel"
                         value={payPhone}
@@ -453,9 +460,12 @@ export default function Result() {
                         style={{width:'100%',background:'rgba(232,200,126,0.06)',border:'1px solid rgba(232,200,126,0.2)',borderRadius:'6px',padding:'12px 14px',color:'#f0e6d3',fontSize:'14px',outline:'none',fontFamily:'inherit',marginBottom:'8px'}}
                       />
                       {payError && <div style={{color:'#ff6b6b',fontSize:'12px',marginBottom:'8px',textAlign:'center'}}>{payError}</div>}
-                      <button onClick={startChatPayment} disabled={paying || !chatInput.trim()} style={{width:'100%',background:'#8b2e00',color:'#e8c97a',border:'1.5px solid #c4712a',borderRadius:'6px',padding:'12px',fontSize:'14px',fontWeight:'700',cursor:paying?'default':'pointer',opacity:paying?0.6:1,fontFamily:'inherit'}}>
+                      <button onClick={startChatPayment} disabled={paying || !chatInput.trim()} style={{width:'100%',background:'#8b2e00',color:'#e8c97a',border:'1.5px solid #c4712a',borderRadius:'6px',padding:'12px',fontSize:'14px',fontWeight:'700',cursor:(paying || !chatInput.trim())?'default':'pointer',opacity:(paying || !chatInput.trim())?0.5:1,fontFamily:'inherit'}}>
                         {paying ? '결제창 여는 중...' : `₩${CHAT_EXTRA_PRICE.toLocaleString()} 결제하고 질문하기`}
                       </button>
+                      {!chatInput.trim() && !paying && (
+                        <div style={{fontSize:'11px',color:'#c4712a',marginTop:'6px',textAlign:'center'}}>↑ 위 입력창에 질문을 먼저 적어주세요</div>
+                      )}
                     </div>
                   )}
                 </div>
