@@ -52,20 +52,40 @@ export default function Home() {
           @keyframes fadeUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
           .fade-up { animation: fadeUp 0.8s cubic-bezier(0.23,1,0.32,1) forwards; }
           select option { background: #0B0A1F; color: #EDE9F2; }
+
+          @media (max-width: 760px) {
+            .hero-grid { grid-template-columns: 1fr !important; padding: 100px 20px 40px !important; text-align: center; gap: 28px !important; }
+            .hero-eyebrow { justify-content: center !important; }
+            .hero-title { font-size: 32px !important; }
+            .hero-desc { max-width: none !important; margin-left: auto; margin-right: auto; }
+            .hero-cta { width: 100%; }
+            .hero-image { order: -1; }
+            .hero-image img { max-width: 220px !important; margin: 0 auto; }
+            .stats-grid { grid-template-columns: repeat(2,1fr) !important; }
+            .stats-grid > div:nth-child(2) { border-right: none !important; }
+            .stats-grid > div:nth-child(3) { border-right: 1px solid rgba(232,200,126,0.08) !important; }
+          }
+
+          @media (max-width: 420px) {
+            .site-header { padding: 14px 14px !important; }
+            .site-header-sub { display: none !important; }
+            .site-nav { gap: 6px !important; }
+            .site-nav a { padding: 6px 9px !important; font-size: 11px !important; letter-spacing: 0 !important; }
+          }
         `}</style>
       </Head>
 
-      <div style={{position:'fixed',top:0,left:0,right:0,zIndex:100,background:'rgba(11,10,31,0.85)',backdropFilter:'blur(12px)',borderBottom:'1px solid rgba(232,200,126,0.1)',padding:'16px 24px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-        <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
-          <img src="/logo_symbol.png" alt="천기소녀" style={{width:'28px',height:'28px',objectFit:'contain'}} />
-          <div>
-            <div style={{fontFamily:"'Cormorant Garamond', 'Noto Serif KR', serif",fontSize:'18px',color:'#E8C87E',fontWeight:'600',letterSpacing:'2px',lineHeight:'1'}}>천기소녀</div>
-            <div style={{fontSize:'9px',color:'rgba(232,200,126,0.4)',letterSpacing:'3px',marginTop:'2px'}}>CHEONGI SONYEO</div>
+      <div className="site-header" style={{position:'fixed',top:0,left:0,right:0,zIndex:100,background:'rgba(11,10,31,0.85)',backdropFilter:'blur(12px)',borderBottom:'1px solid rgba(232,200,126,0.1)',padding:'16px 24px',display:'flex',justifyContent:'space-between',alignItems:'center',gap:'10px'}}>
+        <div style={{display:'flex',alignItems:'center',gap:'10px',minWidth:0,flexShrink:1}}>
+          <img src="/logo_symbol.png" alt="천기소녀" style={{width:'28px',height:'28px',objectFit:'contain',flexShrink:0}} />
+          <div style={{minWidth:0}}>
+            <div style={{fontFamily:"'Cormorant Garamond', 'Noto Serif KR', serif",fontSize:'18px',color:'#E8C87E',fontWeight:'600',letterSpacing:'2px',lineHeight:'1',whiteSpace:'nowrap'}}>천기소녀</div>
+            <div className="site-header-sub" style={{fontSize:'9px',color:'rgba(232,200,126,0.4)',letterSpacing:'3px',marginTop:'2px',whiteSpace:'nowrap'}}>CHEONGI SONYEO</div>
           </div>
         </div>
-        <div style={{display:'flex',gap:'8px'}}>
-          <a href="/gunghap" style={{color:'rgba(237,233,242,0.5)',textDecoration:'none',fontSize:'12px',padding:'7px 14px',border:'1px solid rgba(232,200,126,0.15)',borderRadius:'2px',letterSpacing:'1px'}}>궁합</a>
-          <a href="/tarot" style={{color:'rgba(237,233,242,0.5)',textDecoration:'none',fontSize:'12px',padding:'7px 14px',border:'1px solid rgba(232,200,126,0.15)',borderRadius:'2px',letterSpacing:'1px'}}>타로</a>
+        <div className="site-nav" style={{display:'flex',gap:'8px',flexShrink:0}}>
+          <a href="/gunghap" style={{color:'rgba(237,233,242,0.5)',textDecoration:'none',fontSize:'12px',padding:'7px 14px',border:'1px solid rgba(232,200,126,0.15)',borderRadius:'2px',letterSpacing:'1px',whiteSpace:'nowrap'}}>궁합</a>
+          <a href="/tarot" style={{color:'rgba(237,233,242,0.5)',textDecoration:'none',fontSize:'12px',padding:'7px 14px',border:'1px solid rgba(232,200,126,0.15)',borderRadius:'2px',letterSpacing:'1px',whiteSpace:'nowrap'}}>타로</a>
         </div>
       </div>
 
@@ -74,34 +94,34 @@ export default function Home() {
           <div style={{position:'relative',minHeight:'100vh',display:'flex',alignItems:'center',overflow:'hidden'}}>
             <div style={{position:'absolute',top:0,left:0,right:0,bottom:0,backgroundImage:'url(/hero_cosmos.jpg)',backgroundSize:'cover',backgroundPosition:'center right'}} />
             <div style={{position:'absolute',top:0,left:0,right:0,bottom:0,background:'linear-gradient(90deg, rgba(11,10,31,0.92) 0%, rgba(11,10,31,0.75) 50%, rgba(11,10,31,0.3) 100%)'}} />
-            <div style={{position:'relative',zIndex:5,display:'grid',gridTemplateColumns:'1fr 1fr',maxWidth:'1100px',margin:'0 auto',padding:'100px 32px 60px',alignItems:'center',gap:'40px',width:'100%'}}>
+            <div className="hero-grid" style={{position:'relative',zIndex:5,display:'grid',gridTemplateColumns:'1fr 1fr',maxWidth:'1100px',margin:'0 auto',padding:'100px 32px 60px',alignItems:'center',gap:'40px',width:'100%'}}>
               <div className="fade-up">
-                <div style={{fontSize:'10px',letterSpacing:'4px',color:'rgba(232,200,126,0.6)',marginBottom:'24px',display:'flex',alignItems:'center',gap:'12px'}}>
+                <div className="hero-eyebrow" style={{fontSize:'10px',letterSpacing:'4px',color:'rgba(232,200,126,0.6)',marginBottom:'24px',display:'flex',alignItems:'center',gap:'12px'}}>
                   <span style={{width:'24px',height:'1px',background:'rgba(232,200,126,0.4)',display:'inline-block'}} />
                   명리학 기반 사주 분석
                 </div>
-                <h1 style={{fontFamily:"'Cormorant Garamond', 'Noto Serif KR', serif",fontSize:'54px',fontWeight:'600',lineHeight:'1.25',color:'#EDE9F2',marginBottom:'20px',letterSpacing:'-1px'}}>
+                <h1 className="hero-title" style={{fontFamily:"'Cormorant Garamond', 'Noto Serif KR', serif",fontSize:'54px',fontWeight:'600',lineHeight:'1.25',color:'#EDE9F2',marginBottom:'20px',letterSpacing:'-1px'}}>
                   하늘의 기운을<br/>
                   <span style={{color:'#E8C87E'}}>천기소녀</span>가<br/>
                   읽어드립니다
                 </h1>
-                <p style={{fontSize:'14px',color:'rgba(237,233,242,0.45)',lineHeight:'1.9',marginBottom:'36px',maxWidth:'360px',fontWeight:'300'}}>
+                <p className="hero-desc" style={{fontSize:'14px',color:'rgba(237,233,242,0.45)',lineHeight:'1.9',marginBottom:'36px',maxWidth:'360px',fontWeight:'300'}}>
                   생년월일 하나로 당신의 타고난 운명과<br/>
                   올해의 흐름을 정통 명리학으로 분석해드려요.<br/>
                   이 페이지를 찾아온 것도 인연입니다.
                 </p>
-                <button onClick={()=>setStep('input')} style={{background:'rgba(232,200,126,0.1)',border:'1px solid rgba(232,200,126,0.5)',color:'#E8C87E',padding:'15px 36px',fontSize:'13px',letterSpacing:'2px',cursor:'pointer',fontFamily:'inherit',borderRadius:'2px'}}>
+                <button className="hero-cta" onClick={()=>setStep('input')} style={{background:'rgba(232,200,126,0.15)',border:'1px solid rgba(232,200,126,0.5)',color:'#E8C87E',padding:'16px 36px',fontSize:'14px',letterSpacing:'2px',cursor:'pointer',fontFamily:'inherit',borderRadius:'2px',fontWeight:'600'}}>
                   무료로 사주 보기 →
                 </button>
               </div>
-              <div style={{display:'flex',justifyContent:'center',alignItems:'center'}} className="fade-up">
+              <div className="hero-image fade-up" style={{display:'flex',justifyContent:'center',alignItems:'center'}}>
                 <img src="/oracle_girl.jpg" alt="천기소녀" style={{width:'100%',maxWidth:'360px',borderRadius:'4px',border:'1px solid rgba(232,200,126,0.15)'}} />
               </div>
             </div>
           </div>
 
           <div style={{background:'rgba(11,10,31,0.95)',borderTop:'1px solid rgba(232,200,126,0.1)',borderBottom:'1px solid rgba(232,200,126,0.1)'}}>
-            <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',maxWidth:'1100px',margin:'0 auto'}}>
+            <div className="stats-grid" style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',maxWidth:'1100px',margin:'0 auto'}}>
               {[['3,200+','누적 상담'],['4.9★','평균 별점'],['98%','재방문율'],['22장','타로 카드']].map(([n,l],i)=>(
                 <div key={i} style={{padding:'28px 20px',textAlign:'center',borderRight:i<3?'1px solid rgba(232,200,126,0.08)':'none'}}>
                   <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:'32px',color:'#E8C87E',fontWeight:'600',marginBottom:'4px'}}>{n}</div>
