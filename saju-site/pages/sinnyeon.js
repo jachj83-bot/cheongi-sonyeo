@@ -41,7 +41,7 @@ function makeOrderId() {
 export default function Sinnyeon() {
   const router = useRouter();
   const [step, setStep] = useState('input');
-  const [forecastYear, setForecastYear] = useState('2026');
+  const [forecastYear, setForecastYear] = useState('2027');
   const [form, setForm] = useState({ name: '', year: '', month: '', day: '', hour: '', gender: '', calendar: '양력' });
   const [result, setResult] = useState('');
   const [preview, setPreview] = useState('');
@@ -62,6 +62,13 @@ export default function Sinnyeon() {
     }, 3000);
     return () => clearInterval(timer);
   }, [loading, forecastYear]);
+
+  // 메인 메뉴에서 "올해 운세(2026)" / "신년운세(2027)" 중 무엇을 눌렀는지로 연도 고정
+  useEffect(() => {
+    if (!router.isReady) return;
+    const y = router.query.year;
+    if (y === '2026' || y === '2027') setForecastYear(y);
+  }, [router.isReady, router.query.year]);
 
   // 결제창에서 돌아왔을 때 (returnurl에 orderId가 붙어서 돌아옴) 결제 확인 폴링
   useEffect(() => {
@@ -195,18 +202,7 @@ export default function Sinnyeon() {
           <div style={{maxWidth:'480px',margin:'0 auto',padding:'40px 20px 80px'}}>
             <div style={{fontSize:'10px',letterSpacing:'4px',color:'rgba(232,200,126,0.4)',marginBottom:'12px'}}>{YEAR_INFO[forecastYear].label}</div>
             <h2 style={{fontFamily:"'Cormorant Garamond', 'Noto Serif KR', serif",fontSize:'30px',fontWeight:'600',marginBottom:'8px',color:'#E8C87E',letterSpacing:'-0.5px'}}>나의 운은<br/>어떻게 흘러갈까요</h2>
-            <p style={{fontSize:'12px',color:'rgba(237,233,242,0.3)',marginBottom:'28px',letterSpacing:'1px'}}>생년월일시로 상반기·하반기 흐름을 자세히 풀어드려요</p>
-
-            <div style={{marginBottom:'20px'}}>
-              <label style={S.label}>어느 해 운세를 볼까요</label>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
-                {['2026','2027'].map(y=>(
-                  <button key={y} onClick={()=>setForecastYear(y)} style={{...S.selectBtn(forecastYear===y),padding:'13px 6px'}}>
-                    {YEAR_INFO[y].emoji} {y} {YEAR_INFO[y].badge}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <p style={{fontSize:'12px',color:'rgba(237,233,242,0.3)',marginBottom:'36px',letterSpacing:'1px'}}>생년월일시로 상반기·하반기 흐름을 자세히 풀어드려요</p>
 
             <div style={{marginBottom:'20px'}}>
               <label style={S.label}>이름</label>

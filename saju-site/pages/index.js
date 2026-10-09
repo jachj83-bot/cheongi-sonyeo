@@ -54,13 +54,14 @@ export default function Home() {
           select option { background: #0B0A1F; color: #EDE9F2; }
 
           @media (max-width: 760px) {
-            .hero-grid { grid-template-columns: 1fr !important; padding: 100px 20px 40px !important; text-align: center; gap: 28px !important; }
-            .hero-eyebrow { justify-content: center !important; }
-            .hero-title { font-size: 32px !important; }
-            .hero-desc { max-width: none !important; margin-left: auto; margin-right: auto; }
-            .hero-cta { width: 100%; }
-            .hero-image { order: -1; }
-            .hero-image img { max-width: 220px !important; margin: 0 auto; }
+            .hero-grid { grid-template-columns: 1fr !important; padding: 90px 20px 32px !important; text-align: center; gap: 18px !important; min-height: auto !important; }
+            .hero-content { display: flex !important; flex-direction: column !important; }
+            .hero-eyebrow { justify-content: center !important; order: 1; }
+            .hero-title { font-size: 28px !important; order: 2; margin-bottom: 14px !important; }
+            .hero-cta { width: 100%; order: 3; margin-top: 2px; }
+            .hero-desc { max-width: none !important; margin-left: auto; margin-right: auto; order: 4; margin-top: 18px !important; font-size: 13px !important; }
+            .hero-image { order: 0; }
+            .hero-image img { max-width: 150px !important; margin: 0 auto; }
             .stats-grid { grid-template-columns: repeat(2,1fr) !important; }
             .stats-grid > div:nth-child(2) { border-right: none !important; }
             .stats-grid > div:nth-child(3) { border-right: 1px solid rgba(232,200,126,0.08) !important; }
@@ -95,7 +96,7 @@ export default function Home() {
             <div style={{position:'absolute',top:0,left:0,right:0,bottom:0,backgroundImage:'url(/hero_cosmos.jpg)',backgroundSize:'cover',backgroundPosition:'center right'}} />
             <div style={{position:'absolute',top:0,left:0,right:0,bottom:0,background:'linear-gradient(90deg, rgba(11,10,31,0.92) 0%, rgba(11,10,31,0.75) 50%, rgba(11,10,31,0.3) 100%)'}} />
             <div className="hero-grid" style={{position:'relative',zIndex:5,display:'grid',gridTemplateColumns:'1fr 1fr',maxWidth:'1100px',margin:'0 auto',padding:'100px 32px 60px',alignItems:'center',gap:'40px',width:'100%'}}>
-              <div className="fade-up">
+              <div className="hero-content fade-up">
                 <div className="hero-eyebrow" style={{fontSize:'10px',letterSpacing:'4px',color:'rgba(232,200,126,0.6)',marginBottom:'24px',display:'flex',alignItems:'center',gap:'12px'}}>
                   <span style={{width:'24px',height:'1px',background:'rgba(232,200,126,0.4)',display:'inline-block'}} />
                   명리학 기반 사주 분석
@@ -164,7 +165,8 @@ export default function Home() {
                   {[
                     {icon:'🪐',tag:'완전 무료',name:'나의 운세',desc:'타고난 기질과 오행 에너지 분석',price:'무료',onClick:()=>setStep('input')},
                     {icon:'💑',tag:'완전 무료',name:'궁합 분석',desc:'연인·배우자·친구 궁합 점수 공개',price:'무료',onClick:()=>router.push('/gunghap')},
-                    {icon:'🐎',tag:'2026 병오년',name:'신년운세',desc:'상반기·하반기 흐름을 자세히 풀이',price:'₩9,900',onClick:()=>router.push('/sinnyeon')},
+                    {icon:'🐎',tag:'2026 병오년 · 올해',name:'올해 운세',desc:'남은 상반기·하반기 흐름을 자세히 풀이',price:'₩9,900',onClick:()=>router.push('/sinnyeon?year=2026')},
+                    {icon:'🐐',tag:'2027 정미년 · 내년',name:'신년운세',desc:'다가올 상반기·하반기 흐름을 미리 풀이',price:'₩9,900',onClick:()=>router.push('/sinnyeon?year=2027')},
                     {icon:'📜',tag:'전통 방식',name:'토정비결',desc:'괘를 뽑아 계절별 신수를 풀이',price:'₩9,900',onClick:()=>router.push('/tojeong')}
                   ].map((p,i)=>(
                     <div key={i} onClick={p.onClick} style={{background:'linear-gradient(180deg,rgba(40,34,72,.4),rgba(24,20,46,.5))',border:'1px solid rgba(232,200,126,0.1)',borderRadius:'4px',padding:'24px',cursor:'pointer',backdropFilter:'blur(10px)'}}>
