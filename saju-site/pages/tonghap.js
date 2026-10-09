@@ -349,7 +349,7 @@ export default function Tonghap() {
                 <div style={{position:'relative',background:'linear-gradient(180deg,rgba(11,10,31,0) 0%,rgba(11,10,31,0.97) 60%)',height:'80px',marginTop:'-80px',marginBottom:'8px',pointerEvents:'none'}} />
 
                 <div style={{background:'rgba(196,154,232,0.06)',border:'1px solid rgba(196,154,232,0.35)',borderRadius:'6px',padding:'24px',marginBottom:'20px',textAlign:'center'}}>
-                  <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:'17px',color:'#c49ae8',marginBottom:'6px'}}>뽑힌 카드가 말하는 것부터 재물·연애·2026년 흐름까지</div>
+                  <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:'17px',color:'#c49ae8',marginBottom:'6px'}}>뽑힌 카드가 말하는 것부터 재물·연애·앞으로의 흐름까지</div>
                   <div style={{fontSize:'12px',color:'rgba(237,233,242,0.4)',marginBottom:'18px'}}>나머지 내용은 결제 후 바로 확인하실 수 있어요</div>
 
                   <input

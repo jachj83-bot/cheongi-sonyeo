@@ -18,11 +18,18 @@ const HOURS = [
   { label: '모름', desc: '시간 불명', value: '모름' },
 ];
 
-const LOADING_MESSAGES = [
-  '천기소녀가 2026년의 기운을 읽고 있어요...',
-  '병오년 세운과 사주를 맞춰보는 중이에요...',
-  '거의 다 왔어요, 조금만 기다려주세요...',
-];
+const YEAR_INFO = {
+  '2026': { label: '2026 병오년(丙午年)', ganji: '병오년(丙午年)', emoji: '🐎', badge: '올해' },
+  '2027': { label: '2027 정미년(丁未年)', ganji: '정미년(丁未年)', emoji: '🐐', badge: '내년' },
+};
+
+function getLoadingMessages(year) {
+  return [
+    `천기소녀가 ${year}년의 기운을 읽고 있어요...`,
+    `${YEAR_INFO[year].ganji} 세운과 사주를 맞춰보는 중이에요...`,
+    '거의 다 왔어요, 조금만 기다려주세요...',
+  ];
+}
 
 const PRICE = 9900;
 
@@ -34,6 +41,7 @@ function makeOrderId() {
 export default function Sinnyeon() {
   const router = useRouter();
   const [step, setStep] = useState('input');
+  const [forecastYear, setForecastYear] = useState('2026');
   const [form, setForm] = useState({ name: '', year: '', month: '', day: '', hour: '', gender: '', calendar: '양력' });
   const [result, setResult] = useState('');
   const [preview, setPreview] = useState('');
@@ -50,10 +58,10 @@ export default function Sinnyeon() {
   useEffect(() => {
     if (!loading) { setLoadingMsgIdx(0); return; }
     const timer = setInterval(() => {
-      setLoadingMsgIdx(i => Math.min(i + 1, LOADING_MESSAGES.length - 1));
+      setLoadingMsgIdx(i => Math.min(i + 1, getLoadingMessages(forecastYear).length - 1));
     }, 3000);
     return () => clearInterval(timer);
-  }, [loading]);
+  }, [loading, forecastYear]);
 
   // 결제창에서 돌아왔을 때 (returnurl에 orderId가 붙어서 돌아옴) 결제 확인 폴링
   useEffect(() => {
@@ -74,7 +82,11 @@ export default function Sinnyeon() {
         if (data.paid && data.stash) {
           setResult(data.stash.full || '');
           setLocked(false);
-          if (data.stash.meta) setForm(f => ({ ...f, ...data.stash.meta }));
+          if (data.stash.meta) {
+            const { forecastYear: fy, ...rest } = data.stash.meta;
+            setForm(f => ({ ...f, ...rest }));
+            if (fy) setForecastYear(fy);
+          }
           setRestoring(false);
           return;
         }
@@ -107,7 +119,7 @@ export default function Sinnyeon() {
       const res = await fetch('/api/saju', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'sinnyeon', ...form, orderId: oid })
+        body: JSON.stringify({ type: 'sinnyeon', ...form, forecastYear, orderId: oid })
       });
       const data = await res.json();
       if (data.locked) {
@@ -137,7 +149,7 @@ export default function Sinnyeon() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           orderId,
-          goodname: '2026 신년운세 전체보기',
+          goodname: `${forecastYear} 신년운세 전체보기`,
           price: PRICE,
           recvphone: phoneDigits,
           returnPath: `/sinnyeon?orderId=${orderId}`,
@@ -159,7 +171,7 @@ export default function Sinnyeon() {
   return (
     <>
       <Head>
-        <title>2026 신년운세 — 천기소녀</title>
+        <title>{forecastYear} 신년운세 — 천기소녀</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
         <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Noto+Serif+KR:wght@300;400;700&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet" />
         <style>{`
@@ -175,15 +187,26 @@ export default function Sinnyeon() {
           <img src="/logo_symbol.png" alt="천기소녀" style={{width:'26px',height:'26px',objectFit:'contain'}} />
           <div style={{fontFamily:"'Cormorant Garamond', 'Noto Serif KR', serif",fontSize:'17px',color:'#E8C87E',fontWeight:'600',letterSpacing:'2px'}}>천기소녀</div>
         </a>
-        <div style={{fontSize:'12px',color:'rgba(232,200,126,0.5)',letterSpacing:'1px'}}>🐎 신년운세</div>
+        <div style={{fontSize:'12px',color:'rgba(232,200,126,0.5)',letterSpacing:'1px'}}>{YEAR_INFO[forecastYear].emoji} 신년운세</div>
       </div>
 
       {step === 'input' && (
         <div style={{minHeight:'100vh',background:'#0B0A1F'}}>
           <div style={{maxWidth:'480px',margin:'0 auto',padding:'40px 20px 80px'}}>
-            <div style={{fontSize:'10px',letterSpacing:'4px',color:'rgba(232,200,126,0.4)',marginBottom:'12px'}}>2026 병오년(丙午年)</div>
-            <h2 style={{fontFamily:"'Cormorant Garamond', 'Noto Serif KR', serif",fontSize:'30px',fontWeight:'600',marginBottom:'8px',color:'#E8C87E',letterSpacing:'-0.5px'}}>올해 나의 운은<br/>어떻게 흘러갈까요</h2>
-            <p style={{fontSize:'12px',color:'rgba(237,233,242,0.3)',marginBottom:'36px',letterSpacing:'1px'}}>생년월일시로 2026년 상반기·하반기 흐름을 자세히 풀어드려요</p>
+            <div style={{fontSize:'10px',letterSpacing:'4px',color:'rgba(232,200,126,0.4)',marginBottom:'12px'}}>{YEAR_INFO[forecastYear].label}</div>
+            <h2 style={{fontFamily:"'Cormorant Garamond', 'Noto Serif KR', serif",fontSize:'30px',fontWeight:'600',marginBottom:'8px',color:'#E8C87E',letterSpacing:'-0.5px'}}>나의 운은<br/>어떻게 흘러갈까요</h2>
+            <p style={{fontSize:'12px',color:'rgba(237,233,242,0.3)',marginBottom:'28px',letterSpacing:'1px'}}>생년월일시로 상반기·하반기 흐름을 자세히 풀어드려요</p>
+
+            <div style={{marginBottom:'20px'}}>
+              <label style={S.label}>어느 해 운세를 볼까요</label>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
+                {['2026','2027'].map(y=>(
+                  <button key={y} onClick={()=>setForecastYear(y)} style={{...S.selectBtn(forecastYear===y),padding:'13px 6px'}}>
+                    {YEAR_INFO[y].emoji} {y} {YEAR_INFO[y].badge}
+                  </button>
+                ))}
+              </div>
+            </div>
 
             <div style={{marginBottom:'20px'}}>
               <label style={S.label}>이름</label>
@@ -238,7 +261,7 @@ export default function Sinnyeon() {
             {error && <p style={{color:'#ff6b6b',fontSize:'13px',marginBottom:'16px',padding:'10px 14px',background:'rgba(255,107,107,0.08)',borderRadius:'4px'}}>⚠️ {error}</p>}
 
             <button onClick={handleSubmit} style={{width:'100%',background:'rgba(232,200,126,0.1)',color:'#E8C87E',padding:'16px',border:'1px solid rgba(232,200,126,0.4)',borderRadius:'2px',fontSize:'14px',fontWeight:'500',cursor:'pointer',letterSpacing:'2px',fontFamily:'inherit'}}>
-              2026 신년운세 보기 →
+              {forecastYear} 신년운세 보기 →
             </button>
           </div>
         </div>
@@ -248,14 +271,14 @@ export default function Sinnyeon() {
         <div style={{minHeight:'100vh',background:'#0B0A1F'}}>
           <div style={{maxWidth:'600px',margin:'0 auto',padding:'32px 20px 80px'}}>
             <div style={{background:'rgba(232,200,126,0.05)',border:'1px solid rgba(232,200,126,0.15)',borderRadius:'4px',padding:'20px',marginBottom:'20px'}}>
-              <h2 style={{fontFamily:"'Cormorant Garamond', serif",fontSize:'20px',color:'#E8C87E',marginBottom:'4px'}}>{form.name || '의뢰인'}님의 2026 신년운세</h2>
-              <p style={{color:'rgba(237,233,242,0.4)',fontSize:'13px'}}>병오년(丙午年) · {form.year}년 {form.month}월 {form.day}일생</p>
+              <h2 style={{fontFamily:"'Cormorant Garamond', serif",fontSize:'20px',color:'#E8C87E',marginBottom:'4px'}}>{form.name || '의뢰인'}님의 {forecastYear} 신년운세</h2>
+              <p style={{color:'rgba(237,233,242,0.4)',fontSize:'13px'}}>{YEAR_INFO[forecastYear].ganji} · {form.year}년 {form.month}월 {form.day}일생</p>
             </div>
 
             {(loading || restoring) ? (
               <div style={{textAlign:'center',padding:'60px 0'}}>
-                <div style={{fontSize:'44px',marginBottom:'20px'}}>🐎</div>
-                <p style={{fontSize:'15px',color:'rgba(232,200,126,0.6)'}}>{restoring ? '결제를 확인하고 있어요...' : LOADING_MESSAGES[loadingMsgIdx]}</p>
+                <div style={{fontSize:'44px',marginBottom:'20px'}}>{YEAR_INFO[forecastYear].emoji}</div>
+                <p style={{fontSize:'15px',color:'rgba(232,200,126,0.6)'}}>{restoring ? '결제를 확인하고 있어요...' : getLoadingMessages(forecastYear)[loadingMsgIdx]}</p>
               </div>
             ) : locked ? (
               <>
