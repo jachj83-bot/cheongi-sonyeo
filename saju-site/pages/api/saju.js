@@ -15,6 +15,17 @@ const JIJI_JIJANGGAN = {
   '오':['병','기'],'미':['기','을','정'],'신':['무','임','경'],
   '유':['경','신'],'술':['신','정','무'],'해':['무','갑','임']
 };
+const SINNYEON_YEAR_INFO = {
+  '2026': {
+    ganji: '병오년(丙午年)', emoji: '🐎',
+    desc: (ilgan, ilganOhaeng) => `2026년은 병오년(丙午年), 붉은 말의 해로 화(火) 기운이 매우 강합니다. 이 사주의 일간 ${ilgan}(${ilganOhaeng})이 병오년의 강한 화 기운과 어떻게 상호작용하는지(생조/극제 관계) 반드시 반영해서 풀이해주세요.`,
+  },
+  '2027': {
+    ganji: '정미년(丁未年)', emoji: '🐐',
+    desc: (ilgan, ilganOhaeng) => `2027년은 정미년(丁未年), 붉은 양의 해로 정(丁)의 음화 기운과 미(未)의 토 기운이 함께 어우러져 화(火)와 토(土)가 섞인 흐름을 만듭니다. 이 사주의 일간 ${ilgan}(${ilganOhaeng})이 정미년의 화·토 기운과 어떻게 상호작용하는지(생조/극제 관계) 반드시 반영해서 풀이해주세요.`,
+  },
+};
+
 const CHEONGAN_UMYANG = {
   '갑':'양','을':'음','병':'양','정':'음','무':'양',
   '기':'음','경':'양','신':'음','임':'양','계':'음'
@@ -156,7 +167,7 @@ function splitPreview(fullText, previewSections = 2) {
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { name, year, month, day, hour, gender, type, me, partner, card, cardEn, reversed, question, orderId } = req.body;
+  const { name, year, month, day, hour, gender, type, me, partner, card, cardEn, reversed, question, orderId, forecastYear } = req.body;
 
   try {
 
@@ -260,7 +271,7 @@ ${meName}님과 ${partnerName}님, 두 분의 궁합을 봐주세요. 아래 형
 
 ⚠️ 주의해야 할 부분 (극복 방법 포함)
 
-🌿 2026 병오년 두 사람에게
+🌿 다가오는 해, 두 사람에게
 
 두 분의 이름을 자연스럽게 불러가며, 장점과 단점을 6:4로 균형있게, 따뜻한 톤으로 한국어로 작성해주세요.`;
 
@@ -268,8 +279,10 @@ ${meName}님과 ${partnerName}님, 두 분의 궁합을 봐주세요. 아래 형
       return;
     }
 
-    // 신년운세 (2026 병오년)
+    // 신년운세 (2026 병오년 / 2027 정미년, 선택 가능)
     if (type === 'sinnyeon') {
+      const fy = SINNYEON_YEAR_INFO[forecastYear] ? forecastYear : '2026';
+      const yearInfo = SINNYEON_YEAR_INFO[fy];
       const hourNum = hour === '모름' ? 12 : getHourNumber(hour);
       const saju = calculateSaju(parseInt(year), parseInt(month), parseInt(day), hourNum);
       const ilgan = getIlgan(saju.dayPillar);
@@ -277,18 +290,18 @@ ${meName}님과 ${partnerName}님, 두 분의 궁합을 봐주세요. 아래 형
       const strength = calcOhaengStrength(pillars);
       const ilganOhaeng = CHEONGAN_OHAENG[ilgan];
 
-      const prompt = `당신은 30년 경력의 명리학 전문가입니다. ${name || '의뢰인'}님의 2026년 병오년(丙午年) 신년운세를 상세히 봐주세요.
+      const prompt = `당신은 30년 경력의 명리학 전문가입니다. ${name || '의뢰인'}님의 ${fy}년 ${yearInfo.ganji} 신년운세를 상세히 봐주세요.
 
 [${name || '의뢰인'}님 사주팔자]
 년주: ${saju.yearPillar} / 월주: ${saju.monthPillar} / 일주: ${saju.dayPillar} / 시주: ${saju.hourPillar}
 성별: ${gender}자 / 일간: ${ilgan}(${ilganOhaeng})
 오행 강약: 목${strength['목']} 화${strength['화']} 토${strength['토']} 금${strength['금']} 수${strength['수']}
 
-2026년은 병오년(丙午年), 붉은 말의 해로 화(火) 기운이 매우 강합니다. 이 사주의 일간 ${ilgan}(${ilganOhaeng})이 병오년의 강한 화 기운과 어떻게 상호작용하는지(생조/극제 관계) 반드시 반영해서 풀이해주세요.
+${yearInfo.desc(ilgan, ilganOhaeng)}
 
 첫 문장은 반드시 "하늘의 기운을 읽었습니다."로 시작하고 아래 형식으로 분석해주세요:
 
-🐎 2026 병오년 총운
+${yearInfo.emoji} ${fy} ${yearInfo.ganji} 총운
 📅 상반기 흐름 (1~6월)
 📅 하반기 흐름 (7~12월)
 💰 재물운
@@ -303,7 +316,7 @@ ${meName}님과 ${partnerName}님, 두 분의 궁합을 봐주세요. 아래 형
       const { preview, locked } = splitPreview(fullText, 2);
 
       if (locked && orderId) {
-        await setJSON(`payapp:stash:${orderId}`, { full: fullText, meta: { name, year, month, day } }, 60 * 60 * 24);
+        await setJSON(`payapp:stash:${orderId}`, { full: fullText, meta: { name, year, month, day, forecastYear: fy } }, 60 * 60 * 24);
       }
 
       res.status(200).json({ preview, full: (locked && orderId) ? null : fullText, locked: !!(locked && orderId) });
@@ -325,7 +338,7 @@ ${meName}님과 ${partnerName}님, 두 분의 궁합을 봐주세요. 아래 형
       const junggwae = (Math.floor(seed / 8) % 6) + 1;
       const hagwae = (Math.floor(seed / 48) % 3) + 1;
 
-      const prompt = `당신은 전통 토정비결(土亭秘訣) 풀이에 능한 30년 경력의 명리학 전문가입니다. ${name || '의뢰인'}님의 2026년 신수(身數)를 토정비결 형식을 빌려 풀이해주세요.
+      const prompt = `당신은 전통 토정비결(土亭秘訣) 풀이에 능한 30년 경력의 명리학 전문가입니다. ${name || '의뢰인'}님의 2027년 신수(身數)를 토정비결 형식을 빌려 풀이해주세요.
 
 [${name || '의뢰인'}님 사주팔자]
 년주: ${saju.yearPillar} / 월주: ${saju.monthPillar} / 일주: ${saju.dayPillar} / 시주: ${saju.hourPillar}
@@ -385,7 +398,7 @@ ${card} (${cardEn || ''}) — ${reversed ? '역방향' : '정방향'}
 🔮 사주와 카드가 겹쳐서 보여주는 지금 이 시기
 💰 재물 · 커리어
 ❤️ 연애 · 관계
-⚡ 2026 병오년과 함께 본 앞으로의 흐름
+⚡ 다가오는 흐름과 함께 본 앞날
 ⚠️ 종합 조언
 
 사주(장기 흐름)와 타로(현재 기운)가 서로를 어떻게 뒷받침하거나 다른 신호를 주는지 명확히 짚어주면서, 따뜻하고 신비로운 톤으로 한국어로 작성해주세요.`;
@@ -461,7 +474,7 @@ ${sipsinData.map(s => s ? `${s.pillar}: 천간(${s.ganSipsin}) 지지(${s.jiSips
 🔥 오행 에너지
 💫 십신으로 본 성격과 재능
 
-${singang} 사주 특성에 맞게, 장점과 단점을 6:4로 균형있게, 따뜻하고 신비로운 톤으로 한국어로 작성해주세요. 각 항목은 딱 2문장으로만 짧게 써주세요. 마지막에 줄바꿈 후 "✨" 로 시작하는 한 줄로, 재물운·연애운·2026년 병오년 운세는 더 자세한 유료 콘텐츠에서 확인할 수 있다는 걸 자연스럽게 궁금증을 자아내는 문장으로 안내해주세요 (예: "재물운과 연애운, 2026년의 흐름은 신년운세에서 훨씬 자세히 만나볼 수 있어요"). 전체 분량은 절대 넘치지 않게, 딱 필요한 만큼만 써주세요.`;
+${singang} 사주 특성에 맞게, 장점과 단점을 6:4로 균형있게, 따뜻하고 신비로운 톤으로 한국어로 작성해주세요. 각 항목은 딱 2문장으로만 짧게 써주세요. 마지막에 줄바꿈 후 "✨" 로 시작하는 한 줄로, 재물운·연애운·다가오는 운세는 더 자세한 유료 콘텐츠에서 확인할 수 있다는 걸 자연스럽게 궁금증을 자아내는 문장으로 안내해주세요 (예: "재물운과 연애운, 앞으로의 흐름은 신년운세에서 훨씬 자세히 만나볼 수 있어요"). 전체 분량은 절대 넘치지 않게, 딱 필요한 만큼만 써주세요.`;
 
     // sajuData를 먼저 헤더로 보내고, AI 해석은 실시간 스트리밍으로 전송 (체감 속도 개선)
     const sajuDataPayload = {
