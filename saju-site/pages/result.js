@@ -16,6 +16,35 @@ const JIJI_OHAENG = {
   '오':'화','미':'토','신':'금','유':'금','술':'토','해':'수'
 };
 
+// 천간 10개 + 지지 12개 한 줄 성향 — 일주(일간+일지)를 바로 풀어서
+// AI 해석이 나오기 전에도 "나는 어떤 사람"이 즉시 보이게 하기 위한 데이터
+const CHEONGAN_TRAIT = {
+  '갑':'큰 나무처럼 곧고 당당해서 자연스럽게 리더 역할을 맡는 타입',
+  '을':'덩굴 식물처럼 유연하고 세심하며 계획을 세우는 힘이 뛰어난 타입',
+  '병':'강한 태양처럼 따뜻하고 활발해서 주변에 에너지를 퍼뜨리는 타입',
+  '정':'촛불처럼 섬세하고 따뜻한 마음으로 사람을 챙기는 타입',
+  '무':'큰 산처럼 듬직해서 곁에 있으면 안정감과 신뢰를 주는 타입',
+  '기':'논밭의 흙처럼 다정하고 현실적인 감각으로 일을 풀어가는 타입',
+  '경':'날카로운 강철처럼 강단 있고 직설적으로 밀고 나가는 타입',
+  '신':'보석처럼 반짝여서 세련되고 세심한 감각을 지닌 타입',
+  '임':'큰 강물처럼 여유롭고 포용력 있게 사람을 품는 타입',
+  '계':'이슬비처럼 조용하지만 지혜롭게 상황을 꿰뚫어 보는 타입',
+};
+const JIJI_TRAIT = {
+  '자':'잔잔한 호수처럼 총명하고 민첩하게 상황을 살피는 관찰자형',
+  '축':'묵묵한 밭처럼 느리지만 단단하고 인내심이 강한 타입',
+  '인':'숲속의 호랑이처럼 용맹하고 직관적으로 앞장서는 리더형',
+  '묘':'봄의 들꽃처럼 유연하고 따뜻한 감성을 지닌 타입',
+  '진':'하늘을 나는 용처럼 야망이 크고 에너지가 넘치는 타입',
+  '사':'조용한 불꽃처럼 지혜롭고 집중력이 강한 전략가형',
+  '오':'달리는 말처럼 열정적이고 솔직하게 행동하는 타입',
+  '미':'푸른 초원의 양처럼 부드럽고 배려심이 깊은 평화주의자형',
+  '신':'재주 많은 원숭이처럼 재치 있고 두뇌 회전이 빠른 타입',
+  '유':'반짝이는 닭처럼 깔끔하고 세련된 완벽주의자형',
+  '술':'충직한 개처럼 신뢰감 있고 의리가 깊은 수호자형',
+  '해':'넉넉한 강물처럼 포용력 있고 순한 낙천가형',
+};
+
 const LOADING_MESSAGES = [
   '천기소녀가 하늘의 기운을 읽고 있어요...',
   '사주팔자를 하나하나 짚어보는 중이에요...',
@@ -267,6 +296,13 @@ export default function Result() {
     ? `${name || '의뢰인'}님은 오행 중 ${strongestOhaeng} 기운이 유독 강한 ${sajuData.singang} 사주예요. 오늘은 뭐가 제일 궁금해요?`
     : '';
 
+  // 일주(일간+일지) = "나"를 나타내는 기둥 — 천간/지지 한 줄 성향을 이어붙여
+  // AI 해석이 로딩되기 전에도 바로 보여줄 수 있는 즉시 표시용 블러브
+  const dayPillar = sajuData?.pillars?.day;
+  const iljuBlurb = dayPillar && dayPillar.length >= 2 && CHEONGAN_TRAIT[dayPillar[0]] && JIJI_TRAIT[dayPillar[1]]
+    ? `일간은 ${CHEONGAN_TRAIT[dayPillar[0]]}이고, 일지는 ${JIJI_TRAIT[dayPillar[1]]}예요. 두 기운이 합쳐진 게 ${name || '의뢰인'}님의 바탕 성향이에요.`
+    : null;
+
   const PillarCard = ({ label, pillar, sipsin }) => {
     if (!pillar) return null;
     const gan = pillar[0];
@@ -364,6 +400,14 @@ export default function Result() {
                       <span style={{fontSize:'12px',color:'#e8c97a',background:'rgba(139,46,0,0.3)',padding:'3px 12px',borderRadius:'10px',border:'1px solid #3d1500'}}>{sajuData.singang} 사주</span>
                     </div>
                   </div>
+
+                  {/* 일주 한 줄 성향 — AI 해석이 뜨기 전에도 바로 보이는 즉시 표시 블러브 */}
+                  {iljuBlurb && (
+                    <div style={{borderTop:'1px solid #3d1500',marginTop:'14px',paddingTop:'14px'}}>
+                      <div style={{fontSize:'11px',color:'#7a5030',marginBottom:'8px',letterSpacing:'1px',textAlign:'center'}}>일주로 보는 바탕 성향</div>
+                      <p style={{fontSize:'13px',color:'#e0c9a8',lineHeight:'1.6',textAlign:'center'}}>{iljuBlurb}</p>
+                    </div>
+                  )}
                 </div>
               )}
 

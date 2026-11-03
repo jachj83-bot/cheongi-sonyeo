@@ -3,28 +3,28 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 
 const TAROT_CARDS = [
-  { id: 0, name: '바보', nameEn: 'The Fool', emoji: '🌟', img: '/cheongi_tarot_00_fool.png' },
-  { id: 1, name: '마법사', nameEn: 'The Magician', emoji: '🔮', img: '/cheongi_tarot_01_magician.png' },
-  { id: 2, name: '여사제', nameEn: 'The High Priestess', emoji: '🌙', img: '/cheongi_tarot_02_high_priestess.png' },
-  { id: 3, name: '여황제', nameEn: 'The Empress', emoji: '🌸', img: '/cheongi_tarot_03_empress.png' },
-  { id: 4, name: '황제', nameEn: 'The Emperor', emoji: '👑', img: '/cheongi_tarot_04_emperor.png' },
-  { id: 5, name: '교황', nameEn: 'The Hierophant', emoji: '✨', img: '/cheongi_tarot_05_hierophant.png' },
-  { id: 6, name: '연인', nameEn: 'The Lovers', emoji: '💑', img: '/cheongi_tarot_06_lovers.png' },
-  { id: 7, name: '전차', nameEn: 'The Chariot', emoji: '⚡', img: '/cheongi_tarot_07_chariot.png' },
-  { id: 8, name: '힘', nameEn: 'Strength', emoji: '🦁', img: '/cheongi_tarot_08_strength.png' },
-  { id: 9, name: '은둔자', nameEn: 'The Hermit', emoji: '🕯️', img: '/cheongi_tarot_09_hermit.png' },
-  { id: 10, name: '운명의 수레바퀴', nameEn: 'Wheel of Fortune', emoji: '🎡', img: '/cheongi_tarot_10_wheel.png' },
-  { id: 11, name: '정의', nameEn: 'Justice', emoji: '⚖️', img: '/cheongi_tarot_11_justice.png' },
-  { id: 12, name: '매달린 사람', nameEn: 'The Hanged Man', emoji: '🌿', img: '/cheongi_tarot_12_hanged_man.png' },
-  { id: 13, name: '죽음', nameEn: 'Death', emoji: '🦋', img: '/cheongi_tarot_13_death.png' },
-  { id: 14, name: '절제', nameEn: 'Temperance', emoji: '🌊', img: '/cheongi_tarot_14_temperance.png' },
-  { id: 15, name: '악마', nameEn: 'The Devil', emoji: '🔥', img: '/cheongi_tarot_15_devil.png' },
-  { id: 16, name: '탑', nameEn: 'The Tower', emoji: '⛈️', img: '/cheongi_tarot_16_tower.png' },
-  { id: 17, name: '별', nameEn: 'The Star', emoji: '⭐', img: '/cheongi_tarot_17_star.png' },
-  { id: 18, name: '달', nameEn: 'The Moon', emoji: '🌕', img: '/cheongi_tarot_18_moon.png' },
-  { id: 19, name: '태양', nameEn: 'The Sun', emoji: '☀️', img: '/cheongi_tarot_19_sun.png' },
-  { id: 20, name: '심판', nameEn: 'Judgement', emoji: '🎺', img: '/cheongi_tarot_20_judgement.png' },
-  { id: 21, name: '세계', nameEn: 'The World', emoji: '🌍', img: '/cheongi_tarot_21_world.png' },
+  { id: 0, name: '바보', nameEn: 'The Fool', emoji: '🌟', img: '/cheongi_tarot_00_fool.jpg' },
+  { id: 1, name: '마법사', nameEn: 'The Magician', emoji: '🔮', img: '/cheongi_tarot_01_magician.jpg' },
+  { id: 2, name: '여사제', nameEn: 'The High Priestess', emoji: '🌙', img: '/cheongi_tarot_02_high_priestess.jpg' },
+  { id: 3, name: '여황제', nameEn: 'The Empress', emoji: '🌸', img: '/cheongi_tarot_03_empress.jpg' },
+  { id: 4, name: '황제', nameEn: 'The Emperor', emoji: '👑', img: '/cheongi_tarot_04_emperor.jpg' },
+  { id: 5, name: '교황', nameEn: 'The Hierophant', emoji: '✨', img: '/cheongi_tarot_05_hierophant.jpg' },
+  { id: 6, name: '연인', nameEn: 'The Lovers', emoji: '💑', img: '/cheongi_tarot_06_lovers.jpg' },
+  { id: 7, name: '전차', nameEn: 'The Chariot', emoji: '⚡', img: '/cheongi_tarot_07_chariot.jpg' },
+  { id: 8, name: '힘', nameEn: 'Strength', emoji: '🦁', img: '/cheongi_tarot_08_strength.jpg' },
+  { id: 9, name: '은둔자', nameEn: 'The Hermit', emoji: '🕯️', img: '/cheongi_tarot_09_hermit.jpg' },
+  { id: 10, name: '운명의 수레바퀴', nameEn: 'Wheel of Fortune', emoji: '🎡', img: '/cheongi_tarot_10_wheel.jpg' },
+  { id: 11, name: '정의', nameEn: 'Justice', emoji: '⚖️', img: '/cheongi_tarot_11_justice.jpg' },
+  { id: 12, name: '매달린 사람', nameEn: 'The Hanged Man', emoji: '🌿', img: '/cheongi_tarot_12_hanged_man.jpg' },
+  { id: 13, name: '죽음', nameEn: 'Death', emoji: '🦋', img: '/cheongi_tarot_13_death.jpg' },
+  { id: 14, name: '절제', nameEn: 'Temperance', emoji: '🌊', img: '/cheongi_tarot_14_temperance.jpg' },
+  { id: 15, name: '악마', nameEn: 'The Devil', emoji: '🔥', img: '/cheongi_tarot_15_devil.jpg' },
+  { id: 16, name: '탑', nameEn: 'The Tower', emoji: '⛈️', img: '/cheongi_tarot_16_tower.jpg' },
+  { id: 17, name: '별', nameEn: 'The Star', emoji: '⭐', img: '/cheongi_tarot_17_star.jpg' },
+  { id: 18, name: '달', nameEn: 'The Moon', emoji: '🌕', img: '/cheongi_tarot_18_moon.jpg' },
+  { id: 19, name: '태양', nameEn: 'The Sun', emoji: '☀️', img: '/cheongi_tarot_19_sun.jpg' },
+  { id: 20, name: '심판', nameEn: 'Judgement', emoji: '🎺', img: '/cheongi_tarot_20_judgement.jpg' },
+  { id: 21, name: '세계', nameEn: 'The World', emoji: '🌍', img: '/cheongi_tarot_21_world.jpg' },
 ];
 
 const CATEGORIES = [
@@ -171,9 +171,9 @@ export default function Tarot() {
           {step === 'intro' && (
             <div style={{textAlign:'center'}} className="fade-in">
               <div style={{position:'relative',height:'140px',marginBottom:'28px',display:'flex',justifyContent:'center',alignItems:'center'}} className="float">
-                <img src="/cheongi_tarot_18_moon.png" alt="" style={{position:'absolute',width:'78px',borderRadius:'8px',border:'1px solid rgba(232,200,126,0.35)',boxShadow:'0 8px 24px rgba(0,0,0,0.5)',transform:'rotate(-16deg) translateX(-46px)',opacity:0.85}} />
-                <img src="/cheongi_tarot_00_fool.png" alt="" style={{position:'relative',width:'92px',borderRadius:'8px',border:'1px solid rgba(232,200,126,0.6)',boxShadow:'0 10px 30px rgba(0,0,0,0.6)',zIndex:2}} />
-                <img src="/cheongi_tarot_17_star.png" alt="" style={{position:'absolute',width:'78px',borderRadius:'8px',border:'1px solid rgba(232,200,126,0.35)',boxShadow:'0 8px 24px rgba(0,0,0,0.5)',transform:'rotate(16deg) translateX(46px)',opacity:0.85}} />
+                <img src="/cheongi_tarot_18_moon.jpg" alt="" style={{position:'absolute',width:'78px',borderRadius:'8px',border:'1px solid rgba(232,200,126,0.35)',boxShadow:'0 8px 24px rgba(0,0,0,0.5)',transform:'rotate(-16deg) translateX(-46px)',opacity:0.85}} />
+                <img src="/cheongi_tarot_00_fool.jpg" alt="" style={{position:'relative',width:'92px',borderRadius:'8px',border:'1px solid rgba(232,200,126,0.6)',boxShadow:'0 10px 30px rgba(0,0,0,0.6)',zIndex:2}} />
+                <img src="/cheongi_tarot_17_star.jpg" alt="" style={{position:'absolute',width:'78px',borderRadius:'8px',border:'1px solid rgba(232,200,126,0.35)',boxShadow:'0 8px 24px rgba(0,0,0,0.5)',transform:'rotate(16deg) translateX(46px)',opacity:0.85}} />
               </div>
               <h1 style={{fontFamily:'serif',fontSize:'28px',fontWeight:'900',color:'#f0e6d3',marginBottom:'12px',lineHeight:'1.4'}}>오늘 당신에게<br/><span style={{color:'#c49ae8'}}>어떤 카드</span>가 올까요?</h1>
               <div style={{width:'40px',height:'2px',background:'#6030a0',margin:'16px auto'}} />
