@@ -1,5 +1,5 @@
 // 일간(태어난 날의 천간) 10가지 = 천기소녀 10가지 타입
-// 아이콘은 48x48 기준 선(stroke) 경로라서 SVG와 캔버스(스토리 카드)에서 똑같이 쓸 수 있다.
+// 타입마다 궁중 인물의 역할 한자(將·策·王…)를 도장처럼 찍어 아이콘으로 쓴다.
 
 export const ELEMENT_COLOR = {
   '목': '#6fbf73', '화': '#ef7a4a', '토': '#d9a646', '금': '#c9c9e3', '수': '#5aa0e0',
@@ -8,40 +8,28 @@ export const ELEMENT_COLOR = {
 // 나를 생(生)해주는 오행 — 상생: 수→목→화→토→금→수
 export const GENERATED_BY = { '목': '수', '화': '목', '토': '화', '금': '토', '수': '금' };
 
-const ICON = {
-  tree: 'M24 5 L12 21 H18 L9 32 H21 V43 H27 V32 H39 L30 21 H36 Z',
-  flower: 'M24 19a5 5 0 1 0 0.01 0 M24 19 C19 10 29 10 24 19 M29 24 C38 19 38 29 29 24 M19 24 C10 29 10 19 19 24 M24 29 V43 M24 37 C28 33 33 34 33 34',
-  sun: 'M24 15a9 9 0 1 0 0.01 0 M24 3 V9 M24 39 V45 M3 24 H9 M39 24 H45 M9 9 L13 13 M35 35 L39 39 M39 9 L35 13 M13 35 L9 39',
-  candle: 'M17 24 H31 V43 H17 Z M24 24 V19 M24 19 C19 15 21 8 24 5 C27 8 29 15 24 19 Z',
-  mountain: 'M3 41 L18 13 L26 27 L32 19 L45 41 Z M13 22 L18 26 L23 21',
-  sprout: 'M6 39 H42 M11 44 H37 M24 39 V22 M24 29 C17 29 13 25 13 18 C20 18 24 22 24 29 M24 24 C31 24 35 20 35 13 C28 13 24 17 24 24',
-  sword: 'M24 3 L28 9 V31 H20 V9 Z M13 31 H35 M24 31 V40 M19 44 H29 M24 40 V44',
-  gem: 'M14 8 H34 L43 18 L24 42 L5 18 Z M5 18 H43 M19 8 L15 18 L24 42 M29 8 L33 18 L24 42',
-  wave: 'M3 19 C9 13 14 13 19 19 S29 25 35 19 S42 13 45 15 M3 29 C9 23 14 23 19 29 S29 35 35 29 S42 23 45 25 M3 39 C9 33 14 33 19 39 S29 45 35 39',
-  drop: 'M24 5 C24 5 11 21 11 30 a13 13 0 0 0 26 0 C37 21 24 5 24 5 Z M17 30 a7 7 0 0 0 7 7',
-};
 
 export const DAY_TYPES = {
-  '갑': { name: '청송형', hanja: '甲', title: '푸른 소나무', el: '목', icon: ICON.tree,
-    line: '곧게 자라서 사람들이 자연스럽게 기대는 리더', tags: ['리더십', '우직함', '성장'] },
-  '을': { name: '들꽃형', hanja: '乙', title: '바위틈 들꽃', el: '목', icon: ICON.flower,
-    line: '여려 보여도 어디서든 꽃을 피우는 생존력', tags: ['유연함', '센스', '끈기'] },
-  '병': { name: '태양형', hanja: '丙', title: '한낮의 태양', el: '화', icon: ICON.sun,
-    line: '들어서는 순간 분위기를 환하게 바꾸는 사람', tags: ['열정', '솔직함', '존재감'] },
-  '정': { name: '등불형', hanja: '丁', title: '밤의 등불', el: '화', icon: ICON.candle,
-    line: '조용하지만 모두가 곁으로 모여드는 따뜻함', tags: ['섬세함', '다정함', '집중력'] },
-  '무': { name: '태산형', hanja: '戊', title: '큰 산', el: '토', icon: ICON.mountain,
-    line: '흔들리지 않아서 모두의 안식처가 되는 사람', tags: ['듬직함', '신뢰', '포용'] },
-  '기': { name: '텃밭형', hanja: '己', title: '기름진 텃밭', el: '토', icon: ICON.sprout,
-    line: '무엇을 심어도 키워내는 현실 감각과 다정함', tags: ['현실감각', '배려', '살림꾼'] },
-  '경': { name: '명검형', hanja: '庚', title: '잘 벼린 칼', el: '금', icon: ICON.sword,
-    line: '겉은 날카롭고 내 사람에겐 끝까지 의리 있는', tags: ['결단력', '의리', '직진'] },
-  '신': { name: '보석형', hanja: '辛', title: '빛나는 보석', el: '금', icon: ICON.gem,
-    line: '다듬을수록 빛나는 세련됨과 완벽주의', tags: ['세련됨', '예리함', '완벽주의'] },
-  '임': { name: '바다형', hanja: '壬', title: '넓은 바다', el: '수', icon: ICON.wave,
-    line: '생각도 마음도 넓어서 자유를 사랑하는 사람', tags: ['포용력', '자유', '스케일'] },
-  '계': { name: '이슬형', hanja: '癸', title: '새벽 이슬', el: '수', icon: ICON.drop,
-    line: '조용히 스며들어 결국 모든 걸 바꾸는 지혜', tags: ['직관', '지혜', '감수성'] },
+  '갑': { name: '장군형', hanja: '甲', role: '將', title: '선봉에 선 장군', el: '목',
+    line: '맨 앞에서 깃발을 들고 길을 여는 리더', tags: ['리더십', '추진력', '책임감'] },
+  '을': { name: '책사형', hanja: '乙', role: '策', title: '판을 읽는 책사', el: '목',
+    line: '부드럽게 판을 읽고 끝내 원하는 걸 이뤄내는 전략가', tags: ['전략', '유연함', '끈기'] },
+  '병': { name: '임금형', hanja: '丙', role: '王', title: '빛나는 임금', el: '화',
+    line: '어디에 있든 자연스럽게 중심이 되는 존재감', tags: ['존재감', '열정', '솔직함'] },
+  '정': { name: '의원형', hanja: '丁', role: '醫', title: '마음을 살피는 의원', el: '화',
+    line: '조용히 사람을 살피고 챙기는 따뜻한 손길', tags: ['섬세함', '다정함', '집중력'] },
+  '무': { name: '재상형', hanja: '戊', role: '相', title: '나라를 받치는 재상', el: '토',
+    line: '모두가 믿고 기대는 흔들림 없는 버팀목', tags: ['듬직함', '신뢰', '포용'] },
+  '기': { name: '상궁형', hanja: '己', role: '宮', title: '궁을 꾸리는 상궁', el: '토',
+    line: '살림도 사람도 빈틈없이 챙기는 현실 감각', tags: ['현실감각', '배려', '살림꾼'] },
+  '경': { name: '무사형', hanja: '庚', role: '武', title: '칼을 든 무사', el: '금',
+    line: '결단은 빠르게, 내 사람에 대한 의리는 끝까지', tags: ['결단력', '의리', '직진'] },
+  '신': { name: '화원형', hanja: '辛', role: '畵', title: '궁중 화원', el: '금',
+    line: '남다른 감각으로 디테일까지 완성하는 장인', tags: ['세련됨', '감각', '완벽주의'] },
+  '임': { name: '상단주형', hanja: '壬', role: '商', title: '바다를 건너는 상단주', el: '수',
+    line: '판을 크게 보고 자유롭게 움직이는 승부사', tags: ['스케일', '자유', '포용력'] },
+  '계': { name: '도사형', hanja: '癸', role: '道', title: '산속의 도사', el: '수',
+    line: '말수는 적어도 핵심을 꿰뚫어 보는 직관', tags: ['직관', '지혜', '감수성'] },
 };
 
 export const TYPE_ORDER = ['갑', '을', '병', '정', '무', '기', '경', '신', '임', '계'];
@@ -59,9 +47,11 @@ export function TypeIcon({ gan, size = 48, color, strokeWidth = 2, style }) {
   if (!t) return null;
   const c = color || ELEMENT_COLOR[t.el];
   return (
-    <svg width={size} height={size} viewBox="0 0 48 48" fill="none" stroke={c} strokeWidth={strokeWidth}
-      strokeLinecap="round" strokeLinejoin="round" style={style} aria-hidden="true">
-      <path d={t.icon} />
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none" style={style} aria-hidden="true">
+      <circle cx="24" cy="24" r="21.5" stroke={c} strokeWidth={strokeWidth} />
+      <circle cx="24" cy="24" r="17.5" stroke={c} strokeWidth={strokeWidth * 0.5} strokeDasharray="2 2.5" opacity="0.8" />
+      <text x="24" y="31.5" textAnchor="middle" fontSize="21" fontWeight="700" fill={c}
+        fontFamily="'Noto Serif KR', 'Nanum Myeongjo', serif">{t.role}</text>
     </svg>
   );
 }
@@ -99,7 +89,7 @@ export async function drawStoryCard({ gan, name, pillars, strength }) {
   ctx.textAlign = 'center';
   ctx.fillStyle = 'rgba(232,200,126,0.75)';
   ctx.font = `500 34px ${sans}`;
-  ctx.fillText('천기소녀 · 나의 일간 타입', W / 2, 190);
+  ctx.fillText('천기소녀 · 궁중에 태어났다면 나는', W / 2, 190);
 
   // 원형 링 + 아이콘
   ctx.strokeStyle = 'rgba(232,200,126,0.35)'; ctx.lineWidth = 2;
@@ -116,11 +106,17 @@ export async function drawStoryCard({ gan, name, pillars, strength }) {
     ctx.fillText(ch, W / 2 + Math.cos(a) * 330, 700 + Math.sin(a) * 330 + 13);
   });
   ctx.save();
-  ctx.translate(W / 2 - 180, 700 - 180);
-  ctx.scale(360 / 48, 360 / 48);
-  ctx.strokeStyle = col; ctx.lineWidth = 1.6; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-  ctx.shadowColor = col; ctx.shadowBlur = 6;
-  ctx.stroke(new Path2D(t.icon));
+  ctx.shadowColor = col; ctx.shadowBlur = 18;
+  ctx.strokeStyle = col; ctx.lineWidth = 6;
+  ctx.beginPath(); ctx.arc(W / 2, 700, 170, 0, Math.PI * 2); ctx.stroke();
+  ctx.lineWidth = 2.5; ctx.setLineDash([10, 12]);
+  ctx.beginPath(); ctx.arc(W / 2, 700, 140, 0, Math.PI * 2); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = col;
+  ctx.font = `700 170px ${serif}`;
+  ctx.textBaseline = 'middle';
+  ctx.fillText(t.role, W / 2, 712);
+  ctx.textBaseline = 'alphabetic';
   ctx.restore();
 
   // 이름
