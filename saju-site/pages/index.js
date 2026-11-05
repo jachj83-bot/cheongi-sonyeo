@@ -337,15 +337,15 @@ export default function Home() {
             <div style={{maxWidth:'1100px',margin:'0 auto'}}>
               <div className="reveal" style={{textAlign:'center',marginBottom:'32px'}}>
                 <div style={{fontSize:'10px',letterSpacing:'4px',color:'rgba(232,200,126,0.4)',marginBottom:'12px'}}>10 TYPES</div>
-                <div style={{fontFamily:"'Cormorant Garamond', 'Noto Serif KR', serif",fontSize:'28px',color:'#E8C87E',marginBottom:'10px'}}>나는 열 가지 중 어떤 타입일까</div>
-                <p style={{fontSize:'13px',color:'rgba(237,233,242,0.45)',lineHeight:'1.8'}}>태어난 날의 천간이 곧 '나'예요. 결과에서 내 타입을 이미지로 저장해 스토리에 올릴 수 있어요</p>
+                <div style={{fontFamily:"'Cormorant Garamond', 'Noto Serif KR', serif",fontSize:'28px',color:'#E8C87E',marginBottom:'10px'}}>궁중에 태어났다면 나는 누구였을까</div>
+                <p style={{fontSize:'13px',color:'rgba(237,233,242,0.45)',lineHeight:'1.8'}}>태어난 날의 천간으로 장군부터 도사까지 열 가지 인물 중 내 자리를 찾아드려요. 결과는 이미지로 저장해 스토리에 올릴 수 있어요</p>
               </div>
               <div className="types-grid" style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:'12px'}}>
                 {TYPE_ORDER.map((g,i)=>{ const t = DAY_TYPES[g]; const c = ELEMENT_COLOR[t.el]; return (
                   <button key={g} onClick={()=>setStep('input')} className="reveal type-tile" style={{'--d':`${(i%5)*80}ms`,'--tc':c}}>
                     <span className="type-tile-icon"><TypeIcon gan={g} size={44} /></span>
                     <span style={{fontFamily:"'Noto Serif KR', serif",fontSize:'15px',color:'#EDE9F2',fontWeight:'700'}}>{t.name}</span>
-                    <span style={{fontSize:'11px',color:c}}>{t.hanja} · {t.el}</span>
+                    <span style={{fontSize:'11px',color:c}}>{t.title}</span>
                   </button>
                 ); })}
               </div>
@@ -371,8 +371,8 @@ export default function Home() {
                 <div style={{textAlign:'center',padding:'18px 14px 14px',background:'radial-gradient(circle at 50% 0%, rgba(239,122,74,.25), transparent 65%)',borderBottom:'1px solid rgba(232,200,126,.1)'}}>
                   <div style={{fontSize:'10px',letterSpacing:'2px',color:'#c4956a',marginBottom:'8px'}}>나의 일간 타입</div>
                   <TypeIcon gan="병" size={54} style={{filter:'drop-shadow(0 0 6px #ef7a4a)'}} />
-                  <div style={{fontFamily:"'Noto Serif KR', serif",fontSize:'22px',fontWeight:'900',color:'#ef7a4a',marginTop:'4px'}}>태양형</div>
-                  <div style={{fontSize:'11px',color:'rgba(237,233,242,.6)'}}>들어서는 순간 분위기를 환하게 바꾸는 사람</div>
+                  <div style={{fontFamily:"'Noto Serif KR', serif",fontSize:'22px',fontWeight:'900',color:'#ef7a4a',marginTop:'4px'}}>임금형</div>
+                  <div style={{fontSize:'11px',color:'rgba(237,233,242,.6)'}}>어디에 있든 자연스럽게 중심이 되는 존재감</div>
                 </div>
                 <div style={{display:'flex',gap:'5px',padding:'12px 14px'}}>
                   {[['갑','오','#6fbf73','#ef7a4a'],['병','인','#ef7a4a','#6fbf73'],['계','미','#5aa0e0','#d9a646'],['을','해','#6fbf73','#5aa0e0']].map(([g,j,c1,c2],i)=>(

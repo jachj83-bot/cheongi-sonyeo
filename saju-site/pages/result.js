@@ -431,7 +431,7 @@ export default function Result() {
                 const helpers = helperTypes(gan);
                 return (
                   <div className="soft-in type-card" style={{'--tc':col,position:'relative',overflow:'hidden',background:`radial-gradient(circle at 50% 0%, ${col}33, transparent 60%), #1f0a00`,border:`1px solid ${col}66`,borderRadius:'10px',padding:'26px 20px 22px',marginBottom:'20px',textAlign:'center'}}>
-                    <div style={{fontSize:'11px',letterSpacing:'3px',color:'#c4956a',marginBottom:'14px'}}>나의 일간 타입</div>
+                    <div style={{fontSize:'11px',letterSpacing:'3px',color:'#c4956a',marginBottom:'14px'}}>궁중에 태어났다면 나는</div>
                     <div className="type-icon-wrap" style={{position:'relative',width:'120px',height:'120px',margin:'0 auto 14px'}}>
                       <div className="type-ring" />
                       <div style={{position:'absolute',inset:'18px',display:'flex',alignItems:'center',justifyContent:'center'}}>
