@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import { DAY_TYPES, ELEMENT_COLOR, TypeIcon, helperTypes, drawStoryCard } from '../lib/dayTypes';
 
 const OHAENG_COLOR = {
   '목': '#4a9e4a', '화': '#e05a2b', '토': '#c4962a',
@@ -75,6 +76,16 @@ const QUESTION_CHIPS = [
   '오늘 하루 어떻게 보내면 좋을까요?',
   '저랑 잘 맞는 사람은 어떤 타입이에요?',
   '제가 제일 조심해야 할 건 뭐예요?',
+  '저한테 맞는 일이나 직업은 뭐예요?',
+  '올해 돈 관리는 어떻게 하는 게 좋아요?',
+];
+
+// 채팅 영역 맨 위에서 "여기서 뭘 할 수 있는지" 보여주는 안내 카드
+const CHAT_USES = [
+  { k: '연애', d: '그 사람과 나, 잘 맞을까' },
+  { k: '일·진로', d: '나한테 맞는 방향' },
+  { k: '돈', d: '모을 때와 쓸 때' },
+  { k: '오늘', d: '하루를 보내는 법' },
 ];
 
 const CHAT_EXTRA_PRICE = 1000;
@@ -98,6 +109,24 @@ export default function Result() {
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState('');
   const [chatPayProcessed, setChatPayProcessed] = useState(false);
+  const [storyState, setStoryState] = useState('');
+
+  const saveStoryCard = async (gan) => {
+    if (storyState === 'saving') return;
+    setStoryState('saving');
+    try {
+      const blob = await drawStoryCard({ gan, name: router.query.name, pillars: sajuData?.pillars });
+      const file = new File([blob], `cheongi_${DAY_TYPES[gan].name}.png`, { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try { await navigator.share({ files: [file], title: '천기소녀 · 나의 타입' }); setStoryState('done'); return; } catch (e) { if (e && e.name === 'AbortError') { setStoryState(''); return; } }
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      setStoryState('done');
+    } catch { setStoryState('error'); }
+  };
 
   useEffect(() => {
     try {
@@ -333,9 +362,35 @@ export default function Result() {
         <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
         <style>{`
           * {box-sizing:border-box;margin:0;padding:0;}
-          body {background:#1a0a00;color:#f0e6d3;font-family:'Noto Sans KR',sans-serif;}
+          body {background:#1a0a00;color:#f0e6d3;font-family:'Noto Sans KR',sans-serif;word-break:keep-all;}
           @keyframes bubbleIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+          @keyframes orbit { to{transform:rotate(360deg)} }
+          @keyframes orbitRev { to{transform:rotate(-360deg)} }
+          @keyframes corePulse { 0%,100%{transform:scale(.9);opacity:.7} 50%{transform:scale(1.1);opacity:1} }
+          @keyframes msgFade { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+          @keyframes pillarIn { from{opacity:0;transform:perspective(600px) rotateY(90deg)} to{opacity:1;transform:perspective(600px) rotateY(0)} }
+          @keyframes barGrow { from{transform:scaleX(0)} to{transform:scaleX(1)} }
+          @keyframes softIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
+          .loader { position:relative; width:150px; height:150px; margin:0 auto 28px; }
+          .loader-orbit { position:absolute; inset:0; border-radius:50%; border:1px dashed rgba(232,201,122,.25); animation: orbit 6s linear infinite; }
+          .loader-orbit span { position:absolute; width:14px; height:14px; border-radius:50%; transform:translate(-50%,-50%); }
+          .loader-ring { position:absolute; inset:28px; border-radius:50%; border:1px solid rgba(232,201,122,.2); animation: orbitRev 9s linear infinite; }
+          .loader-ring b { position:absolute; font-family:serif; font-size:13px; color:rgba(232,201,122,.6); transform:translate(-50%,-50%); font-weight:400; }
+          .loader-core { position:absolute; inset:58px; border-radius:50%; background:radial-gradient(circle,#ffe7a8,#c4956a 60%,transparent 70%); animation: corePulse 2s ease-in-out infinite; box-shadow:0 0 30px rgba(232,201,122,.5); }
+          .loading-msg { animation: msgFade .6s ease; }
+          .pillar-in { opacity:0; animation: pillarIn .7s cubic-bezier(.23,1,.32,1) forwards; }
+          .bar-grow { transform-origin:left center; animation: barGrow 1.1s cubic-bezier(.23,1,.32,1) both; }
+          .soft-in { opacity:0; animation: softIn .8s ease forwards; }
+          @media (prefers-reduced-motion: reduce) { *{animation:none !important} .pillar-in,.soft-in{opacity:1 !important} }
           .chat-bubble { animation: bubbleIn 0.4s ease forwards; }
+          @keyframes typeSpin { to{transform:rotate(360deg)} }
+          @keyframes typeFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+          @keyframes askGlow { 0%,100%{box-shadow:0 0 0 0 rgba(196,113,42,.0)} 50%{box-shadow:0 0 18px 0 rgba(196,113,42,.45)} }
+          .type-ring { position:absolute; inset:0; border-radius:50%; border:1.5px dashed var(--tc); opacity:.6; animation: typeSpin 18s linear infinite; }
+          .type-icon-wrap > div:last-child { animation: typeFloat 4s ease-in-out infinite; }
+          .ask-jump { animation: askGlow 2.6s ease-in-out infinite; }
+          .story-btn { transition: transform .2s, filter .2s; }
+          .story-btn:hover { transform: translateY(-2px); filter: brightness(1.08); }
         `}</style>
       </Head>
 
@@ -355,22 +410,55 @@ export default function Result() {
 
           {loading ? (
             <div style={{textAlign:'center',padding:'60px 0'}}>
-              <div style={{fontSize:'48px',marginBottom:'20px'}}>🔮</div>
-              <p style={{fontSize:'16px',color:'#c4956a'}}>{LOADING_MESSAGES[loadingMsgIdx]}</p>
+              <div className="loader" aria-hidden="true">
+                <div className="loader-orbit">
+                  {Object.values(OHAENG_COLOR).map((c,i)=>{ const a=i*2*Math.PI/5; return <span key={i} style={{left:`${50+50*Math.sin(a)}%`,top:`${50-50*Math.cos(a)}%`,background:c,boxShadow:`0 0 12px ${c}`}} />; })}
+                </div>
+                <div className="loader-ring">
+                  {['甲','丙','戊','庚','壬','子','午','卯','酉'].map((ch,i,arr)=>{ const a=i*2*Math.PI/arr.length; return <b key={i} style={{left:`${50+50*Math.sin(a)}%`,top:`${50-50*Math.cos(a)}%`}}>{ch}</b>; })}
+                </div>
+                <div className="loader-core" />
+              </div>
+              <p key={loadingMsgIdx} className="loading-msg" style={{fontSize:'16px',color:'#c4956a'}}>{LOADING_MESSAGES[loadingMsgIdx]}</p>
             </div>
           ) : (
             <>
+              {/* 나의 일간 타입 카드 */}
+              {sajuData && DAY_TYPES[sajuData.pillars?.day?.[0]] && (() => {
+                const gan = sajuData.pillars.day[0];
+                const t = DAY_TYPES[gan];
+                const col = ELEMENT_COLOR[t.el];
+                const helpers = helperTypes(gan);
+                return (
+                  <div className="soft-in type-card" style={{'--tc':col,position:'relative',overflow:'hidden',background:`radial-gradient(circle at 50% 0%, ${col}33, transparent 60%), #1f0a00`,border:`1px solid ${col}66`,borderRadius:'10px',padding:'26px 20px 22px',marginBottom:'20px',textAlign:'center'}}>
+                    <div style={{fontSize:'11px',letterSpacing:'3px',color:'#c4956a',marginBottom:'14px'}}>나의 일간 타입</div>
+                    <div className="type-icon-wrap" style={{position:'relative',width:'120px',height:'120px',margin:'0 auto 14px'}}>
+                      <div className="type-ring" />
+                      <div style={{position:'absolute',inset:'18px',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                        <TypeIcon gan={gan} size={84} strokeWidth={1.8} style={{filter:`drop-shadow(0 0 8px ${col})`}} />
+                      </div>
+                    </div>
+                    <div style={{fontSize:'14px',color:'#e0c9a8',marginBottom:'2px'}}>{name}님은</div>
+                    <div style={{fontFamily:'serif',fontSize:'34px',fontWeight:'900',color:col,lineHeight:'1.2'}}>{t.name}</div>
+                    <div style={{fontFamily:'serif',fontSize:'13px',color:'#c4956a',margin:'4px 0 12px'}}>{t.hanja} · {t.title}</div>
+                    <p style={{fontSize:'15px',color:'#f0e6d3',lineHeight:'1.6',marginBottom:'12px'}}>{t.line}</p>
+                    <div style={{display:'flex',gap:'6px',justifyContent:'center',flexWrap:'wrap',marginBottom:'14px'}}>
+                      {t.tags.map(tg => <span key={tg} style={{fontSize:'12px',color:col,border:`1px solid ${col}88`,borderRadius:'14px',padding:'4px 10px'}}>#{tg}</span>)}
+                    </div>
+                    {helpers.length > 0 && <div style={{fontSize:'12px',color:'#a08060',marginBottom:'16px'}}>나를 살려주는 타입 · {helpers.join(', ')}</div>}
+                    <button onClick={()=>saveStoryCard(gan)} className="story-btn" style={{background:col,color:'#1a0a00',border:'none',borderRadius:'24px',padding:'12px 22px',fontSize:'14px',fontWeight:'700',cursor:'pointer',fontFamily:'inherit'}}>
+                      {storyState === 'saving' ? '이미지 만드는 중...' : '인스타 스토리용 이미지 저장'}
+                    </button>
+                    {storyState === 'done' && <div style={{fontSize:'12px',color:'#c4956a',marginTop:'8px'}}>저장됐어요. 스토리에 올리고 친구 타입도 물어보세요</div>}
+                    {storyState === 'error' && <div style={{fontSize:'12px',color:'#ff6b6b',marginTop:'8px'}}>이미지를 만들지 못했어요. 다시 눌러주세요</div>}
+                  </div>
+                );
+              })()}
+
               {/* 사주원국 표 */}
               {sajuData && (
                 <div style={{background:'#1f0a00',border:'1px solid #3d1500',borderRadius:'6px',padding:'20px',marginBottom:'20px'}}>
                   <div style={{textAlign:'center',fontFamily:'serif',fontSize:'14px',color:'#e8c97a',marginBottom:'16px',letterSpacing:'2px'}}>✦ 사주원국 ✦</div>
-
-                  {/* 주 레이블 */}
-                  <div style={{display:'flex',gap:'8px',marginBottom:'12px'}}>
-                    {['시주','일주','월주','년주'].map(l=>(
-                      <div key={l} style={{flex:1,textAlign:'center',fontSize:'11px',color:'#7a5030',letterSpacing:'1px'}}>{l}</div>
-                    ))}
-                  </div>
 
                   {/* 천간/지지 카드 */}
                   <div style={{display:'flex',gap:'8px',marginBottom:'16px'}}>
@@ -380,7 +468,7 @@ export default function Result() {
                       {label:'월주', pillar:sajuData.pillars.month, sipsin:sajuData.sipsin?.[1]},
                       {label:'년주', pillar:sajuData.pillars.year, sipsin:sajuData.sipsin?.[0]},
                     ].map((p,i)=>(
-                      <PillarCard key={i} {...p} />
+                      <div key={i} className="pillar-in" style={{flex:1,minWidth:0,display:'flex',animationDelay:`${0.15 + i*0.18}s`}}><PillarCard {...p} /></div>
                     ))}
                   </div>
 
@@ -391,7 +479,7 @@ export default function Result() {
                       <div key={k} style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'6px'}}>
                         <div style={{width:'20px',fontSize:'12px',color:OHAENG_COLOR[k],fontWeight:'700'}}>{k}</div>
                         <div style={{flex:1,background:'rgba(255,255,255,0.05)',borderRadius:'4px',height:'8px',overflow:'hidden'}}>
-                          <div style={{width:`${Math.min(v/6*100,100)}%`,height:'100%',background:OHAENG_COLOR[k],borderRadius:'4px',transition:'width 0.5s'}} />
+                          <div className="bar-grow" style={{width:`${Math.min(v/6*100,100)}%`,height:'100%',background:OHAENG_COLOR[k],borderRadius:'4px',animationDelay:'0.9s'}} />
                         </div>
                         <div style={{width:'24px',fontSize:'11px',color:'#c4956a',textAlign:'right'}}>{v}</div>
                       </div>
@@ -403,12 +491,25 @@ export default function Result() {
 
                   {/* 일주 한 줄 성향 — AI 해석이 뜨기 전에도 바로 보이는 즉시 표시 블러브 */}
                   {iljuBlurb && (
-                    <div style={{borderTop:'1px solid #3d1500',marginTop:'14px',paddingTop:'14px'}}>
+                    <div className="soft-in" style={{borderTop:'1px solid #3d1500',marginTop:'14px',paddingTop:'14px',animationDelay:'1.5s'}}>
                       <div style={{fontSize:'11px',color:'#7a5030',marginBottom:'8px',letterSpacing:'1px',textAlign:'center'}}>일주로 보는 바탕 성향</div>
                       <p style={{fontSize:'13px',color:'#e0c9a8',lineHeight:'1.6',textAlign:'center'}}>{iljuBlurb}</p>
                     </div>
                   )}
                 </div>
+              )}
+
+              {sajuData && (
+                <a href="#ask" className="ask-jump" style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'10px',background:'linear-gradient(90deg,#3a1600,#2d0f00)',border:'1px solid #c4712a',borderRadius:'10px',padding:'14px 16px',marginBottom:'20px',textDecoration:'none'}}>
+                  <span style={{display:'flex',alignItems:'center',gap:'10px'}}>
+                    <img src="/logo_symbol.png" alt="" style={{width:'28px',height:'28px'}} />
+                    <span style={{textAlign:'left'}}>
+                      <span style={{display:'block',fontSize:'14px',color:'#e8c97a',fontWeight:'700'}}>궁금한 건 천기소녀에게 바로 물어보세요</span>
+                      <span style={{display:'block',fontSize:'12px',color:'#c4956a'}}>내 사주를 보고 1:1로 답해줘요 · 오늘 1회 무료</span>
+                    </span>
+                  </span>
+                  <span style={{color:'#e8c97a',fontSize:'18px'}}>↓</span>
+                </a>
               )}
 
               {/* 분석 결과 — 카톡처럼 말풍선으로 하나씩 */}
@@ -428,8 +529,26 @@ export default function Result() {
 
               {/* 천기소녀와 대화하기 */}
               {sajuData && (
-                <div style={{background:'#1f0a00',border:'1px solid #3d1500',borderRadius:'6px',padding:'20px',marginBottom:'20px'}}>
-                  <div style={{textAlign:'center',fontFamily:'serif',fontSize:'14px',color:'#e8c97a',marginBottom:'16px',letterSpacing:'2px'}}>✦ 천기소녀와 대화하기 ✦</div>
+                <div id="ask" style={{background:'#1f0a00',border:'1px solid #c4712a',borderRadius:'10px',padding:'20px',marginBottom:'20px',scrollMarginTop:'70px'}}>
+                  <div style={{textAlign:'center',marginBottom:'16px'}}>
+                    <div style={{fontSize:'11px',letterSpacing:'3px',color:'#c4956a',marginBottom:'6px'}}>1:1 사주 상담</div>
+                    <div style={{fontFamily:'serif',fontSize:'20px',color:'#e8c97a',fontWeight:'700',marginBottom:'6px'}}>천기소녀에게 직접 물어보기</div>
+                    <p style={{fontSize:'13px',color:'#c4956a',lineHeight:'1.6'}}>방금 본 {name}님의 사주팔자를 그대로 읽고<br/>질문 하나에 딱 맞춰 답해드려요</p>
+                  </div>
+                  <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'6px',marginBottom:'14px'}}>
+                    {CHAT_USES.map(u => (
+                      <div key={u.k} style={{background:'rgba(232,200,126,0.05)',border:'1px solid #3d1500',borderRadius:'8px',padding:'10px 4px',textAlign:'center'}}>
+                        <div style={{fontSize:'13px',color:'#e8c97a',fontWeight:'700',marginBottom:'3px'}}>{u.k}</div>
+                        <div style={{fontSize:'10px',color:'#a08060',lineHeight:'1.4'}}>{u.d}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{display:'flex',justifyContent:'center',gap:'6px',flexWrap:'wrap',marginBottom:'16px'}}>
+                    <span style={{fontSize:'11px',color:'#1a0a00',background:'#e8c97a',borderRadius:'10px',padding:'3px 10px',fontWeight:'700'}}>오늘 1회 무료</span>
+                    <span style={{fontSize:'11px',color:'#e8c97a',border:'1px solid #c4712a',borderRadius:'10px',padding:'3px 10px'}}>추가 질문 1건 ₩{CHAT_EXTRA_PRICE.toLocaleString()}</span>
+                    <span style={{fontSize:'11px',color:'#e8c97a',border:'1px solid #3d1500',borderRadius:'10px',padding:'3px 10px'}}>가입 없이 바로</span>
+                  </div>
+                  <div style={{borderTop:'1px dashed #3d1500',marginBottom:'16px'}} />
 
                   <div className="chat-bubble" style={{display:'flex',gap:'10px',alignItems:'flex-start',marginBottom:'14px'}}>
                     <img src="/logo_symbol.png" alt="" style={{width:'30px',height:'30px',borderRadius:'50%',border:'1px solid #3d1500',background:'#2d1500',objectFit:'contain',padding:'4px',flexShrink:0,marginTop:'2px'}} />
@@ -457,6 +576,9 @@ export default function Result() {
                     <div style={{fontSize:'13px',color:'#7a5030',paddingLeft:'40px',marginBottom:'10px'}}>천기소녀가 답하는 중...</div>
                   )}
 
+                  {!freeUsed && chatMessages.length === 0 && (
+                    <div style={{fontSize:'12px',color:'#a08060',marginBottom:'8px'}}>눌러서 바로 물어보기</div>
+                  )}
                   {!freeUsed && chatMessages.length === 0 && (
                     <div style={{display:'flex',flexWrap:'wrap',gap:'8px',marginBottom:'14px'}}>
                       {QUESTION_CHIPS.map((q, i) => (
