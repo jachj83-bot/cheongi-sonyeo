@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { DAY_TYPES, ELEMENT_COLOR, TypeIcon, helperTypes, drawStoryCard } from '../lib/dayTypes';
+import NewYearPopup from '../lib/NewYearPopup';
 
 const OHAENG_COLOR = {
   '목': '#4a9e4a', '화': '#e05a2b', '토': '#c4962a',
@@ -642,8 +643,8 @@ export default function Result() {
                 <div style={{fontFamily:'serif',fontSize:'18px',color:'#e8c97a',marginBottom:'8px'}}>✦ 재물운·연애운·다가올 운세가 궁금하신가요? ✦</div>
                 <p style={{color:'#7a5030',fontSize:'13px',marginBottom:'20px'}}>지금 본 건 일주 성격 분석이에요 · 더 자세한 이야기는 아래에서</p>
                 <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
-                  <button onClick={()=>router.push('/sinnyeon')} style={{background:'#8b2e00',color:'#e8c97a',padding:'14px 24px',border:'1.5px solid #c4712a',borderRadius:'4px',fontSize:'14px',fontWeight:'700',cursor:'pointer',fontFamily:'serif'}}>
-                    신년운세 보기 · ₩9,900
+                  <button onClick={()=>router.push('/sinnyeon?year=2027')} style={{background:'#8b2e00',color:'#e8c97a',padding:'14px 24px',border:'1.5px solid #c4712a',borderRadius:'4px',fontSize:'14px',fontWeight:'700',cursor:'pointer',fontFamily:'serif'}}>
+                    2027 정미년 신년운세 보기 · ₩9,900
                   </button>
                   <button onClick={()=>router.push('/tonghap')} style={{background:'transparent',color:'#c49ae8',padding:'14px 24px',border:'1px solid #3d1560',borderRadius:'4px',fontSize:'14px',cursor:'pointer'}}>
                     사주+타로 통합분석 · ₩24,900
@@ -661,6 +662,7 @@ export default function Result() {
           )}
         </div>
       </div>
+      <NewYearPopup popup={false} enabled={!loading} />
     </>
   );
 }

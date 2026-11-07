@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { DAY_TYPES, TYPE_ORDER, ELEMENT_COLOR, TypeIcon } from '../lib/dayTypes';
+import NewYearPopup from '../lib/NewYearPopup';
 
 // 히어로 배경에 반짝이는 별 — 서버/클라이언트 렌더 결과가 같도록 고정 시드로 위치를 만든다
 const STARS = (() => {
@@ -550,6 +551,7 @@ export default function Home() {
           </div>
         </div>
       )}
+      <NewYearPopup enabled={step === 'landing'} />
     </>
   );
 }
