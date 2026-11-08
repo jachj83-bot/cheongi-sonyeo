@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import { CardBack, CARD_BACK_CSS } from '../lib/CardBack';
 
 const TAROT_CARDS = [
   { id: 0, name: '바보', nameEn: 'The Fool', emoji: '🌟', img: '/cheongi_tarot_00_fool.jpg' },
@@ -157,13 +158,14 @@ export default function Tarot() {
           .card-item:hover { transform: translateY(-6px) scale(1.03); }
           .float { animation: float 3s ease-in-out infinite; }
           .fade-in { animation: fadeIn 0.6s ease forwards; }
+          ${CARD_BACK_CSS}
         `}</style>
       </Head>
 
       <div style={{minHeight:'100vh',background:'#0a0015'}}>
         <div style={{position:'sticky',top:0,zIndex:100,background:'rgba(10,0,21,0.97)',backdropFilter:'blur(10px)',borderBottom:'1px solid #2d1560',padding:'14px 20px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
           <a href="/" style={{display:'flex',alignItems:'center',gap:'8px',color:'#e8c97a',fontSize:'18px',fontWeight:'900',textDecoration:'none',fontFamily:'serif',letterSpacing:'2px'}}><img src="/logo_symbol.png" alt="" style={{width:'24px',height:'24px',objectFit:'contain'}} />천기소녀</a>
-          <div style={{fontSize:'13px',color:'#c49ae8'}}>🃏 타로</div>
+          <div style={{fontSize:'13px',color:'#c49ae8'}}><svg width="14" height="18" viewBox="0 0 14 18" style={{verticalAlign:'-3px',marginRight:'5px'}} aria-hidden="true"><rect x="1" y="1" width="12" height="16" rx="2" fill="#2b1652" stroke="#e8c87e" /><path d="M7 5 L8 8 L11 9 L8 10 L7 13 L6 10 L3 9 L6 8 Z" fill="#e8c87e" /></svg>타로</div>
         </div>
 
         <div style={{maxWidth:'480px',margin:'0 auto',padding:'28px 20px 80px'}}>
@@ -197,7 +199,7 @@ export default function Tarot() {
               </div>
 
               <button onClick={() => startReading()} style={{width:'100%',background:'linear-gradient(135deg,#3d1560,#6030a0)',color:'#e8c97a',padding:'16px',border:'1.5px solid #9060d0',borderRadius:'6px',fontSize:'16px',fontWeight:'800',cursor:'pointer',letterSpacing:'1px',fontFamily:'serif'}}>
-                {category.label} 카드 펼치기 🃏
+                {category.label} 카드 펼치기
               </button>
             </div>
           )}
@@ -228,15 +230,14 @@ export default function Tarot() {
                 </div>
               )}
 
-              <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'8px'}}>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'10px'}}>
                 {cards.slice(0, 16).map((card, idx) => {
                   const isPicked = picked.find(p => p.id === card.id);
                   return (
                     <div key={card.id} onClick={() => !isPicked && pickCard(card)}
-                      className={isPicked ? '' : 'card-item'}
-                      style={{background:isPicked?'rgba(120,50,200,0.1)':'linear-gradient(135deg,#1a0a2a,#2d1060)',border:`1.5px solid ${isPicked?'#3d1560':'#3d1560'}`,borderRadius:'8px',padding:'14px 6px',textAlign:'center',opacity:isPicked?0.4:1,cursor:isPicked?'default':'pointer'}}>
-                      <div style={{fontSize:'24px',marginBottom:'4px'}}>{isPicked ? '✓' : '🎴'}</div>
-                      <div style={{fontSize:'10px',color:'#6040a0'}}>{idx + 1}</div>
+                      className={isPicked ? '' : 'cb-pick'}
+                      style={{cursor:isPicked?'default':'pointer'}}>
+                      <CardBack picked={!!isPicked} idx={idx} />
                     </div>
                   );
                 })}
@@ -271,7 +272,7 @@ export default function Tarot() {
                   </div>
 
                   <button onClick={()=>{setStep('intro');setPicked([]);}} style={{width:'100%',background:'linear-gradient(135deg,#3d1560,#6030a0)',color:'#e8c97a',padding:'14px',border:'1.5px solid #9060d0',borderRadius:'6px',fontSize:'15px',fontWeight:'700',cursor:'pointer',fontFamily:'serif',marginBottom:'12px'}}>
-                    다시 뽑기 🃏
+                    다시 뽑기
                   </button>
                   <a href="/" style={{display:'block',textAlign:'center',color:'#6040a0',fontSize:'13px',textDecoration:'none',padding:'10px'}}>← 처음으로</a>
                 </>

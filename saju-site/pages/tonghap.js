@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import { CardBack, CARD_BACK_CSS } from '../lib/CardBack';
 
 const HOURS = [
   { label: '자시', desc: '23:30~01:30', value: '자시' },
@@ -224,6 +225,7 @@ export default function Tonghap() {
           select option { background: #0B0A1F; color: #EDE9F2; }
           .tcard { transition: transform 0.2s; cursor: pointer; }
           .tcard:hover { transform: translateY(-4px); }
+          ${CARD_BACK_CSS}
         `}</style>
       </Head>
 
@@ -308,12 +310,10 @@ export default function Tonghap() {
               <h2 style={{fontFamily:"'Cormorant Garamond', serif",fontSize:'20px',color:'#c49ae8',marginBottom:'8px'}}>직감이 가는 카드 한 장을 고르세요</h2>
               <p style={{fontSize:'13px',color:'rgba(237,233,242,0.35)'}}>{form.name}님의 사주와 지금 이 카드가 만나요</p>
             </div>
-            <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'8px'}}>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'10px'}}>
               {deck.slice(0, 16).map((card, idx) => (
-                <div key={idx} onClick={() => pickCard(card)} className="tcard"
-                  style={{background:'linear-gradient(135deg,#1a1030,#2d1a4a)',border:'1.5px solid rgba(196,154,232,0.25)',borderRadius:'8px',padding:'14px 6px',textAlign:'center'}}>
-                  <div style={{fontSize:'24px',marginBottom:'4px'}}>🎴</div>
-                  <div style={{fontSize:'10px',color:'rgba(196,154,232,0.5)'}}>{idx + 1}</div>
+                <div key={idx} onClick={() => pickCard(card)} className="cb-pick">
+                  <CardBack idx={idx} />
                 </div>
               ))}
             </div>
