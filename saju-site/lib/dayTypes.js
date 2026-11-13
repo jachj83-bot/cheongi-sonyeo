@@ -159,7 +159,7 @@ export async function drawStoryCard({ gan, name, pillars, strength }) {
   }
   ctx.fillStyle = 'rgba(237,233,242,0.55)';
   ctx.font = `500 34px ${sans}`;
-  ctx.fillText('cheongi-sonyeo.vercel.app 에서 내 타입 보기', W / 2, 1840);
+  ctx.fillText('cheongisonyeo.com 에서 내 타입 보기', W / 2, 1840);
 
   return new Promise(resolve => cv.toBlob(b => resolve(b), 'image/png'));
 }

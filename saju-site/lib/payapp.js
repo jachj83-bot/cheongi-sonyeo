@@ -5,7 +5,7 @@
 const PAYAPP_API_URL = 'https://api.payapp.kr/oapi/apiLoad.html';
 
 function getSiteUrl() {
-  return process.env.SITE_URL || 'https://cheongi-sonyeo.vercel.app';
+  return process.env.SITE_URL || 'https://www.cheongisonyeo.com';
 }
 
 // orderId를 var1으로 실어 보내서, 결제 완료 통보(feedbackurl)가 올 때
