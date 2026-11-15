@@ -79,13 +79,26 @@ function getHourNumber(hourLabel) {
   return map[hourLabel] ?? 12;
 }
 
+// 모든 AI 호출에 붙는 공통 시스템 지시: 오늘 날짜(한국 시간) 기준으로 연도를 쓰게 하고,
+// 화면이 마크다운을 그리지 않으므로 ** 같은 기호를 쓰지 않게 한다.
+function systemContext() {
+  const kst = new Date(Date.now() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = kst.getUTCMonth() + 1;
+  const d = kst.getUTCDate();
+  return `오늘은 ${y}년 ${m}월 ${d}일(한국 시간)입니다. 올해는 ${y}년, 내년은 ${y + 1}년입니다. `
+    + `연도를 말할 때는 반드시 이 날짜를 기준으로 하고, 이미 지난 연도(${y - 1}년 이전)를 앞으로 다가올 해처럼 쓰지 마세요. `
+    + `특정 연도를 꼭 말할 필요가 없으면 '올해', '내년', '앞으로'처럼 표현하세요. `
+    + `답변에는 마크다운 기호(**, ##, ###, 백틱)를 절대 쓰지 말고, 강조가 필요하면 이모지나 문장으로만 표현하세요.`;
+}
+
 // AI 응답을 실시간 스트리밍으로 전송 (체감 속도 개선). extraHeader가 있으면
 // 사이드카 데이터(사주원국, 괘 등)를 헤더로 함께 실어 보낸다.
 async function streamAnthropic(res, { prompt, maxTokens = 2000, fallback = '분석 결과를 가져올 수 없습니다.', extraHeader }) {
   const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-    body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: maxTokens, stream: true, messages: [{ role: 'user', content: prompt }] })
+    body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: maxTokens, stream: true, system: systemContext(), messages: [{ role: 'user', content: prompt }] })
   });
 
   if (!anthropicRes.ok || !anthropicRes.body) {
@@ -130,7 +143,7 @@ async function generateFullText({ prompt, maxTokens = 2000, fallback = '분석 �
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: maxTokens, messages: [{ role: 'user', content: prompt }] })
+      body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: maxTokens, system: systemContext(), messages: [{ role: 'user', content: prompt }] })
     });
     if (!anthropicRes.ok) return fallback;
     const data = await anthropicRes.json();
@@ -474,7 +487,7 @@ ${sipsinData.map(s => s ? `${s.pillar}: 천간(${s.ganSipsin}) 지지(${s.jiSips
 🔥 오행 에너지
 💫 십신으로 본 성격과 재능
 
-${singang} 사주 특성에 맞게, 장점과 단점을 6:4로 균형있게, 따뜻하고 신비로운 톤으로 한국어로 작성해주세요. 각 항목은 딱 2문장으로만 짧게 써주세요. 마지막에 줄바꿈 후 "✨" 로 시작하는 한 줄로, 재물운·연애운·다가오는 운세는 더 자세한 유료 콘텐츠에서 확인할 수 있다는 걸 자연스럽게 궁금증을 자아내는 문장으로 안내해주세요 (예: "재물운과 연애운, 앞으로의 흐름은 신년운세에서 훨씬 자세히 만나볼 수 있어요"). 전체 분량은 절대 넘치지 않게, 딱 필요한 만큼만 써주세요.`;
+${singang} 사주 특성에 맞게, 장점과 단점을 6:4로 균형있게, 따뜻하고 신비로운 톤으로 한국어로 작성해주세요. 각 항목은 딱 2문장으로만 짧게 써주세요. 마지막에 줄바꿈 후 "✨" 로 시작하는 한 줄로, 재물운·연애운·다가오는 운세는 더 자세한 유료 콘텐츠에서 확인할 수 있다는 걸 자연스럽게 궁금증을 자아내는 문장으로 안내해주세요 (예: "재물운과 연애운, 2027 정미년의 흐름은 신년운세에서 훨씬 자세히 만나볼 수 있어요"). 연도는 2027 정미년 외에 다른 연도를 쓰지 마세요. 전체 분량은 절대 넘치지 않게, 딱 필요한 만큼만 써주세요.`;
 
     // sajuData를 먼저 헤더로 보내고, AI 해석은 실시간 스트리밍으로 전송 (체감 속도 개선)
     const sajuDataPayload = {
@@ -488,7 +501,7 @@ ${singang} 사주 특성에 맞게, 장점과 단점을 6:4로 균형있게, 따
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 900, stream: true, messages: [{ role: 'user', content: prompt }] })
+      body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 900, stream: true, system: systemContext(), messages: [{ role: 'user', content: prompt }] })
     });
 
     if (!anthropicRes.ok || !anthropicRes.body) {
