@@ -58,7 +58,8 @@ const LOADING_MESSAGES = [
 const SECTION_EMOJI = /^[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u;
 function splitIntoBubbles(text) {
   if (!text) return [];
-  const lines = text.split('\n');
+  // 화면은 마크다운을 그리지 않으므로 AI가 붙인 **강조**, ## 제목 기호는 지운다
+  const lines = text.replace(/\*\*/g, '').replace(/^#{1,3}\s*/gm, '').split('\n');
   const bubbles = [];
   let current = '';
   lines.forEach(line => {
