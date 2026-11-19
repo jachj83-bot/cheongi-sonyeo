@@ -1,12 +1,12 @@
 // Upstash Redis REST API 헬퍼
 // 결제 완료 여부, 결제 전 임시 저장한 콘텐츠(stash) 등을 저장하는 용도로 사용.
-// 환경변수 UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN이 Vercel에 설정되어 있어야 동작한다.
+// 환경변수 KV_REST_API_URL, KV_REST_API_TOKEN (또는 UPSTASH_REDIS_REST_URL/TOKEN)이 Vercel에 설정되어 있어야 동작한다.
 
 async function redisCommand(cmd) {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!url || !token) {
-    throw new Error('UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN 환경변수가 설정되어 있지 않습니다.');
+    throw new Error('KV_REST_API_URL / KV_REST_API_TOKEN 환경변수가 설정되어 있지 않습니다.');
   }
   const res = await fetch(url, {
     method: 'POST',
