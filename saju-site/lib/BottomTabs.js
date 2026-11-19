@@ -2,11 +2,11 @@ import { useRouter } from 'next/router';
 
 // 휴대폰에서만 보이는 하단 고정 탭. 사주아이처럼 어느 화면에서든 메뉴로 바로 이동.
 const TABS = [
-  { href: '/', label: '홈', match: p => p === '/', d: 'M8 22 L24 9 L40 22 V40 H29 V29 H19 V40 H8 Z' },
-  { href: '/#start', label: '내 사주', match: p => p === '/result', d: 'M24 8a16 16 0 1 0 0.01 0 M24 15 V24 L30 28' },
+  { href: '/', label: '홈', match: p => p === '/' || p === '/result', d: 'M8 22 L24 9 L40 22 V40 H29 V29 H19 V40 H8 Z' },
   { href: '/gunghap', label: '궁합', match: p => p === '/gunghap', d: 'M24 40 C10 30 6 22 10 15 C14 9 21 10 24 16 C27 10 34 9 38 15 C42 22 38 30 24 40 Z' },
   { href: '/tarot', label: '타로', match: p => p === '/tarot', d: 'M12 8 H30 V40 H12 Z M22 6 L38 10 L32 42' },
   { href: '/sinnyeon?year=2027', label: '신년운세', match: p => p === '/sinnyeon' || p === '/tojeong' || p === '/tonghap', d: 'M24 4 L28 18 L42 20 L30 28 L34 42 L24 34 L14 42 L18 28 L6 20 L20 18 Z' },
+  { href: '/my', label: '보관함', match: p => p.startsWith('/my'), d: 'M8 14 H40 V40 H8 Z M8 14 L13 7 H35 L40 14 M19 22 H29' },
 ];
 
 export default function BottomTabs() {

@@ -1,5 +1,5 @@
 // Upstash Redis REST API 헬퍼
-// 결제 완료 여부, 결제 전 임시 저장한 콘텐츠(stash) 등을 저장하는 용도로 사용.
+// 결제 완료 여부, 결제 전 임시 저장한 콘텐츠(stash), 회원 정보와 보관함을 저장하는 용도로 사용.
 // 환경변수 KV_REST_API_URL, KV_REST_API_TOKEN (또는 UPSTASH_REDIS_REST_URL/TOKEN)이 Vercel에 설정되어 있어야 동작한다.
 
 async function redisCommand(cmd) {
@@ -38,4 +38,20 @@ async function getJSON(key) {
   }
 }
 
-module.exports = { setJSON, getJSON };
+// 리스트 맨 앞에 JSON 하나를 넣고, 최대 max개만 남긴다 (보관함용)
+async function pushJSON(key, value, max = 50) {
+  await redisCommand(['LPUSH', key, JSON.stringify(value)]);
+  await redisCommand(['LTRIM', key, '0', String(max - 1)]);
+}
+
+async function listJSON(key, start = 0, stop = 49) {
+  const rows = (await redisCommand(['LRANGE', key, String(start), String(stop)])) || [];
+  return rows.map(r => { try { return JSON.parse(r); } catch { return null; } }).filter(Boolean);
+}
+
+async function delKeys(...keys) {
+  if (!keys.length) return 0;
+  return redisCommand(['DEL', ...keys]);
+}
+
+module.exports = { redisCommand, setJSON, getJSON, pushJSON, listJSON, delKeys };
