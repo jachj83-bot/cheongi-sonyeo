@@ -1,5 +1,6 @@
 import { requestPayment } from '../../../lib/payapp';
 import { setJSON } from '../../../lib/redis';
+import { getUid } from '../../../lib/auth';
 
 // 결제 요청 생성.
 // orderId는 클라이언트에서 미리 만들어 보낸다 (crypto.randomUUID()).
@@ -22,6 +23,12 @@ export default async function handler(req, res) {
 
     if (stash) {
       await setJSON(`payapp:stash:${orderId}`, stash, 60 * 60 * 24); // 24시간 보관
+    }
+
+    // 로그인한 사람이면 이 주문이 누구 건지 적어 두고, 결제가 끝나면 보관함에 영구 저장한다
+    const uid = await getUid(req, res);
+    if (uid) {
+      await setJSON(`payapp:owner:${orderId}`, { uid, goodname, price }, 60 * 60 * 24 * 7);
     }
 
     const result = await requestPayment({ goodname, price, recvphone: phoneDigits, orderId, returnPath });
