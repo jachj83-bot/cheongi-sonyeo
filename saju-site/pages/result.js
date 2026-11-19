@@ -84,10 +84,10 @@ const QUESTION_CHIPS = [
 
 // 채팅 영역 맨 위에서 "여기서 뭘 할 수 있는지" 보여주는 안내 카드
 const CHAT_USES = [
-  { k: '연애', d: '그 사람과 나, 잘 맞을까' },
-  { k: '일·진로', d: '나한테 맞는 방향' },
-  { k: '돈', d: '모을 때와 쓸 때' },
-  { k: '오늘', d: '하루를 보내는 법' },
+  { k: '연애', d: '그 사람과 나, 잘 맞을까', q: '제 연애운은 어때요? 저랑 잘 맞는 사람은 어떤 사람이에요?' },
+  { k: '일·진로', d: '나한테 맞는 방향', q: '저한테 맞는 일이나 진로 방향은 뭐예요?' },
+  { k: '돈', d: '모을 때와 쓸 때', q: '저는 돈을 언제 모으고 언제 쓰는 게 좋아요?' },
+  { k: '오늘', d: '하루를 보내는 법', q: '오늘 하루 어떻게 보내면 좋을까요?' },
 ];
 
 const CHAT_EXTRA_PRICE = 1000;
@@ -112,6 +112,19 @@ export default function Result() {
   const [payError, setPayError] = useState('');
   const [chatPayProcessed, setChatPayProcessed] = useState(false);
   const [storyState, setStoryState] = useState('');
+  const [shareState, setShareState] = useState('');
+
+  // 친구에게 보내는 링크 — 상대가 누르면 첫 화면에 "친구는 ○○형" 배너가 뜨고 바로 입력칸으로 간다
+  const shareLink = async (gan) => {
+    const t = DAY_TYPES[gan];
+    const url = `${window.location.origin}/?type=${encodeURIComponent(gan)}&utm_source=share&utm_medium=result`;
+    const text = `나는 천기소녀에서 '${t ? t.name : ''}'이 나왔어. 너는 궁중에 태어났다면 누구였을까?`;
+    try {
+      if (navigator.share) { await navigator.share({ title: '천기소녀', text, url }); setShareState('done'); return; }
+    } catch (e) { if (e && e.name === 'AbortError') return; }
+    try { await navigator.clipboard.writeText(`${text} ${url}`); setShareState('copied'); }
+    catch { setShareState('error'); }
+  };
 
   const saveStoryCard = async (gan) => {
     if (storyState === 'saving') return;
@@ -233,6 +246,18 @@ export default function Result() {
       const today = new Date().toISOString().slice(0, 10);
       localStorage.setItem('cheongi_chat_free_date', today);
     } catch {}
+  };
+
+  // 연애·일·돈·오늘 카드: 무료 질문이 남았으면 바로 물어보고, 다 썼으면 입력칸에 채워서 결제 안내로 보낸다
+  const askTopic = (q) => {
+    if (chatLoading) return;
+    if (!freeUsed) {
+      sendChatQuestion(q);
+      setTimeout(() => { const el = document.getElementById('chat-log-end'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 150);
+      return;
+    }
+    setChatInput(q);
+    setTimeout(() => { const el = document.getElementById('chat-input'); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus({ preventScroll: true }); } }, 50);
   };
 
   const sendChatQuestion = async (q, skipFreeCheck) => {
@@ -393,6 +418,13 @@ export default function Result() {
           .ask-jump { animation: askGlow 2.6s ease-in-out infinite; }
           .story-btn { transition: transform .2s, filter .2s; }
           .story-btn:hover { transform: translateY(-2px); filter: brightness(1.08); }
+          .use-card { transition: transform .15s, border-color .15s, background .15s; }
+          .use-card:hover, .use-card:active { border-color:#c4712a !important; background:rgba(232,200,126,0.12) !important; transform:translateY(-2px); }
+          .use-card:disabled { opacity:.5; cursor:default; }
+          @media (max-width:760px) { .ny-chip { display:none !important; } }
+          .ch-nav { position:sticky; top:57px; z-index:50; display:flex; gap:6px; overflow-x:auto; margin:0 -20px 16px; padding:10px 20px; background:rgba(26,10,0,0.96); border-bottom:1px solid #3d1500; scrollbar-width:none; }
+          .ch-nav::-webkit-scrollbar { display:none; }
+          .ch-nav a { flex:0 0 auto; font-size:12px; color:#e8c97a; text-decoration:none; border:1px solid #5a2a08; border-radius:14px; padding:5px 11px; white-space:nowrap; background:#2d1500; }
         `}</style>
       </Head>
 
@@ -414,10 +446,10 @@ export default function Result() {
             <div style={{textAlign:'center',padding:'60px 0'}}>
               <div className="loader" aria-hidden="true">
                 <div className="loader-orbit">
-                  {Object.values(OHAENG_COLOR).map((c,i)=>{ const a=i*2*Math.PI/5; return <span key={i} style={{left:`${50+50*Math.sin(a)}%`,top:`${50-50*Math.cos(a)}%`,background:c,boxShadow:`0 0 12px ${c}`}} />; })}
+                  {Object.values(OHAENG_COLOR).map((c,i)=>{ const a=i*2*Math.PI/5; return <span key={i} style={{left:`${(50+50*Math.sin(a)).toFixed(3)}%`,top:`${(50-50*Math.cos(a)).toFixed(3)}%`,background:c,boxShadow:`0 0 12px ${c}`}} />; })}
                 </div>
                 <div className="loader-ring">
-                  {['甲','丙','戊','庚','壬','子','午','卯','酉'].map((ch,i,arr)=>{ const a=i*2*Math.PI/arr.length; return <b key={i} style={{left:`${50+50*Math.sin(a)}%`,top:`${50-50*Math.cos(a)}%`}}>{ch}</b>; })}
+                  {['甲','丙','戊','庚','壬','子','午','卯','酉'].map((ch,i,arr)=>{ const a=i*2*Math.PI/arr.length; return <b key={i} style={{left:`${(50+50*Math.sin(a)).toFixed(3)}%`,top:`${(50-50*Math.cos(a)).toFixed(3)}%`}}>{ch}</b>; })}
                 </div>
                 <div className="loader-core" />
               </div>
@@ -453,6 +485,11 @@ export default function Result() {
                     </button>
                     {storyState === 'done' && <div style={{fontSize:'12px',color:'#c4956a',marginTop:'8px'}}>저장됐어요. 스토리에 올리고 친구 타입도 물어보세요</div>}
                     {storyState === 'error' && <div style={{fontSize:'12px',color:'#ff6b6b',marginTop:'8px'}}>이미지를 만들지 못했어요. 다시 눌러주세요</div>}
+                    <button onClick={()=>shareLink(gan)} className="story-btn" style={{display:'block',margin:'10px auto 0',background:'transparent',color:col,border:`1px solid ${col}`,borderRadius:'24px',padding:'10px 20px',fontSize:'13px',fontWeight:'700',cursor:'pointer',fontFamily:'inherit'}}>
+                      친구 타입도 궁금하면 링크 보내기
+                    </button>
+                    {shareState === 'copied' && <div style={{fontSize:'12px',color:'#c4956a',marginTop:'8px'}}>링크를 복사했어요. 카톡이나 DM에 붙여넣어 보내세요</div>}
+                    {shareState === 'error' && <div style={{fontSize:'12px',color:'#ff6b6b',marginTop:'8px'}}>복사하지 못했어요. 주소창 링크를 직접 보내주세요</div>}
                   </div>
                 );
               })()}
@@ -515,9 +552,22 @@ export default function Result() {
               )}
 
               {/* 분석 결과 — 카톡처럼 말풍선으로 하나씩 */}
+              {/* 챕터 목차 — 풀이가 길어도 원하는 부분으로 바로 이동 */}
+              {(() => {
+                const chs = splitIntoBubbles(result);
+                if (chs.length < 3) return null;
+                return (
+                  <div className="ch-nav">
+                    {chs.map((b, i) => {
+                      const title = b.split('\n')[0].replace(SECTION_EMOJI, '').replace(/[\[\]【】]/g, '').trim().slice(0, 14);
+                      return <a key={i} href={`#ch-${i}`}>{String(i + 1).padStart(2, '0')} {title || '풀이'}</a>;
+                    })}
+                  </div>
+                );
+              })()}
               <div style={{display:'flex',flexDirection:'column',gap:'16px',marginBottom:'20px'}}>
                 {splitIntoBubbles(result).map((bubble, i) => (
-                  <div key={i} className="chat-bubble" style={{display:'flex',gap:'10px',alignItems:'flex-start'}}>
+                  <div key={i} id={`ch-${i}`} className="chat-bubble" style={{display:'flex',gap:'10px',alignItems:'flex-start',scrollMarginTop:'120px'}}>
                     <img src="/logo_symbol.png" alt="" style={{width:'30px',height:'30px',borderRadius:'50%',border:'1px solid #3d1500',background:'#2d1500',objectFit:'contain',padding:'4px',flexShrink:0,marginTop:'2px'}} />
                     <div style={{minWidth:0}}>
                       <div style={{fontSize:'11px',color:'#7a5030',marginBottom:'4px',paddingLeft:'2px'}}>천기소녀</div>
@@ -539,10 +589,10 @@ export default function Result() {
                   </div>
                   <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'6px',marginBottom:'14px'}}>
                     {CHAT_USES.map(u => (
-                      <div key={u.k} style={{background:'rgba(232,200,126,0.05)',border:'1px solid #3d1500',borderRadius:'8px',padding:'10px 4px',textAlign:'center'}}>
+                      <button key={u.k} type="button" className="use-card" onClick={()=>askTopic(u.q)} disabled={chatLoading} style={{background:'rgba(232,200,126,0.05)',border:'1px solid #3d1500',borderRadius:'8px',padding:'10px 4px',textAlign:'center',cursor:'pointer',fontFamily:'inherit'}}>
                         <div style={{fontSize:'13px',color:'#e8c97a',fontWeight:'700',marginBottom:'3px'}}>{u.k}</div>
                         <div style={{fontSize:'10px',color:'#a08060',lineHeight:'1.4'}}>{u.d}</div>
-                      </div>
+                      </button>
                     ))}
                   </div>
                   <div style={{display:'flex',justifyContent:'center',gap:'6px',flexWrap:'wrap',marginBottom:'16px'}}>
@@ -577,6 +627,7 @@ export default function Result() {
                   {chatLoading && (
                     <div style={{fontSize:'13px',color:'#7a5030',paddingLeft:'40px',marginBottom:'10px'}}>천기소녀가 답하는 중...</div>
                   )}
+                  <div id="chat-log-end" />
 
                   {!freeUsed && chatMessages.length === 0 && (
                     <div style={{fontSize:'12px',color:'#a08060',marginBottom:'8px'}}>눌러서 바로 물어보기</div>
@@ -593,6 +644,7 @@ export default function Result() {
 
                   <div style={{display:'flex',gap:'8px'}}>
                     <input
+                      id="chat-input"
                       type="text"
                       value={chatInput}
                       onChange={e=>setChatInput(e.target.value)}

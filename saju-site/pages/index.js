@@ -58,13 +58,27 @@ const HOURS = [
 
 export default function Home() {
   const router = useRouter();
-  const [step, setStep] = useState('landing');
   const [form, setForm] = useState({ name: '', year: '', month: '', day: '', hour: '', gender: '', calendar: '양력' });
   const [error, setError] = useState('');
+  const [sharedType, setSharedType] = useState(null);
+
+  // 친구가 공유한 링크(?type=병)로 들어오면 첫 화면에 "친구는 ○○형" 배너를 띄운다
+  useEffect(() => {
+    const g = new URLSearchParams(window.location.search).get('type');
+    if (g && DAY_TYPES[g]) setSharedType(DAY_TYPES[g]);
+    if (window.location.hash === '#start') setTimeout(goStart, 300);
+  }, []);
+
+  // 어느 버튼을 눌러도 첫 화면의 입력칸으로 올라가 이름칸에 커서를 둔다
+  const goStart = () => {
+    const el = document.getElementById('start');
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => { const i = el.querySelector('input'); if (i) i.focus({ preventScroll: true }); }, 450);
+  };
 
   // 스크롤해서 화면에 들어오는 섹션을 아래에서 위로 떠오르게
   useEffect(() => {
-    if (step !== 'landing') return;
     const els = document.querySelectorAll('.reveal');
     if (!('IntersectionObserver' in window)) { els.forEach(el => el.classList.add('in')); return; }
     const io = new IntersectionObserver(entries => {
@@ -72,7 +86,7 @@ export default function Home() {
     }, { threshold: 0.15 });
     els.forEach(el => io.observe(el));
     return () => io.disconnect();
-  }, [step]);
+  }, []);
 
   const handleSubmit = () => {
     if (!form.name || !form.year || !form.month || !form.day || !form.gender || !form.hour) {
@@ -175,21 +189,36 @@ export default function Home() {
             .preview-grid ul { display:inline-block; text-align:left; }
           }
 
+          .birth-card { background:rgba(11,10,31,.78); border:1px solid rgba(232,200,126,.28); border-radius:12px; padding:18px 18px 20px; max-width:420px; backdrop-filter:blur(8px); scroll-margin-top:80px; text-align:left; }
+          .birth-card-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; font-family:'Noto Serif KR',serif; font-size:16px; font-weight:700; color:#E8C87E; }
+          .birth-card-badge { font-family:'Noto Sans KR',sans-serif; font-size:11px; font-weight:500; color:#0B0A1F; background:#E8C87E; border-radius:10px; padding:2px 9px; }
+          .birth-card label { margin-bottom:6px !important; }
+          .birth-card > div { margin-bottom:12px !important; }
+          .free-strip { background:#0B0A1F; padding:18px 0 6px; border-bottom:1px solid rgba(232,200,126,.08); }
+          .free-shared { order:3; display:block; width:100%; max-width:420px; margin:0 0 10px; background:rgba(232,200,126,.08); border:1px solid rgba(232,200,126,.3); color:#EDE9F2; border-radius:10px; padding:12px 14px; font-size:14px; font-family:inherit; cursor:pointer; text-align:left; }
+          .free-row { display:flex; gap:8px; overflow-x:auto; padding:0 16px 12px; max-width:1132px; margin:0 auto; scrollbar-width:none; }
+          .free-row::-webkit-scrollbar { display:none; }
+          .free-chip { flex:0 0 auto; display:flex; align-items:center; gap:8px; padding:10px 14px; border-radius:22px; border:1px solid rgba(155,109,214,.35); background:rgba(155,109,214,.1); color:#EDE9F2; text-decoration:none; font-size:13px; white-space:nowrap; }
+          .free-chip em { font-style:normal; font-size:11px; font-weight:700; color:#0B0A1F; background:#c49ae8; border-radius:9px; padding:1px 7px; }
+          .free-chip:last-child em { background:#E8C87E; }
+
           @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation: none !important; transition: none !important; }
             .reveal, .title-line, .demo-bubble { opacity:1 !important; transform:none !important; }
           }
 
           @media (max-width: 760px) {
-            .hero-grid { grid-template-columns: 1fr !important; padding: 90px 20px 32px !important; text-align: center; gap: 18px !important; min-height: auto !important; }
+            .hero-grid { grid-template-columns: 1fr !important; padding: 72px 16px 24px !important; text-align: center; gap: 18px !important; min-height: auto !important; }
             .hero-content { display: flex !important; flex-direction: column !important; }
             .hero-eyebrow { justify-content: center !important; order: 1; }
-            .hero-title { font-size: 28px !important; order: 2; margin-bottom: 14px !important; }
-            .hero-cta { width: 100%; order: 3; margin-top: 2px; }
-            .hero-desc { max-width: none !important; margin-left: auto; margin-right: auto; order: 4; margin-top: 18px !important; font-size: 13px !important; }
-            .hero-image { order: 0; }
-            .hero-image img { max-width: 150px !important; margin: 0 auto; }
-            .hero-image .oracle-wrap { max-width: 150px; margin: 18px auto 10px; }
+            .hero-title { font-size: 24px !important; order: 2; margin-bottom: 14px !important; }
+            .hero-cta { width: 100%; }
+            .birth-card { order: 3; max-width: none; margin: 0 auto; width: 100%; }
+            .hero-desc { max-width: none !important; margin-left: auto; margin-right: auto; order: 4; margin-top: 14px !important; font-size: 12px !important; }
+            .hero-image { display: none !important; }
+            .ny-chip { display: none !important; }
+            .hero-image img { max-width: 84px !important; margin: 0 auto; }
+            .hero-image .oracle-wrap { max-width: 84px; margin: 6px auto 0; }
             .oracle-ring span { font-size: 10px !important; }
             .stats-grid { grid-template-columns: repeat(2,1fr) !important; }
             .stats-grid > div:nth-child(2) { border-right: none !important; }
@@ -219,8 +248,7 @@ export default function Home() {
         </div>
       </div>
 
-      {step === 'landing' && (
-        <>
+      <>
           <div style={{position:'relative',minHeight:'100vh',display:'flex',alignItems:'center',overflow:'hidden'}}>
             <div className="hero-bg" style={{position:'absolute',top:0,left:0,right:0,bottom:0,backgroundImage:'url(/hero_cosmos.jpg)',backgroundSize:'cover',backgroundPosition:'center right'}} />
             <div style={{position:'absolute',top:0,left:0,right:0,bottom:0,background:'linear-gradient(90deg, rgba(11,10,31,0.92) 0%, rgba(11,10,31,0.75) 50%, rgba(11,10,31,0.3) 100%)'}} />
@@ -241,14 +269,75 @@ export default function Home() {
                   <span className="title-line" style={{animationDelay:'.4s'}}><span style={{color:'#E8C87E'}}>천기소녀</span>가</span><br/>
                   <span className="title-line" style={{animationDelay:'.65s'}}>읽어드립니다</span>
                 </h1>
-                <p className="hero-desc" style={{fontSize:'14px',color:'rgba(237,233,242,0.45)',lineHeight:'1.9',marginBottom:'36px',maxWidth:'360px',fontWeight:'300'}}>
-                  생년월일 하나로 당신의 타고난 운명과<br/>
-                  올해의 흐름을 정통 명리학으로 분석해드려요.<br/>
-                  이 페이지를 찾아온 것도 인연입니다.
-                </p>
-                <button className="hero-cta" onClick={()=>setStep('input')} style={{background:'rgba(232,200,126,0.15)',border:'1px solid rgba(232,200,126,0.5)',color:'#E8C87E',padding:'16px 36px',fontSize:'14px',letterSpacing:'2px',cursor:'pointer',fontFamily:'inherit',borderRadius:'2px',fontWeight:'600'}}>
-                  무료로 사주 보기 →
+                {sharedType && (
+                  <div className="free-shared">
+                    친구는 <b style={{color:ELEMENT_COLOR[sharedType.el]}}>{sharedType.name}</b>이 나왔어요. 나는 어떤 타입일까?
+                  </div>
+                )}
+                <div id="start" className="birth-card">
+                  <div className="birth-card-head">
+                    <span>무료로 내 사주 보기</span>
+                    <span className="birth-card-badge">가입 없이 30초</span>
+                  </div>
+                <div style={{marginBottom:'20px'}}>
+                  <label style={S.label}>이름</label>
+                  <input type="text" placeholder="홍길동" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} style={S.input}/>
+                </div>
+
+                <div style={{marginBottom:'20px'}}>
+                  <label style={S.label}>양력 / 음력</label>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
+                    {['양력','음력'].map(c=>(
+                      <button key={c} onClick={()=>setForm({...form,calendar:c})} style={S.selectBtn(form.calendar===c)}>{c}</button>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{marginBottom:'20px'}}>
+                  <label style={S.label}>생년월일</label>
+                  <div style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr',gap:'8px'}}>
+                    {[['year','년','1995'],['month','월','07'],['day','일','21']].map(([k,l,p])=>(
+                      <div key={k} style={{position:'relative'}}>
+                        <input type="number" placeholder={p} value={form[k]} onChange={e=>setForm({...form,[k]:e.target.value})} style={S.input}/>
+                        <span style={{position:'absolute',right:'12px',top:'50%',transform:'translateY(-50%)',fontSize:'12px',color:'rgba(232,200,126,0.3)'}}>{l}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{marginBottom:'20px'}}>
+                  <label style={S.label}>태어난 시간</label>
+                  <div style={{position:'relative'}}>
+                    <select value={form.hour} onChange={e=>setForm({...form,hour:e.target.value})} style={S.select}>
+                      <option value="" style={{background:'#0B0A1F'}}>시간을 선택하세요</option>
+                      {HOURS.map(h=>(
+                        <option key={h.value} value={h.value} style={{background:'#0B0A1F',color:'#EDE9F2'}}>
+                          {h.label} · {h.desc}
+                        </option>
+                      ))}
+                    </select>
+                    <span style={{position:'absolute',right:'14px',top:'50%',transform:'translateY(-50%)',color:'rgba(232,200,126,0.4)',pointerEvents:'none',fontSize:'12px'}}>▼</span>
+                  </div>
+                </div>
+
+                <div style={{marginBottom:'36px'}}>
+                  <label style={S.label}>성별</label>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
+                    {['남','여'].map(g=>(
+                      <button key={g} onClick={()=>setForm({...form,gender:g})} style={{...S.selectBtn(form.gender===g),padding:'13px'}}>{g}자</button>
+                    ))}
+                  </div>
+                </div>
+
+                {error && <p style={{color:'#ff6b6b',fontSize:'13px',marginBottom:'16px',padding:'10px 14px',background:'rgba(255,107,107,0.08)',borderRadius:'4px'}}>⚠️ {error}</p>}
+
+                <button onClick={handleSubmit} style={{width:'100%',background:'rgba(232,200,126,0.1)',color:'#E8C87E',padding:'16px',border:'1px solid rgba(232,200,126,0.4)',borderRadius:'2px',fontSize:'14px',fontWeight:'500',cursor:'pointer',letterSpacing:'2px',fontFamily:'inherit'}}>
+                  사주 분석 시작하기 →
                 </button>
+                </div>
+                <p className="hero-desc" style={{fontSize:'13px',color:'rgba(237,233,242,0.45)',lineHeight:'1.8',marginTop:'16px',maxWidth:'400px',fontWeight:'300'}}>
+                  생년월일 하나로 타고난 기질과 올해 흐름을 정통 명리학으로 풀어드려요.
+                </p>
               </div>
               <div className="hero-image fade-up" style={{display:'flex',justifyContent:'center',alignItems:'center'}}>
                 <div className="oracle-wrap">
@@ -256,7 +345,7 @@ export default function Home() {
                     <div className="oracle-ring">
                       {RING_CHARS.map((c,i)=>{
                         const a = i * 2 * Math.PI / RING_CHARS.length;
-                        return <span key={i} style={{left:`${50 + 50*Math.sin(a)}%`,top:`${50 - 50*Math.cos(a)}%`,transform:`translate(-50%,-50%) rotate(${i*360/RING_CHARS.length}deg)`}}>{c}</span>;
+                        return <span key={i} style={{left:`${(50 + 50*Math.sin(a)).toFixed(3)}%`,top:`${(50 - 50*Math.cos(a)).toFixed(3)}%`,transform:`translate(-50%,-50%) rotate(${i*360/RING_CHARS.length}deg)`}}>{c}</span>;
                       })}
                     </div>
                   </div>
@@ -266,133 +355,18 @@ export default function Home() {
               </div>
             </div>
           </div>
-
-          <div style={{background:'rgba(11,10,31,0.95)',borderTop:'1px solid rgba(232,200,126,0.1)',borderBottom:'1px solid rgba(232,200,126,0.1)'}}>
-            <div className="stats-grid reveal" style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',maxWidth:'1100px',margin:'0 auto'}}>
-              {[['만세력','천문 데이터로 계산'],['10타입','일간 성향 분석'],['22장','메이저 아르카나'],['무료','가입 없이 바로']].map(([n,l],i)=>(
-                <div key={i} style={{padding:'28px 20px',textAlign:'center',borderRight:i<3?'1px solid rgba(232,200,126,0.08)':'none'}}>
-                  <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:'32px',color:'#E8C87E',fontWeight:'600',marginBottom:'4px'}}>{n}</div>
-                  <div style={{fontSize:'11px',color:'rgba(237,233,242,0.35)',letterSpacing:'1.5px'}}>{l}</div>
-                </div>
+          {/* 오늘 무료 — 첫 화면 바로 아래 */}
+          <div className="free-strip">
+            <div className="free-row">
+              {[
+                {t:'오늘의 타로 한 장',s:'무료',href:'/tarot?cat=daily'},
+                {t:'궁합 점수',s:'무료',href:'/gunghap'},
+                {t:'연애 타로',s:'무료',href:'/tarot?cat=love'},
+                {t:'재물 타로',s:'무료',href:'/tarot?cat=wealth'},
+                {t:'2027 신년운세',s:'₩9,900',href:'/sinnyeon?year=2027'},
+              ].map(b=>(
+                <a key={b.t} href={b.href} className="free-chip"><span>{b.t}</span><em>{b.s}</em></a>
               ))}
-            </div>
-          </div>
-
-          {/* 이렇게 읽어요 — 3단계 그래픽 */}
-          <div style={{background:'#0B0A1F',padding:'64px 24px 40px'}}>
-            <div style={{maxWidth:'1100px',margin:'0 auto'}}>
-              <div className="reveal" style={{textAlign:'center',marginBottom:'36px'}}>
-                <div style={{fontSize:'10px',letterSpacing:'4px',color:'rgba(232,200,126,0.4)',marginBottom:'12px'}}>HOW IT WORKS</div>
-                <div style={{fontFamily:"'Cormorant Garamond', 'Noto Serif KR', serif",fontSize:'28px',color:'#E8C87E'}}>천기소녀는 이렇게 읽어요</div>
-              </div>
-              <div className="steps-grid" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'16px'}}>
-                <div className="reveal step-card" style={{'--d':'0ms'}}>
-                  <div className="step-art">
-                    <div style={{display:'flex',gap:'6px'}}>
-                      {[['甲','子','#6fbf73','#5aa0e0'],['丙','午','#ef7a4a','#ef7a4a'],['戊','辰','#d9a646','#d9a646'],['庚','申','#c9c9e3','#c9c9e3']].map(([g,j,c1,c2],i)=>(
-                        <div key={i} className="mini-pillar" style={{'--d':`${i*0.2}s`}}>
-                          <span style={{color:c1,borderColor:c1}}>{g}</span><span style={{color:c2,borderColor:c2}}>{j}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="step-no">01</div>
-                  <div className="step-title">여덟 글자 계산</div>
-                  <div className="step-desc">생년월일시를 만세력으로 바꿔 네 기둥, 여덟 글자를 세워요</div>
-                </div>
-                <div className="reveal step-card" style={{'--d':'120ms'}}>
-                  <div className="step-art">
-                    <svg width="150" height="150" viewBox="0 0 200 200" aria-hidden="true">
-                      <polygon points={OH.map(p=>`${p.x},${p.y}`).join(' ')} fill="none" stroke="rgba(232,200,126,.25)" strokeWidth="1.5" />
-                      <polygon className="ohaeng-star" points={[0,2,4,1,3].map(i=>`${OH[i].x},${OH[i].y}`).join(' ')} fill="none" stroke="rgba(239,122,74,.35)" strokeWidth="1" strokeDasharray="4 5" />
-                      <circle cx="100" cy="100" r="70" fill="none" stroke="rgba(232,200,126,.12)" />
-                      <g className="ohaeng-orbit"><circle cx="100" cy="30" r="4" fill="#E8C87E" /></g>
-                      {OH.map((p,i)=>(
-                        <g key={p.el} className="ohaeng-node" style={{animationDelay:`${i*0.4}s`,transformOrigin:`${p.x}px ${p.y}px`}}>
-                          <circle cx={p.x} cy={p.y} r="17" fill="#0B0A1F" stroke={ELEMENT_COLOR[p.el]} strokeWidth="2" />
-                          <text x={p.x} y={p.y+5} textAnchor="middle" fontSize="15" fill={ELEMENT_COLOR[p.el]} fontFamily="'Noto Serif KR', serif">{p.el}</text>
-                        </g>
-                      ))}
-                    </svg>
-                  </div>
-                  <div className="step-no">02</div>
-                  <div className="step-title">오행 균형 분석</div>
-                  <div className="step-desc">목·화·토·금·수 중 무엇이 강하고 약한지, 십성까지 계산해요</div>
-                </div>
-                <div className="reveal step-card" style={{'--d':'240ms'}}>
-                  <div className="step-art" style={{flexDirection:'column',gap:'8px',alignItems:'stretch',padding:'0 18px'}}>
-                    <div className="demo-bubble left">올해 이직해도 괜찮을까요?</div>
-                    <div className="demo-bubble right">하반기에 들어오는 기운이 좋아요. 9월 이후가…</div>
-                    <div className="demo-typing"><i/><i/><i/></div>
-                  </div>
-                  <div className="step-no">03</div>
-                  <div className="step-title">풀이하고, 물어보고</div>
-                  <div className="step-desc">결과를 읽은 뒤 궁금한 건 천기소녀에게 1:1로 바로 물어봐요</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 10가지 타입 */}
-          <div style={{background:'linear-gradient(180deg,#0B0A1F,#120f2e 50%,#0B0A1F)',padding:'56px 24px'}}>
-            <div style={{maxWidth:'1100px',margin:'0 auto'}}>
-              <div className="reveal" style={{textAlign:'center',marginBottom:'32px'}}>
-                <div style={{fontSize:'10px',letterSpacing:'4px',color:'rgba(232,200,126,0.4)',marginBottom:'12px'}}>10 TYPES</div>
-                <div style={{fontFamily:"'Cormorant Garamond', 'Noto Serif KR', serif",fontSize:'28px',color:'#E8C87E',marginBottom:'10px'}}>궁중에 태어났다면 나는 누구였을까</div>
-                <p style={{fontSize:'13px',color:'rgba(237,233,242,0.45)',lineHeight:'1.8'}}>태어난 날의 천간으로 장군부터 도사까지 열 가지 인물 중 내 자리를 찾아드려요. 결과는 이미지로 저장해 스토리에 올릴 수 있어요</p>
-              </div>
-              <div className="types-grid" style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:'12px'}}>
-                {TYPE_ORDER.map((g,i)=>{ const t = DAY_TYPES[g]; const c = ELEMENT_COLOR[t.el]; return (
-                  <button key={g} onClick={()=>setStep('input')} className="reveal type-tile" style={{'--d':`${(i%5)*80}ms`,'--tc':c}}>
-                    <span className="type-tile-icon"><TypeIcon gan={g} size={44} /></span>
-                    <span style={{fontFamily:"'Noto Serif KR', serif",fontSize:'15px',color:'#EDE9F2',fontWeight:'700'}}>{t.name}</span>
-                    <span style={{fontSize:'11px',color:c}}>{t.title}</span>
-                  </button>
-                ); })}
-              </div>
-            </div>
-          </div>
-
-          {/* 결과 미리보기 */}
-          <div style={{background:'#0B0A1F',padding:'56px 24px'}}>
-            <div className="preview-grid" style={{maxWidth:'900px',margin:'0 auto',display:'grid',gridTemplateColumns:'1fr 1fr',gap:'36px',alignItems:'center'}}>
-              <div className="reveal">
-                <div style={{fontSize:'10px',letterSpacing:'4px',color:'rgba(232,200,126,0.4)',marginBottom:'12px'}}>PREVIEW</div>
-                <div style={{fontFamily:"'Cormorant Garamond', 'Noto Serif KR', serif",fontSize:'28px',color:'#E8C87E',marginBottom:'14px',lineHeight:'1.4'}}>결과는 이렇게 나와요</div>
-                <ul style={{listStyle:'none',fontSize:'14px',color:'rgba(237,233,242,0.6)',lineHeight:'2.1'}}>
-                  <li>· 나의 일간 타입과 스토리용 이미지</li>
-                  <li>· 네 기둥 사주원국표와 십성</li>
-                  <li>· 오행 강약 그래프와 신강·신약</li>
-                  <li>· 천기소녀의 풀이와 1:1 질문</li>
-                </ul>
-                <button onClick={()=>setStep('input')} className="hero-cta" style={{marginTop:'22px',background:'rgba(232,200,126,0.15)',border:'1px solid rgba(232,200,126,0.5)',color:'#E8C87E',padding:'14px 30px',fontSize:'14px',letterSpacing:'2px',cursor:'pointer',fontFamily:'inherit',borderRadius:'2px',fontWeight:'600'}}>내 결과 보기 →</button>
-              </div>
-              <div className="reveal phone" style={{'--d':'150ms'}}>
-                <div className="phone-tag">예시 화면</div>
-                <div style={{textAlign:'center',padding:'18px 14px 14px',background:'radial-gradient(circle at 50% 0%, rgba(239,122,74,.25), transparent 65%)',borderBottom:'1px solid rgba(232,200,126,.1)'}}>
-                  <div style={{fontSize:'10px',letterSpacing:'2px',color:'#c4956a',marginBottom:'8px'}}>나의 일간 타입</div>
-                  <TypeIcon gan="병" size={54} style={{filter:'drop-shadow(0 0 6px #ef7a4a)'}} />
-                  <div style={{fontFamily:"'Noto Serif KR', serif",fontSize:'22px',fontWeight:'900',color:'#ef7a4a',marginTop:'4px'}}>임금형</div>
-                  <div style={{fontSize:'11px',color:'rgba(237,233,242,.6)'}}>어디에 있든 자연스럽게 중심이 되는 존재감</div>
-                </div>
-                <div style={{display:'flex',gap:'5px',padding:'12px 14px'}}>
-                  {[['갑','오','#6fbf73','#ef7a4a'],['병','인','#ef7a4a','#6fbf73'],['계','미','#5aa0e0','#d9a646'],['을','해','#6fbf73','#5aa0e0']].map(([g,j,c1,c2],i)=>(
-                    <div key={i} style={{flex:1,display:'flex',flexDirection:'column',gap:'4px'}}>
-                      <span style={{border:`1px solid ${c1}`,color:c1,borderRadius:'4px',textAlign:'center',fontFamily:'serif',fontWeight:'900',padding:'4px 0'}}>{g}</span>
-                      <span style={{border:`1px solid ${c2}`,color:c2,borderRadius:'4px',textAlign:'center',fontFamily:'serif',fontWeight:'900',padding:'4px 0'}}>{j}</span>
-                    </div>
-                  ))}
-                </div>
-                <div style={{padding:'0 14px 14px'}}>
-                  {[['목',3.4],['화',3.1],['토',1.6],['금',0.3],['수',2.6]].map(([k,v])=>(
-                    <div key={k} style={{display:'flex',alignItems:'center',gap:'6px',marginBottom:'4px'}}>
-                      <span style={{width:'14px',fontSize:'10px',color:ELEMENT_COLOR[k]}}>{k}</span>
-                      <span style={{flex:1,height:'5px',background:'rgba(255,255,255,.06)',borderRadius:'3px',overflow:'hidden'}}><span className="pv-bar" style={{display:'block',height:'100%',width:`${v/6*100}%`,background:ELEMENT_COLOR[k]}} /></span>
-                    </div>
-                  ))}
-                  <div style={{marginTop:'10px',background:'rgba(232,200,126,.06)',border:'1px solid rgba(232,200,126,.15)',borderRadius:'4px 12px 12px 12px',padding:'9px 11px',fontSize:'11px',color:'rgba(237,233,242,.75)',lineHeight:'1.6'}}>병화 일간에 인목이 받쳐주는 사주예요. 따뜻하고 추진력이 강한 편이라…</div>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -406,7 +380,7 @@ export default function Home() {
                 <div style={{fontSize:'10px',letterSpacing:'3px',color:'rgba(232,200,126,0.4)',marginBottom:'14px'}}>사주 · 운세</div>
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px',marginBottom:'12px'}}>
                   {[
-                    {icon:SVC_ICONS.me,tag:'완전 무료',name:'나의 운세',desc:'타고난 기질과 오행 에너지 분석',price:'무료',onClick:()=>setStep('input')},
+                    {icon:SVC_ICONS.me,tag:'완전 무료',name:'나의 운세',desc:'타고난 기질과 오행 에너지 분석',price:'무료',onClick:()=>goStart()},
                     {icon:SVC_ICONS.match,tag:'완전 무료',name:'궁합 분석',desc:'연인·배우자·친구 궁합 점수 공개',price:'무료',onClick:()=>router.push('/gunghap')},
                     {icon:SVC_ICONS.year,tag:'2026 병오년 · 올해',name:'올해 운세',desc:'남은 상반기·하반기 흐름을 자세히 풀이',price:'₩9,900',onClick:()=>router.push('/sinnyeon?year=2026')},
                     {icon:SVC_ICONS.next,tag:'2027 정미년 · 내년',name:'신년운세',desc:'다가올 상반기·하반기 흐름을 미리 풀이',price:'₩9,900',onClick:()=>router.push('/sinnyeon?year=2027')},
@@ -478,80 +452,133 @@ export default function Home() {
               </div>
             </div>
           </div>
-
-          <div style={{textAlign:'center',padding:'32px 20px',borderTop:'1px solid rgba(232,200,126,0.08)',color:'rgba(237,233,242,0.2)',fontSize:'11px',letterSpacing:'2px',background:'#0B0A1F'}}>
-            © 2026 천기소녀 · CHEONGI SONYEO
+          <div style={{background:'rgba(11,10,31,0.95)',borderTop:'1px solid rgba(232,200,126,0.1)',borderBottom:'1px solid rgba(232,200,126,0.1)'}}>
+            <div className="stats-grid reveal" style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',maxWidth:'1100px',margin:'0 auto'}}>
+              {[['만세력','천문 데이터로 계산'],['10타입','일간 성향 분석'],['22장','메이저 아르카나'],['무료','가입 없이 바로']].map(([n,l],i)=>(
+                <div key={i} style={{padding:'28px 20px',textAlign:'center',borderRight:i<3?'1px solid rgba(232,200,126,0.08)':'none'}}>
+                  <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:'32px',color:'#E8C87E',fontWeight:'600',marginBottom:'4px'}}>{n}</div>
+                  <div style={{fontSize:'11px',color:'rgba(237,233,242,0.35)',letterSpacing:'1.5px'}}>{l}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* 이렇게 읽어요 — 3단계 그래픽 */}
+          <div style={{background:'#0B0A1F',padding:'64px 24px 40px'}}>
+            <div style={{maxWidth:'1100px',margin:'0 auto'}}>
+              <div className="reveal" style={{textAlign:'center',marginBottom:'36px'}}>
+                <div style={{fontSize:'10px',letterSpacing:'4px',color:'rgba(232,200,126,0.4)',marginBottom:'12px'}}>HOW IT WORKS</div>
+                <div style={{fontFamily:"'Cormorant Garamond', 'Noto Serif KR', serif",fontSize:'28px',color:'#E8C87E'}}>천기소녀는 이렇게 읽어요</div>
+              </div>
+              <div className="steps-grid" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'16px'}}>
+                <div className="reveal step-card" style={{'--d':'0ms'}}>
+                  <div className="step-art">
+                    <div style={{display:'flex',gap:'6px'}}>
+                      {[['甲','子','#6fbf73','#5aa0e0'],['丙','午','#ef7a4a','#ef7a4a'],['戊','辰','#d9a646','#d9a646'],['庚','申','#c9c9e3','#c9c9e3']].map(([g,j,c1,c2],i)=>(
+                        <div key={i} className="mini-pillar" style={{'--d':`${i*0.2}s`}}>
+                          <span style={{color:c1,borderColor:c1}}>{g}</span><span style={{color:c2,borderColor:c2}}>{j}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="step-no">01</div>
+                  <div className="step-title">여덟 글자 계산</div>
+                  <div className="step-desc">생년월일시를 만세력으로 바꿔 네 기둥, 여덟 글자를 세워요</div>
+                </div>
+                <div className="reveal step-card" style={{'--d':'120ms'}}>
+                  <div className="step-art">
+                    <svg width="150" height="150" viewBox="0 0 200 200" aria-hidden="true">
+                      <polygon points={OH.map(p=>`${p.x},${p.y}`).join(' ')} fill="none" stroke="rgba(232,200,126,.25)" strokeWidth="1.5" />
+                      <polygon className="ohaeng-star" points={[0,2,4,1,3].map(i=>`${OH[i].x},${OH[i].y}`).join(' ')} fill="none" stroke="rgba(239,122,74,.35)" strokeWidth="1" strokeDasharray="4 5" />
+                      <circle cx="100" cy="100" r="70" fill="none" stroke="rgba(232,200,126,.12)" />
+                      <g className="ohaeng-orbit"><circle cx="100" cy="30" r="4" fill="#E8C87E" /></g>
+                      {OH.map((p,i)=>(
+                        <g key={p.el} className="ohaeng-node" style={{animationDelay:`${i*0.4}s`,transformOrigin:`${p.x}px ${p.y}px`}}>
+                          <circle cx={p.x} cy={p.y} r="17" fill="#0B0A1F" stroke={ELEMENT_COLOR[p.el]} strokeWidth="2" />
+                          <text x={p.x} y={p.y+5} textAnchor="middle" fontSize="15" fill={ELEMENT_COLOR[p.el]} fontFamily="'Noto Serif KR', serif">{p.el}</text>
+                        </g>
+                      ))}
+                    </svg>
+                  </div>
+                  <div className="step-no">02</div>
+                  <div className="step-title">오행 균형 분석</div>
+                  <div className="step-desc">목·화·토·금·수 중 무엇이 강하고 약한지, 십성까지 계산해요</div>
+                </div>
+                <div className="reveal step-card" style={{'--d':'240ms'}}>
+                  <div className="step-art" style={{flexDirection:'column',gap:'8px',alignItems:'stretch',padding:'0 18px'}}>
+                    <div className="demo-bubble left">올해 이직해도 괜찮을까요?</div>
+                    <div className="demo-bubble right">하반기에 들어오는 기운이 좋아요. 9월 이후가…</div>
+                    <div className="demo-typing"><i/><i/><i/></div>
+                  </div>
+                  <div className="step-no">03</div>
+                  <div className="step-title">풀이하고, 물어보고</div>
+                  <div className="step-desc">결과를 읽은 뒤 궁금한 건 천기소녀에게 1:1로 바로 물어봐요</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* 10가지 타입 */}
+          <div style={{background:'linear-gradient(180deg,#0B0A1F,#120f2e 50%,#0B0A1F)',padding:'56px 24px'}}>
+            <div style={{maxWidth:'1100px',margin:'0 auto'}}>
+              <div className="reveal" style={{textAlign:'center',marginBottom:'32px'}}>
+                <div style={{fontSize:'10px',letterSpacing:'4px',color:'rgba(232,200,126,0.4)',marginBottom:'12px'}}>10 TYPES</div>
+                <div style={{fontFamily:"'Cormorant Garamond', 'Noto Serif KR', serif",fontSize:'28px',color:'#E8C87E',marginBottom:'10px'}}>궁중에 태어났다면 나는 누구였을까</div>
+                <p style={{fontSize:'13px',color:'rgba(237,233,242,0.45)',lineHeight:'1.8'}}>태어난 날의 천간으로 장군부터 도사까지 열 가지 인물 중 내 자리를 찾아드려요. 결과는 이미지로 저장해 스토리에 올릴 수 있어요</p>
+              </div>
+              <div className="types-grid" style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:'12px'}}>
+                {TYPE_ORDER.map((g,i)=>{ const t = DAY_TYPES[g]; const c = ELEMENT_COLOR[t.el]; return (
+                  <button key={g} onClick={()=>goStart()} className="reveal type-tile" style={{'--d':`${(i%5)*80}ms`,'--tc':c}}>
+                    <span className="type-tile-icon"><TypeIcon gan={g} size={44} /></span>
+                    <span style={{fontFamily:"'Noto Serif KR', serif",fontSize:'15px',color:'#EDE9F2',fontWeight:'700'}}>{t.name}</span>
+                    <span style={{fontSize:'11px',color:c}}>{t.title}</span>
+                  </button>
+                ); })}
+              </div>
+            </div>
+          </div>
+          {/* 결과 미리보기 */}
+          <div style={{background:'#0B0A1F',padding:'56px 24px'}}>
+            <div className="preview-grid" style={{maxWidth:'900px',margin:'0 auto',display:'grid',gridTemplateColumns:'1fr 1fr',gap:'36px',alignItems:'center'}}>
+              <div className="reveal">
+                <div style={{fontSize:'10px',letterSpacing:'4px',color:'rgba(232,200,126,0.4)',marginBottom:'12px'}}>PREVIEW</div>
+                <div style={{fontFamily:"'Cormorant Garamond', 'Noto Serif KR', serif",fontSize:'28px',color:'#E8C87E',marginBottom:'14px',lineHeight:'1.4'}}>결과는 이렇게 나와요</div>
+                <ul style={{listStyle:'none',fontSize:'14px',color:'rgba(237,233,242,0.6)',lineHeight:'2.1'}}>
+                  <li>· 나의 일간 타입과 스토리용 이미지</li>
+                  <li>· 네 기둥 사주원국표와 십성</li>
+                  <li>· 오행 강약 그래프와 신강·신약</li>
+                  <li>· 천기소녀의 풀이와 1:1 질문</li>
+                </ul>
+                <button onClick={()=>goStart()} className="hero-cta" style={{marginTop:'22px',background:'rgba(232,200,126,0.15)',border:'1px solid rgba(232,200,126,0.5)',color:'#E8C87E',padding:'14px 30px',fontSize:'14px',letterSpacing:'2px',cursor:'pointer',fontFamily:'inherit',borderRadius:'2px',fontWeight:'600'}}>내 결과 보기 →</button>
+              </div>
+              <div className="reveal phone" style={{'--d':'150ms'}}>
+                <div className="phone-tag">예시 화면</div>
+                <div style={{textAlign:'center',padding:'18px 14px 14px',background:'radial-gradient(circle at 50% 0%, rgba(239,122,74,.25), transparent 65%)',borderBottom:'1px solid rgba(232,200,126,.1)'}}>
+                  <div style={{fontSize:'10px',letterSpacing:'2px',color:'#c4956a',marginBottom:'8px'}}>나의 일간 타입</div>
+                  <TypeIcon gan="병" size={54} style={{filter:'drop-shadow(0 0 6px #ef7a4a)'}} />
+                  <div style={{fontFamily:"'Noto Serif KR', serif",fontSize:'22px',fontWeight:'900',color:'#ef7a4a',marginTop:'4px'}}>임금형</div>
+                  <div style={{fontSize:'11px',color:'rgba(237,233,242,.6)'}}>어디에 있든 자연스럽게 중심이 되는 존재감</div>
+                </div>
+                <div style={{display:'flex',gap:'5px',padding:'12px 14px'}}>
+                  {[['갑','오','#6fbf73','#ef7a4a'],['병','인','#ef7a4a','#6fbf73'],['계','미','#5aa0e0','#d9a646'],['을','해','#6fbf73','#5aa0e0']].map(([g,j,c1,c2],i)=>(
+                    <div key={i} style={{flex:1,display:'flex',flexDirection:'column',gap:'4px'}}>
+                      <span style={{border:`1px solid ${c1}`,color:c1,borderRadius:'4px',textAlign:'center',fontFamily:'serif',fontWeight:'900',padding:'4px 0'}}>{g}</span>
+                      <span style={{border:`1px solid ${c2}`,color:c2,borderRadius:'4px',textAlign:'center',fontFamily:'serif',fontWeight:'900',padding:'4px 0'}}>{j}</span>
+                    </div>
+                  ))}
+                </div>
+                <div style={{padding:'0 14px 14px'}}>
+                  {[['목',3.4],['화',3.1],['토',1.6],['금',0.3],['수',2.6]].map(([k,v])=>(
+                    <div key={k} style={{display:'flex',alignItems:'center',gap:'6px',marginBottom:'4px'}}>
+                      <span style={{width:'14px',fontSize:'10px',color:ELEMENT_COLOR[k]}}>{k}</span>
+                      <span style={{flex:1,height:'5px',background:'rgba(255,255,255,.06)',borderRadius:'3px',overflow:'hidden'}}><span className="pv-bar" style={{display:'block',height:'100%',width:`${v/6*100}%`,background:ELEMENT_COLOR[k]}} /></span>
+                    </div>
+                  ))}
+                  <div style={{marginTop:'10px',background:'rgba(232,200,126,.06)',border:'1px solid rgba(232,200,126,.15)',borderRadius:'4px 12px 12px 12px',padding:'9px 11px',fontSize:'11px',color:'rgba(237,233,242,.75)',lineHeight:'1.6'}}>병화 일간에 인목이 받쳐주는 사주예요. 따뜻하고 추진력이 강한 편이라…</div>
+                </div>
+              </div>
+            </div>
           </div>
         </>
-      )}
-
-      {step === 'input' && (
-        <div style={{paddingTop:'80px',minHeight:'100vh',background:'#0B0A1F'}}>
-          <div style={{maxWidth:'480px',margin:'0 auto',padding:'40px 20px 80px'}}>
-            <button onClick={()=>setStep('landing')} style={{background:'none',border:'none',color:'rgba(232,200,126,0.5)',cursor:'pointer',fontSize:'13px',marginBottom:'32px',padding:'4px 0',letterSpacing:'1px',fontFamily:'inherit'}}>← 뒤로</button>
-            <div style={{fontSize:'10px',letterSpacing:'4px',color:'rgba(232,200,126,0.4)',marginBottom:'12px'}}>SAJU ANALYSIS</div>
-            <h2 style={{fontFamily:"'Cormorant Garamond', 'Noto Serif KR', serif",fontSize:'32px',fontWeight:'600',marginBottom:'8px',color:'#E8C87E',letterSpacing:'-0.5px'}}>생년월일시를<br/>알려주세요</h2>
-            <p style={{fontSize:'12px',color:'rgba(237,233,242,0.3)',marginBottom:'36px',letterSpacing:'1px'}}>하늘의 기운을 정확히 읽기 위해 필요합니다</p>
-
-            <div style={{marginBottom:'20px'}}>
-              <label style={S.label}>이름</label>
-              <input type="text" placeholder="홍길동" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} style={S.input}/>
-            </div>
-
-            <div style={{marginBottom:'20px'}}>
-              <label style={S.label}>양력 / 음력</label>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
-                {['양력','음력'].map(c=>(
-                  <button key={c} onClick={()=>setForm({...form,calendar:c})} style={S.selectBtn(form.calendar===c)}>{c}</button>
-                ))}
-              </div>
-            </div>
-
-            <div style={{marginBottom:'20px'}}>
-              <label style={S.label}>생년월일</label>
-              <div style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr',gap:'8px'}}>
-                {[['year','년','1995'],['month','월','07'],['day','일','21']].map(([k,l,p])=>(
-                  <div key={k} style={{position:'relative'}}>
-                    <input type="number" placeholder={p} value={form[k]} onChange={e=>setForm({...form,[k]:e.target.value})} style={S.input}/>
-                    <span style={{position:'absolute',right:'12px',top:'50%',transform:'translateY(-50%)',fontSize:'12px',color:'rgba(232,200,126,0.3)'}}>{l}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div style={{marginBottom:'20px'}}>
-              <label style={S.label}>태어난 시간</label>
-              <div style={{position:'relative'}}>
-                <select value={form.hour} onChange={e=>setForm({...form,hour:e.target.value})} style={S.select}>
-                  <option value="" style={{background:'#0B0A1F'}}>시간을 선택하세요</option>
-                  {HOURS.map(h=>(
-                    <option key={h.value} value={h.value} style={{background:'#0B0A1F',color:'#EDE9F2'}}>
-                      {h.label} · {h.desc}
-                    </option>
-                  ))}
-                </select>
-                <span style={{position:'absolute',right:'14px',top:'50%',transform:'translateY(-50%)',color:'rgba(232,200,126,0.4)',pointerEvents:'none',fontSize:'12px'}}>▼</span>
-              </div>
-            </div>
-
-            <div style={{marginBottom:'36px'}}>
-              <label style={S.label}>성별</label>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
-                {['남','여'].map(g=>(
-                  <button key={g} onClick={()=>setForm({...form,gender:g})} style={{...S.selectBtn(form.gender===g),padding:'13px'}}>{g}자</button>
-                ))}
-              </div>
-            </div>
-
-            {error && <p style={{color:'#ff6b6b',fontSize:'13px',marginBottom:'16px',padding:'10px 14px',background:'rgba(255,107,107,0.08)',borderRadius:'4px'}}>⚠️ {error}</p>}
-
-            <button onClick={handleSubmit} style={{width:'100%',background:'rgba(232,200,126,0.1)',color:'#E8C87E',padding:'16px',border:'1px solid rgba(232,200,126,0.4)',borderRadius:'2px',fontSize:'14px',fontWeight:'500',cursor:'pointer',letterSpacing:'2px',fontFamily:'inherit'}}>
-              사주 분석 시작하기 →
-            </button>
-          </div>
-        </div>
-      )}
-      <NewYearPopup enabled={step === 'landing'} />
+      <NewYearPopup enabled popup={false} />
     </>
   );
 }

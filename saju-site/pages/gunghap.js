@@ -186,7 +186,6 @@ export default function Gunghap() {
         )}
       </div>
 
-      <div style={{textAlign:'center',padding:'32px 20px',borderTop:'1px solid rgba(255,255,255,0.05)',color:'rgba(232,224,208,0.2)',fontSize:'12px'}}>© 2026 천기소녀 · AI 사주 분석</div>
     </>
   );
 }
