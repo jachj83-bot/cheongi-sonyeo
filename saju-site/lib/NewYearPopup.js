@@ -105,7 +105,7 @@ export default function NewYearPopup({ delay = 3500, enabled = true, popup = tru
                 {ZODIAC.map((z, i) => {
                   const a = i * 2 * Math.PI / 12;
                   return (
-                    <span key={z} className={z === '未' ? 'on' : ''} style={{ left: `${50 + 46 * Math.sin(a)}%`, top: `${50 - 46 * Math.cos(a)}%` }}>{z}</span>
+                    <span key={z} className={z === '未' ? 'on' : ''} style={{ left: `${(50 + 46 * Math.sin(a)).toFixed(3)}%`, top: `${(50 - 46 * Math.cos(a)).toFixed(3)}%` }}>{z}</span>
                   );
                 })}
               </div>
