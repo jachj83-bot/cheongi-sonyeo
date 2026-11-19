@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { DAY_TYPES, ELEMENT_COLOR, TypeIcon, helperTypes, drawStoryCard } from '../lib/dayTypes';
@@ -113,6 +114,23 @@ export default function Result() {
   const [chatPayProcessed, setChatPayProcessed] = useState(false);
   const [storyState, setStoryState] = useState('');
   const [shareState, setShareState] = useState('');
+  const { status: authStatus } = useSession();
+  const [doneStreaming, setDoneStreaming] = useState(false);
+
+  // 풀이가 다 나오면 로그인한 회원의 보관함에 자동 저장 (같은 화면에서 한 번만)
+  useEffect(() => {
+    if (!doneStreaming || authStatus !== 'authenticated' || !result || result.length < 200) return;
+    const { name, year, month, day, hour, gender, calendar } = router.query;
+    const guard = 'vault-saved:' + [name, year, month, day, hour, gender, calendar].join('|');
+    try { if (sessionStorage.getItem(guard)) return; sessionStorage.setItem(guard, '1'); } catch {}
+    fetch('/api/vault', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        kind: 'saju', title: `${name}님의 사주`, subtitle: `${calendar || '양력'} ${year}.${month}.${day} ${hour || ''}`.trim(),
+        input: { name, year, month, day, hour, gender, calendar }, gan: sajuData?.pillars?.day?.[0] || null, text: result,
+      }),
+    }).catch(() => {});
+  }, [doneStreaming, authStatus]);
 
   // 친구에게 보내는 링크 — 상대가 누르면 첫 화면에 "친구는 ○○형" 배너가 뜨고 바로 입력칸으로 간다
   const shareLink = async (gan) => {
@@ -223,6 +241,7 @@ export default function Result() {
           if (first) { setLoading(false); first = false; }
         }
         setLoading(false);
+        setDoneStreaming(true);
       } catch {
         setResult('잠시 후 다시 시도해주세요.');
         setLoading(false);

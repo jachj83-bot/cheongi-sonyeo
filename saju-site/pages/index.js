@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { useSession } from 'next-auth/react';
 import Head from 'next/head';
 import { DAY_TYPES, TYPE_ORDER, ELEMENT_COLOR, TypeIcon } from '../lib/dayTypes';
 import NewYearPopup from '../lib/NewYearPopup';
@@ -61,6 +62,21 @@ export default function Home() {
   const [form, setForm] = useState({ name: '', year: '', month: '', day: '', hour: '', gender: '', calendar: '양력' });
   const [error, setError] = useState('');
   const [sharedType, setSharedType] = useState(null);
+  const { data: session, status: authStatus } = useSession();
+  const [savedBirth, setSavedBirth] = useState(null);
+
+  // 로그인한 회원이면 저장해 둔 생년월일을 불러와 입력칸을 미리 채운다
+  useEffect(() => {
+    if (authStatus !== 'authenticated') return;
+    fetch('/api/me').then(r => r.json()).then(d => {
+      if (d && d.birth) {
+        setSavedBirth(d.birth);
+        setForm(f => (f.year ? f : { ...f, ...d.birth, name: d.birth.name || session?.user?.name || '' }));
+      } else if (session?.user?.name) {
+        setForm(f => (f.name ? f : { ...f, name: session.user.name }));
+      }
+    }).catch(() => {});
+  }, [authStatus]);
 
   // 친구가 공유한 링크(?type=병)로 들어오면 첫 화면에 "친구는 ○○형" 배너를 띄운다
   useEffect(() => {
@@ -92,6 +108,10 @@ export default function Home() {
     if (!form.name || !form.year || !form.month || !form.day || !form.gender || !form.hour) {
       setError('모든 항목을 입력해주세요.');
       return;
+    }
+    // 처음 보는 회원이면 이 생년월일을 내 정보로 저장해 둔다 (다음부터 입력 없이)
+    if (authStatus === 'authenticated' && !savedBirth) {
+      fetch('/api/me', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) }).catch(() => {});
     }
     router.push('/result?' + new URLSearchParams(form).toString());
   };
@@ -245,6 +265,7 @@ export default function Home() {
         <div className="site-nav" style={{display:'flex',gap:'8px',flexShrink:0}}>
           <a href="/gunghap" style={{color:'rgba(237,233,242,0.5)',textDecoration:'none',fontSize:'12px',padding:'7px 14px',border:'1px solid rgba(232,200,126,0.15)',borderRadius:'2px',letterSpacing:'1px',whiteSpace:'nowrap'}}>궁합</a>
           <a href="/tarot" style={{color:'rgba(237,233,242,0.5)',textDecoration:'none',fontSize:'12px',padding:'7px 14px',border:'1px solid rgba(232,200,126,0.15)',borderRadius:'2px',letterSpacing:'1px',whiteSpace:'nowrap'}}>타로</a>
+          {authStatus === 'authenticated' && <a href="/my" style={{color:'#E8C87E',textDecoration:'none',fontSize:'12px',padding:'7px 14px',border:'1px solid rgba(232,200,126,0.4)',borderRadius:'2px',letterSpacing:'1px',whiteSpace:'nowrap'}}>보관함</a>}
         </div>
       </div>
 
@@ -276,8 +297,8 @@ export default function Home() {
                 )}
                 <div id="start" className="birth-card">
                   <div className="birth-card-head">
-                    <span>무료로 내 사주 보기</span>
-                    <span className="birth-card-badge">가입 없이 30초</span>
+                    <span>{savedBirth ? `${savedBirth.name || session?.user?.name || ''}님, 다시 오셨네요` : '무료로 내 사주 보기'}</span>
+                    <span className="birth-card-badge">30초면 끝</span>
                   </div>
                 <div style={{marginBottom:'20px'}}>
                   <label style={S.label}>이름</label>
