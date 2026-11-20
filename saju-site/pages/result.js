@@ -113,6 +113,7 @@ export default function Result() {
   const [payError, setPayError] = useState('');
   const [chatPayProcessed, setChatPayProcessed] = useState(false);
   const [storyState, setStoryState] = useState('');
+  const [storyImg, setStoryImg] = useState(null);
   const [shareState, setShareState] = useState('');
   const { status: authStatus } = useSession();
   const [doneStreaming, setDoneStreaming] = useState(false);
@@ -152,6 +153,15 @@ export default function Result() {
       const file = new File([blob], `cheongi_${DAY_TYPES[gan].name}.png`, { type: 'image/png' });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         try { await navigator.share({ files: [file], title: '천기소녀 · 나의 타입' }); setStoryState('done'); return; } catch (e) { if (e && e.name === 'AbortError') { setStoryState(''); return; } }
+      }
+      // 인스타·카톡 같은 앱 안 브라우저는 파일 다운로드를 못 해서 "페이지를 읽어들일 수 없습니다"가 뜬다.
+      // 그래서 앱 안에서는 이미지를 화면에 크게 띄우고 꾹 눌러 저장하게 한다.
+      const ua = navigator.userAgent || '';
+      if (/Instagram|KAKAOTALK|FBAN|FBAV|FB_IAB|Line\/|NAVER\(inapp|everytimeApp|DaumApps|Threads/i.test(ua)) {
+        const dataUrl = await new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = no; r.readAsDataURL(blob); });
+        setStoryImg({ src: dataUrl, android: /Android/i.test(ua), kakao: /KAKAOTALK/i.test(ua) });
+        setStoryState('');
+        return;
       }
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -734,6 +744,26 @@ export default function Result() {
           )}
         </div>
       </div>
+      {storyImg && (
+        <div onClick={()=>setStoryImg(null)} style={{position:'fixed',inset:0,zIndex:2000,background:'rgba(10,4,0,0.94)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'16px'}}>
+          <div onClick={e=>e.stopPropagation()} style={{width:'100%',maxWidth:'360px',textAlign:'center'}}>
+            <div style={{fontSize:'15px',color:'#e8c97a',fontWeight:'700',marginBottom:'4px'}}>이미지를 꾹 눌러서 저장하세요</div>
+            <div style={{fontSize:'12px',color:'#c4956a',marginBottom:'12px',lineHeight:1.6}}>인스타 안에서는 바로 다운로드가 안 돼요.<br/>사진을 길게 누르면 저장 메뉴가 나와요.</div>
+            <img src={storyImg.src} alt="천기소녀 나의 타입" style={{width:'100%',maxHeight:'62vh',objectFit:'contain',borderRadius:'10px',boxShadow:'0 10px 40px rgba(0,0,0,.6)',WebkitTouchCallout:'default',userSelect:'auto'}} />
+            {(storyImg.android || storyImg.kakao) && (
+              <button onClick={()=>{
+                const href = window.location.href;
+                window.location.href = storyImg.kakao
+                  ? 'kakaotalk://web/openExternal?url=' + encodeURIComponent(href)
+                  : 'intent://' + href.replace(/^https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;end';
+              }} style={{marginTop:'12px',width:'100%',height:'44px',borderRadius:'22px',border:'1px solid #c4712a',background:'transparent',color:'#e8c97a',fontSize:'14px',fontWeight:'700',fontFamily:'inherit'}}>
+                저장 메뉴가 안 나오면 {storyImg.kakao ? '바깥 브라우저' : '크롬'}에서 열기
+              </button>
+            )}
+            <button onClick={()=>setStoryImg(null)} style={{marginTop:'10px',width:'100%',height:'44px',borderRadius:'22px',border:'none',background:'#e8c97a',color:'#1a0a00',fontSize:'14px',fontWeight:'700',fontFamily:'inherit'}}>닫기</button>
+          </div>
+        </div>
+      )}
       <NewYearPopup popup={false} enabled={!loading} />
     </>
   );
