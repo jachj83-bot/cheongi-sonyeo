@@ -2,12 +2,23 @@ import { NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 
 // 사주아이처럼 들어오자마자 로그인부터. 로그인 안 했으면 /login으로 보낸다.
-// 카카오·구글 키와 NEXTAUTH_SECRET이 베르셀에 없으면 아무것도 막지 않는다.
-export async function middleware(req) {
-  const enabled = !!process.env.NEXTAUTH_SECRET && !!(process.env.KAKAO_CLIENT_ID || (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET));
-  if (!enabled) return NextResponse.next();
+// 카카오·구글 키가 베르셀에 없으면 아무것도 막지 않는다.
+// lib/auth.js의 authSecret()과 같은 값을 만든다 (미들웨어는 Web Crypto만 쓸 수 있음)
+async function authSecret() {
+  if (process.env.NEXTAUTH_SECRET) return process.env.NEXTAUTH_SECRET;
+  const t = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || '';
+  if (!t) return '';
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('cheongi-auth:' + t));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+export async function middleware(req) {
+  const hasProvider = !!(process.env.KAKAO_CLIENT_ID || (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET));
+  if (!hasProvider) return NextResponse.next();
+  const secret = await authSecret();
+  if (!secret) return NextResponse.next();
+
+  const token = await getToken({ req, secret });
   if (token) return NextResponse.next();
 
   const url = req.nextUrl.clone();
