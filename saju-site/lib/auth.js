@@ -1,13 +1,18 @@
 import KakaoProvider from 'next-auth/providers/kakao';
 import GoogleProvider from 'next-auth/providers/google';
 import { getServerSession } from 'next-auth/next';
+import { createHash } from 'crypto';
 import { getJSON, setJSON } from './redis';
 
 // 카카오·구글 키가 베르셀에 하나라도 등록돼야 로그인이 켜진다.
 // 키가 없으면 지금처럼 로그인 없이 동작한다 (배포해도 사이트가 막히지 않게).
 export const hasKakao = () => !!(process.env.KAKAO_CLIENT_ID);
 export const hasGoogle = () => !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
-export const authEnabled = () => !!process.env.NEXTAUTH_SECRET && (hasKakao() || hasGoogle());
+// 로그인 쿠키를 잠그는 비밀값. NEXTAUTH_SECRET을 따로 안 넣어도 되도록, 이미 베르셀에 있는
+// 저장소 토큰에서 만들어 쓴다 (middleware.js도 같은 방식으로 만든다).
+const storeToken = () => process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || '';
+export const authSecret = () => process.env.NEXTAUTH_SECRET || (storeToken() ? createHash('sha256').update('cheongi-auth:' + storeToken()).digest('hex') : '');
+export const authEnabled = () => !!authSecret() && (hasKakao() || hasGoogle());
 
 const providers = [];
 if (hasKakao()) {
@@ -25,7 +30,7 @@ if (hasGoogle()) {
 
 export const authOptions = {
   providers,
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: authSecret(),
   session: { strategy: 'jwt', maxAge: 60 * 60 * 24 * 90 }, // 90일 동안 로그인 유지
   pages: { signIn: '/login' },
   callbacks: {
