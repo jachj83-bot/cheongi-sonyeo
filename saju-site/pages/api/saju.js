@@ -481,13 +481,15 @@ ${card} (${cardEn || ''}) — ${reversed ? '역방향' : '정방향'}
 십신:
 ${sipsinData.map(s => s ? `${s.pillar}: 천간(${s.ganSipsin}) 지지(${s.jiSipsin})` : '').join('\n')}
 
-첫 문장은 반드시 "하늘의 기운을 읽었습니다."로 시작하고 아래 형식으로, 짧고 임팩트 있게 분석해주세요. 이건 무료로 제공되는 맛보기 리포트이니 전체적으로 짧고 간결하게 써주세요:
+첫 문장은 반드시 "하늘의 기운을 읽었습니다."로 시작하고, 아래 다섯 항목을 순서대로 자세하게 풀어주세요. 무료 리포트지만 "나를 정말 잘 안다"는 느낌이 들 만큼 구체적으로 써주세요:
 
-🌟 일주 분석 (${saju.dayPillar})
-🔥 오행 에너지
-💫 십신으로 본 성격과 재능
+🌟 일주 분석 (${saju.dayPillar}) — 타고난 본성과 겉으로 보이는 모습과 속마음의 차이
+🔥 오행 에너지 — 가장 강한 ${strongest}와 가장 약한 ${weakest}가 일상에서 어떻게 드러나는지, 부족한 기운을 채우는 생활 습관 하나
+💫 십신으로 본 성격과 재능 — 남들보다 잘하는 것과 스스로 놓치기 쉬운 강점
+🤝 사람을 대하는 방식 — 친구, 동료, 연인에게 보이는 모습과 관계에서 반복되는 패턴
+🧭 잘 맞는 일과 환경 — 힘이 나는 일의 방식과 피하면 좋은 환경
 
-${singang} 사주 특성에 맞게, 장점과 단점을 6:4로 균형있게, 따뜻하고 신비로운 톤으로 한국어로 작성해주세요. 각 항목은 딱 2문장으로만 짧게 써주세요. 마지막에 줄바꿈 후 "✨" 로 시작하는 한 줄로, 재물운·연애운·다가오는 운세는 더 자세한 유료 콘텐츠에서 확인할 수 있다는 걸 자연스럽게 궁금증을 자아내는 문장으로 안내해주세요 (예: "재물운과 연애운, 2027 정미년의 흐름은 신년운세에서 훨씬 자세히 만나볼 수 있어요"). 연도는 2027 정미년 외에 다른 연도를 쓰지 마세요. 전체 분량은 절대 넘치지 않게, 딱 필요한 만큼만 써주세요.`;
+${singang} 사주 특성에 맞게, 장점과 단점을 6:4로 균형있게, 따뜻하고 신비로운 톤으로 한국어로 작성해주세요. 각 항목은 4~5문장으로, 일상에서 바로 떠오르는 구체적인 장면(예: "약속 장소를 정할 때", "단톡방에서")을 하나씩 넣어 주세요. 마크다운 기호(**, #)는 쓰지 말고, 각 항목 제목은 위의 이모지로 시작하는 한 줄로 써주세요. 연애운과 재물운의 시기, 다가오는 해의 흐름은 무료 리포트에서 다루지 마세요. 마지막에 줄바꿈 후 "✨"로 시작하는 한 줄로, 재물운·연애운·2027 정미년의 흐름은 신년운세에서 훨씬 자세히 볼 수 있다는 걸 궁금증이 생기게 자연스럽게 안내해주세요. 연도는 2027 정미년 외에 다른 연도를 쓰지 마세요.`;
 
     // sajuData를 먼저 헤더로 보내고, AI 해석은 실시간 스트리밍으로 전송 (체감 속도 개선)
     const sajuDataPayload = {
@@ -501,7 +503,7 @@ ${singang} 사주 특성에 맞게, 장점과 단점을 6:4로 균형있게, 따
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 900, stream: true, system: systemContext(), messages: [{ role: 'user', content: prompt }] })
+      body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 2200, stream: true, system: systemContext(), messages: [{ role: 'user', content: prompt }] })
     });
 
     if (!anthropicRes.ok || !anthropicRes.body) {
