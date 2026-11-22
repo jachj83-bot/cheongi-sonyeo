@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import Head from 'next/head';
-import { DAY_TYPES, TYPE_ORDER, ELEMENT_COLOR, TypeIcon } from '../lib/dayTypes';
+import { DAY_TYPES, TYPE_ORDER, ELEMENT_COLOR, typeImg } from '../lib/dayTypes';
 import NewYearPopup from '../lib/NewYearPopup';
 
 // 히어로 배경에 반짝이는 별 — 서버/클라이언트 렌더 결과가 같도록 고정 시드로 위치를 만든다
@@ -197,7 +197,7 @@ export default function Home() {
           .type-tile { display:flex; flex-direction:column; align-items:center; gap:6px; padding:18px 6px 14px; background:rgba(255,255,255,.02); border:1px solid rgba(232,200,126,.1); border-radius:10px; cursor:pointer; font-family:inherit; transition: transform .25s, border-color .25s, box-shadow .25s, background .25s; }
           .type-tile:hover { transform: translateY(-4px); border-color: var(--tc); box-shadow: 0 0 22px color-mix(in srgb, var(--tc) 35%, transparent); background: color-mix(in srgb, var(--tc) 8%, transparent); }
           .type-tile-icon { display:inline-flex; transition: transform .4s; }
-          .type-tile:hover .type-tile-icon { transform: scale(1.15) rotate(-6deg); }
+          .type-tile:hover .type-tile-icon { transform: translateY(-4px) scale(1.06); }
           .phone { position:relative; max-width:300px; margin:0 auto; width:100%; background:#130f2a; border:1px solid rgba(232,200,126,.25); border-radius:22px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.5), 0 0 40px rgba(155,109,214,.15); }
           .phone-tag { position:absolute; top:10px; right:10px; font-size:10px; color:#0B0A1F; background:#E8C87E; border-radius:8px; padding:2px 8px; z-index:2; }
           .pv-bar { transform-origin:left; animation: barFill 2.5s cubic-bezier(.23,1,.32,1) infinite alternate; }
@@ -548,7 +548,7 @@ export default function Home() {
               <div className="types-grid" style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:'12px'}}>
                 {TYPE_ORDER.map((g,i)=>{ const t = DAY_TYPES[g]; const c = ELEMENT_COLOR[t.el]; return (
                   <button key={g} onClick={()=>goStart()} className="reveal type-tile" style={{'--d':`${(i%5)*80}ms`,'--tc':c}}>
-                    <span className="type-tile-icon"><TypeIcon gan={g} size={44} /></span>
+                    <span className="type-tile-icon"><img src={typeImg(g)} alt={t.name} loading="lazy" decoding="async" width="78" height="120" style={{height:'120px',width:'auto'}} /></span>
                     <span style={{fontFamily:"'Noto Serif KR', serif",fontSize:'15px',color:'#EDE9F2',fontWeight:'700'}}>{t.name}</span>
                     <span style={{fontSize:'11px',color:c}}>{t.title}</span>
                   </button>
@@ -574,7 +574,7 @@ export default function Home() {
                 <div className="phone-tag">예시 화면</div>
                 <div style={{textAlign:'center',padding:'18px 14px 14px',background:'radial-gradient(circle at 50% 0%, rgba(239,122,74,.25), transparent 65%)',borderBottom:'1px solid rgba(232,200,126,.1)'}}>
                   <div style={{fontSize:'10px',letterSpacing:'2px',color:'#c4956a',marginBottom:'8px'}}>나의 일간 타입</div>
-                  <TypeIcon gan="병" size={54} style={{filter:'drop-shadow(0 0 6px #ef7a4a)'}} />
+                  <img src={typeImg('병')} alt="임금형" loading="lazy" decoding="async" width="76" height="120" style={{height:'120px',width:'auto',display:'block',margin:'0 auto'}} />
                   <div style={{fontFamily:"'Noto Serif KR', serif",fontSize:'22px',fontWeight:'900',color:'#ef7a4a',marginTop:'4px'}}>임금형</div>
                   <div style={{fontSize:'11px',color:'rgba(237,233,242,.6)'}}>어디에 있든 자연스럽게 중심이 되는 존재감</div>
                 </div>

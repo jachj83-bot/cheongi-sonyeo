@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import { DAY_TYPES, ELEMENT_COLOR, TypeIcon, helperTypes, drawStoryCard } from '../lib/dayTypes';
+import { DAY_TYPES, ELEMENT_COLOR, typeImg, helperTypes, drawStoryCard } from '../lib/dayTypes';
 import NewYearPopup from '../lib/NewYearPopup';
 
 const OHAENG_COLOR = {
@@ -443,7 +443,7 @@ export default function Result() {
           @keyframes typeFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
           @keyframes askGlow { 0%,100%{box-shadow:0 0 0 0 rgba(196,113,42,.0)} 50%{box-shadow:0 0 18px 0 rgba(196,113,42,.45)} }
           .type-ring { position:absolute; inset:0; border-radius:50%; border:1.5px dashed var(--tc); opacity:.6; animation: typeSpin 18s linear infinite; }
-          .type-icon-wrap > div:last-child { animation: typeFloat 4s ease-in-out infinite; }
+          .type-char img { animation: typeFloat 4s ease-in-out infinite; }
           .ask-jump { animation: askGlow 2.6s ease-in-out infinite; }
           .story-btn { transition: transform .2s, filter .2s; }
           .story-btn:hover { transform: translateY(-2px); filter: brightness(1.08); }
@@ -493,13 +493,11 @@ export default function Result() {
                 const col = ELEMENT_COLOR[t.el];
                 const helpers = helperTypes(gan);
                 return (
-                  <div className="soft-in type-card" style={{'--tc':col,position:'relative',overflow:'hidden',background:`radial-gradient(circle at 50% 0%, ${col}33, transparent 60%), #1f0a00`,border:`1px solid ${col}66`,borderRadius:'10px',padding:'26px 20px 22px',marginBottom:'20px',textAlign:'center'}}>
-                    <div style={{fontSize:'11px',letterSpacing:'3px',color:'#c4956a',marginBottom:'14px'}}>궁중에 태어났다면 나는</div>
-                    <div className="type-icon-wrap" style={{position:'relative',width:'120px',height:'120px',margin:'0 auto 14px'}}>
-                      <div className="type-ring" />
-                      <div style={{position:'absolute',inset:'18px',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                        <TypeIcon gan={gan} size={84} strokeWidth={1.8} style={{filter:`drop-shadow(0 0 8px ${col})`}} />
-                      </div>
+                  <div className="soft-in type-card" style={{'--tc':col,position:'relative',overflow:'hidden',background:`radial-gradient(circle at 50% 0%, ${col}33, transparent 60%), #1f0a00`,border:`1px solid ${col}66`,borderRadius:'10px',padding:'22px 20px 20px',marginBottom:'20px',textAlign:'center'}}>
+                    <div style={{fontSize:'18px',fontWeight:'700',letterSpacing:'1px',color:'#e0b486',marginBottom:'10px'}}>궁중에 태어났다면 나는</div>
+                    <div className="type-char" style={{position:'relative',height:'270px',margin:'0 auto 10px',display:'flex',justifyContent:'center',alignItems:'flex-end'}}>
+                      <div aria-hidden="true" style={{position:'absolute',left:'50%',bottom:'6px',width:'190px',height:'26px',transform:'translateX(-50%)',borderRadius:'50%',background:`radial-gradient(ellipse, ${col}55, transparent 70%)`}} />
+                      <img src={typeImg(gan)} alt={t.name} width="172" height="270" style={{position:'relative',height:'270px',width:'auto',maxWidth:'100%',filter:`drop-shadow(0 0 14px ${col}44)`}} />
                     </div>
                     <div style={{fontSize:'14px',color:'#e0c9a8',marginBottom:'2px'}}>{name}님은</div>
                     <div style={{fontFamily:'serif',fontSize:'34px',fontWeight:'900',color:col,lineHeight:'1.2'}}>{t.name}</div>

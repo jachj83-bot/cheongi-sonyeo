@@ -79,7 +79,7 @@ export default function Login({ enabled, kakao, google }) {
           .lg-sub { font-size:13px; color:rgba(237,233,242,.55); line-height:1.7; margin-bottom:16px; }
           .lg-shared { width:100%; background:rgba(232,200,126,.08); border:1px solid rgba(232,200,126,.3); border-radius:10px; padding:11px 14px; font-size:14px; margin-bottom:16px; }
           .lg-types { display:flex; gap:4px; justify-content:center; flex-wrap:nowrap; margin-bottom:20px; }
-          .lg-types span { display:inline-flex; width:30px; height:30px; align-items:center; justify-content:center; border-radius:50%; background:rgba(255,255,255,.04); border:1px solid rgba(232,200,126,.12); }
+          .lg-types span { display:inline-flex; }
           .lg-btn { width:100%; height:52px; border:none; border-radius:10px; font-size:15px; font-weight:700; font-family:inherit; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:10px; }
           .lg-kakao { background:#FEE500; color:rgba(0,0,0,.85); }
           .lg-google { background:#fff; color:#1f1f1f; }
@@ -99,7 +99,7 @@ export default function Login({ enabled, kakao, google }) {
           <p className="lg-sub">로그인하면 무료로 내 타입과 사주를 보고,<br />결과는 보관함에 계속 남아요.</p>
           {shared && <div className="lg-shared">친구는 <b style={{ color: ELEMENT_COLOR[shared.el] }}>{shared.name}</b>이 나왔어요. 나는?</div>}
           <div className="lg-types" aria-hidden="true">
-            {TYPE_ORDER.map(g => <span key={g}><TypeIcon gan={g} size={19} /></span>)}
+            {TYPE_ORDER.map(g => <span key={g}><TypeIcon gan={g} size={28} strokeWidth={1.4} /></span>)}
           </div>
 
           {error && <div className="lg-err">로그인이 끝나지 않았어요. 한 번 더 눌러 주세요.</div>}
