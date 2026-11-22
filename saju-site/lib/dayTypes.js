@@ -1,5 +1,6 @@
 // 일간(태어난 날의 천간) 10가지 = 천기소녀 10가지 타입
-// 타입마다 궁중 인물의 역할 한자(將·策·王…)를 도장처럼 찍어 아이콘으로 쓴다.
+// 타입마다 천기소녀 그림체로 그린 궁중 인물 캐릭터가 있다 (public/types/{key}.webp).
+// {key}.webp = 전신, {key}_s.webp = 얼굴 동그라미용 96px
 
 export const ELEMENT_COLOR = {
   '목': '#6fbf73', '화': '#ef7a4a', '토': '#d9a646', '금': '#c9c9e3', '수': '#5aa0e0',
@@ -34,6 +35,12 @@ export const DAY_TYPES = {
 
 export const TYPE_ORDER = ['갑', '을', '병', '정', '무', '기', '경', '신', '임', '계'];
 
+export const TYPE_KEY = {
+  '갑': 'gap', '을': 'eul', '병': 'byeong', '정': 'jeong', '무': 'mu',
+  '기': 'gi', '경': 'gyeong', '신': 'sin', '임': 'im', '계': 'gye',
+};
+export const typeImg = (gan, small) => TYPE_KEY[gan] ? `/types/${TYPE_KEY[gan]}${small ? '_s' : ''}.webp` : '';
+
 // 나를 살려주는 오행에 속한 타입 이름들
 export function helperTypes(gan) {
   const t = DAY_TYPES[gan];
@@ -42,18 +49,25 @@ export function helperTypes(gan) {
   return TYPE_ORDER.filter(k => DAY_TYPES[k].el === el).map(k => DAY_TYPES[k].name);
 }
 
+// 작은 얼굴 동그라미 (홈 타일, 로그인 줄, 보관함 목록)
 export function TypeIcon({ gan, size = 48, color, strokeWidth = 2, style }) {
   const t = DAY_TYPES[gan];
   if (!t) return null;
   const c = color || ELEMENT_COLOR[t.el];
   return (
-    <svg width={size} height={size} viewBox="0 0 48 48" fill="none" style={style} aria-hidden="true">
-      <circle cx="24" cy="24" r="21.5" stroke={c} strokeWidth={strokeWidth} />
-      <circle cx="24" cy="24" r="17.5" stroke={c} strokeWidth={strokeWidth * 0.5} strokeDasharray="2 2.5" opacity="0.8" />
-      <text x="24" y="31.5" textAnchor="middle" fontSize="21" fontWeight="700" fill={c}
-        fontFamily="'Noto Serif KR', 'Nanum Myeongjo', serif">{t.role}</text>
-    </svg>
+    <img src={typeImg(gan, true)} alt={t.name} width={size} height={size} loading="lazy" decoding="async"
+      style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', background: '#f6efe2',
+        border: `${Math.max(1, strokeWidth * 0.75)}px solid ${c}`, boxSizing: 'border-box', display: 'inline-block', verticalAlign: 'middle', flexShrink: 0, ...(style || {}) }} />
   );
+}
+
+function loadImage(src) {
+  return new Promise((resolve) => {
+    const im = new Image();
+    im.onload = () => resolve(im);
+    im.onerror = () => resolve(null);
+    im.src = src;
+  });
 }
 
 // ─── 인스타 스토리 카드 (1080x1920) ───
@@ -72,7 +86,7 @@ export async function drawStoryCard({ gan, name, pillars, strength }) {
   const bg = ctx.createLinearGradient(0, 0, 0, H);
   bg.addColorStop(0, '#0B0A1F'); bg.addColorStop(0.55, '#1a1238'); bg.addColorStop(1, '#0B0A1F');
   ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
-  const glow = ctx.createRadialGradient(W / 2, 700, 40, W / 2, 700, 620);
+  const glow = ctx.createRadialGradient(W / 2, 660, 40, W / 2, 660, 620);
   glow.addColorStop(0, col + '55'); glow.addColorStop(1, 'transparent');
   ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
 
@@ -91,33 +105,33 @@ export async function drawStoryCard({ gan, name, pillars, strength }) {
   ctx.font = `500 34px ${sans}`;
   ctx.fillText('천기소녀 · 궁중에 태어났다면 나는', W / 2, 190);
 
-  // 원형 링 + 아이콘
+  // 캐릭터 (링 앞에 전신으로 선다)
   ctx.strokeStyle = 'rgba(232,200,126,0.35)'; ctx.lineWidth = 2;
   ctx.setLineDash([8, 10]);
-  ctx.beginPath(); ctx.arc(W / 2, 700, 330, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath(); ctx.arc(W / 2, 660, 360, 0, Math.PI * 2); ctx.stroke();
   ctx.setLineDash([]);
-  ctx.strokeStyle = col + '88';
-  ctx.beginPath(); ctx.arc(W / 2, 700, 250, 0, Math.PI * 2); ctx.stroke();
-  const ring = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
-  ctx.font = `400 38px ${serif}`;
-  ring.forEach((ch, i) => {
-    const a = i * Math.PI * 2 / ring.length - Math.PI / 2;
-    ctx.fillStyle = ch === t.hanja ? col : 'rgba(232,200,126,0.4)';
-    ctx.fillText(ch, W / 2 + Math.cos(a) * 330, 700 + Math.sin(a) * 330 + 13);
-  });
   ctx.save();
-  ctx.shadowColor = col; ctx.shadowBlur = 18;
-  ctx.strokeStyle = col; ctx.lineWidth = 6;
-  ctx.beginPath(); ctx.arc(W / 2, 700, 170, 0, Math.PI * 2); ctx.stroke();
-  ctx.lineWidth = 2.5; ctx.setLineDash([10, 12]);
-  ctx.beginPath(); ctx.arc(W / 2, 700, 140, 0, Math.PI * 2); ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.fillStyle = col;
-  ctx.font = `700 170px ${serif}`;
-  ctx.textBaseline = 'middle';
-  ctx.fillText(t.role, W / 2, 712);
-  ctx.textBaseline = 'alphabetic';
+  ctx.shadowColor = col; ctx.shadowBlur = 24;
+  ctx.strokeStyle = col + 'aa'; ctx.lineWidth = 4;
+  ctx.beginPath(); ctx.arc(W / 2, 660, 290, 0, Math.PI * 2); ctx.stroke();
   ctx.restore();
+  const img = await loadImage(typeImg(gan));
+  if (img) {
+    // 발밑 그림자
+    const sh = ctx.createRadialGradient(W / 2, 1040, 10, W / 2, 1040, 230);
+    sh.addColorStop(0, col + '66'); sh.addColorStop(1, 'transparent');
+    ctx.save(); ctx.translate(0, 1040); ctx.scale(1, 0.18); ctx.translate(0, -1040);
+    ctx.fillStyle = sh; ctx.beginPath(); ctx.arc(W / 2, 1040, 230, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    const ih = 780, iw = img.width * ih / img.height;
+    ctx.drawImage(img, W / 2 - iw / 2, 1050 - ih, iw, ih);
+  } else {
+    ctx.fillStyle = col;
+    ctx.font = `700 170px ${serif}`;
+    ctx.textBaseline = 'middle';
+    ctx.fillText(t.role, W / 2, 672);
+    ctx.textBaseline = 'alphabetic';
+  }
 
   // 이름
   ctx.fillStyle = '#EDE9F2';
