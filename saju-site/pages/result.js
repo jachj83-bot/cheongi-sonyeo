@@ -515,7 +515,7 @@ export default function Result() {
                     {storyState === 'done' && <div style={{fontSize:'12px',color:'#c4956a',marginTop:'8px'}}>저장됐어요. 스토리에 올리고 친구 타입도 물어보세요</div>}
                     {storyState === 'error' && <div style={{fontSize:'12px',color:'#ff6b6b',marginTop:'8px'}}>이미지를 만들지 못했어요. 다시 눌러주세요</div>}
                     <button onClick={()=>shareLink(gan)} className="story-btn" style={{display:'block',margin:'10px auto 0',background:'transparent',color:col,border:`1px solid ${col}`,borderRadius:'24px',padding:'10px 20px',fontSize:'13px',fontWeight:'700',cursor:'pointer',fontFamily:'inherit'}}>
-                      친구 타입도 궁금하면 링크 보내기
+                      내 친구는 어떤 타입일까? 공유하기
                     </button>
                     {shareState === 'copied' && <div style={{fontSize:'12px',color:'#c4956a',marginTop:'8px'}}>링크를 복사했어요. 카톡이나 DM에 붙여넣어 보내세요</div>}
                     {shareState === 'error' && <div style={{fontSize:'12px',color:'#ff6b6b',marginTop:'8px'}}>복사하지 못했어요. 주소창 링크를 직접 보내주세요</div>}

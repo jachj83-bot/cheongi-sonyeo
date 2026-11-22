@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react';
 import Head from 'next/head';
 import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/router';
 import { DAY_TYPES, TYPE_ORDER, ELEMENT_COLOR, TypeIcon } from '../lib/dayTypes';
 import { hasKakao, hasGoogle, authEnabled } from '../lib/auth';
 
 // 사주아이처럼 첫 화면에서 바로 로그인. 카카오는 인스타·카톡 안 브라우저에서도 되고,
 // 구글은 인스타·카톡 안 브라우저에서 막히므로 바깥 브라우저로 여는 길을 따로 안내한다.
-export async function getServerSideProps({ query }) {
-  const callbackUrl = typeof query.callbackUrl === 'string' && query.callbackUrl.startsWith('/') ? query.callbackUrl : '/';
-  if (!authEnabled()) return { redirect: { destination: callbackUrl, permanent: false } };
-  return { props: { kakao: hasKakao(), google: hasGoogle(), callbackUrl, error: typeof query.error === 'string' ? query.error : '' } };
+// 로그인 화면은 미리 만들어 둔 정적 페이지로 내보내서 바로 뜨게 한다 (서버 대기 없음).
+// 카카오·구글 키 유무는 배포할 때 정해지고, 키를 바꾸면 다시 배포하면 된다.
+export async function getStaticProps() {
+  return { props: { enabled: authEnabled(), kakao: hasKakao(), google: hasGoogle() } };
 }
 
 function inAppBrowser(ua) {
@@ -19,7 +20,13 @@ function inAppBrowser(ua) {
   return '';
 }
 
-export default function Login({ kakao, google, callbackUrl, error }) {
+export default function Login({ enabled, kakao, google }) {
+  const router = useRouter();
+  const { query } = router;
+  // 로그인이 꺼져 있으면 원래 가려던 곳으로 바로 보낸다
+  useEffect(() => { if (!enabled && router.isReady) router.replace(callbackUrl); }, [enabled, router.isReady]);
+  const callbackUrl = typeof query.callbackUrl === 'string' && query.callbackUrl.startsWith('/') ? query.callbackUrl : '/';
+  const error = typeof query.error === 'string' ? query.error : '';
   const [inApp, setInApp] = useState('');
   const [android, setAndroid] = useState(false);
   const [busy, setBusy] = useState('');
