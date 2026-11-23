@@ -117,6 +117,12 @@ export default function Result() {
   const [storyImg, setStoryImg] = useState(null);
   const [shareState, setShareState] = useState('');
   const { status: authStatus } = useSession();
+  // 로그인이 켜져 있는데 아직 로그인 안 했으면 '보관함에 저장' 안내를 보여준다
+  const [needSave, setNeedSave] = useState(false);
+  useEffect(() => {
+    if (authStatus !== 'unauthenticated') { setNeedSave(false); return; }
+    fetch('/api/me').then(r => setNeedSave(r.status === 401)).catch(() => {});
+  }, [authStatus]);
   const [doneStreaming, setDoneStreaming] = useState(false);
 
   // 풀이가 다 나오면 로그인한 회원의 보관함에 자동 저장 (같은 화면에서 한 번만)
@@ -365,6 +371,10 @@ export default function Result() {
         })
       });
       const data = await res.json();
+      if (res.status === 401 && data.needLogin) {
+        window.location.href = '/login?callbackUrl=' + encodeURIComponent(window.location.pathname + window.location.search);
+        return;
+      }
       if (!res.ok || !data.payurl) {
         setPayError(data.error || '결제 요청에 실패했어요.');
         setPaying(false);
@@ -724,6 +734,15 @@ export default function Result() {
                   );
                 })}
               </div>
+
+              {/* 로그인 안 한 사람: 이 풀이를 보관함에 남기기 */}
+              {result && !loading && needSave && (
+                <a href={`/login?callbackUrl=${encodeURIComponent(router.asPath)}`}
+                  style={{display:'block',textDecoration:'none',background:'#FEE500',borderRadius:'12px',padding:'14px 16px',marginBottom:'12px',textAlign:'center',boxShadow:'0 8px 22px rgba(0,0,0,.35)'}}>
+                  <span style={{display:'block',fontSize:'15px',fontWeight:'800',color:'rgba(0,0,0,.85)'}}>카카오로 3초 로그인하고 이 풀이 저장하기</span>
+                  <span style={{display:'block',fontSize:'12px',color:'rgba(0,0,0,.6)',marginTop:'3px'}}>보관함에 계속 남고, 다음부터 생년월일이 자동으로 채워져요</span>
+                </a>
+              )}
 
               {/* 무료 풀이 다음 단계: 이번 달 나의 운세 (1,900원) */}
               {result && !loading && (

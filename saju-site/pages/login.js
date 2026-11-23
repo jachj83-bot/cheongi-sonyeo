@@ -5,7 +5,7 @@ import { useRouter } from 'next/router';
 import { DAY_TYPES, TYPE_ORDER, ELEMENT_COLOR, TypeIcon } from '../lib/dayTypes';
 import { hasKakao, hasGoogle, authEnabled } from '../lib/auth';
 
-// 사주아이처럼 첫 화면에서 바로 로그인. 카카오는 인스타·카톡 안 브라우저에서도 되고,
+// 무료는 로그인 없이 쓰고, 저장·결제할 때 여기로 온다. 카카오는 인스타·카톡 안 브라우저에서도 되고,
 // 구글은 인스타·카톡 안 브라우저에서 막히므로 바깥 브라우저로 여는 길을 따로 안내한다.
 // 로그인 화면은 미리 만들어 둔 정적 페이지로 내보내서 바로 뜨게 한다 (서버 대기 없음).
 // 카카오·구글 키 유무는 배포할 때 정해지고, 키를 바꾸면 다시 배포하면 된다.
@@ -96,7 +96,7 @@ export default function Login({ enabled, kakao, google }) {
           <div className="lg-logo"><img src="/logo_symbol.png" alt="" width="26" height="26" />천기소녀</div>
           <img className="lg-girl" src="/oracle_girl.jpg" alt="천기소녀" />
           <h1>궁중에 태어났다면<br />나는 <b>누구</b>였을까</h1>
-          <p className="lg-sub">로그인하면 무료로 내 타입과 사주를 보고,<br />결과는 보관함에 계속 남아요.</p>
+          <p className="lg-sub">로그인하면 본 풀이가 보관함에 계속 남고,<br />다음부터 생년월일이 자동으로 채워져요.</p>
           {shared && <div className="lg-shared">친구는 <b style={{ color: ELEMENT_COLOR[shared.el] }}>{shared.name}</b>이 나왔어요. 나는?</div>}
           <div className="lg-types" aria-hidden="true">
             {TYPE_ORDER.map(g => <span key={g}><TypeIcon gan={g} size={28} strokeWidth={1.4} /></span>)}

@@ -170,6 +170,10 @@ export default function Wolun() {
         })
       });
       const data = await res.json();
+      if (res.status === 401 && data.needLogin) {
+        window.location.href = '/login?callbackUrl=' + encodeURIComponent(window.location.pathname + window.location.search);
+        return;
+      }
       if (!res.ok || !data.payurl) {
         setPayError(data.error || '결제 요청에 실패했어요.');
         setPaying(false);
