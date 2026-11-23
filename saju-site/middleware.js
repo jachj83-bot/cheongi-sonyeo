@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 
-// 사주아이처럼 들어오자마자 로그인부터. 로그인 안 했으면 /login으로 보낸다.
-// 카카오·구글 키가 베르셀에 없으면 아무것도 막지 않는다.
+// 무료(첫 화면·무료 사주·궁합 점수·타로)는 로그인 없이 바로 쓰고,
+// 유료 상품 페이지(신년운세·이번 달 운세·토정비결·통합분석)만 로그인한 뒤 들어오게 한다.
+// 결제한 풀이를 보관함에 확실히 남기려고. 카카오·구글 키가 베르셀에 없으면 아무것도 막지 않는다.
 // lib/auth.js의 authSecret()과 같은 값을 만든다 (미들웨어는 Web Crypto만 쓸 수 있음)
 async function authSecret() {
   if (process.env.NEXTAUTH_SECRET) return process.env.NEXTAUTH_SECRET;
@@ -28,7 +29,6 @@ export async function middleware(req) {
   return NextResponse.redirect(url);
 }
 
-// 로그인 화면, 약관·개인정보·환불, API, 이미지 같은 정적 파일은 로그인 없이 열린다
 export const config = {
-  matcher: ['/((?!api|_next|login|terms|privacy|refund|favicon|robots|sitemap|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico|txt|xml|json|mp4)$).*)'],
+  matcher: ['/sinnyeon/:path*', '/wolun/:path*', '/tojeong/:path*', '/tonghap/:path*'],
 };
