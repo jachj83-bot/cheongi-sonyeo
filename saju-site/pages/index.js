@@ -167,8 +167,28 @@ export default function Home() {
           @keyframes revealUp { from{opacity:0;translate:0 36px} to{opacity:1;translate:0 0} }
           .reveal { opacity:0; }
           .reveal.in { animation: revealUp .9s cubic-bezier(.23,1,.32,1) forwards; animation-delay: var(--d, 0ms); }
-          .svc-card { transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease; }
-          .svc-card:hover { transform: translateY(-4px); border-color: rgba(232,200,126,.45) !important; box-shadow: 0 10px 30px rgba(0,0,0,.35), 0 0 24px rgba(232,200,126,.12); }
+          .svc-sec { font-size:13px; font-weight:700; letter-spacing:2px; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+          .svc-sec::after { content:''; flex:1; height:1px; background:currentColor; opacity:.25; }
+          .svc-sec.svc-gold { color:#E8C87E; } .svc-sec.svc-violet { color:#c49ae8; }
+          .svc-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+          @media (min-width:900px) { .svc-grid { grid-template-columns:repeat(3,1fr); gap:16px; } }
+          .svc-card { cursor:pointer; border-radius:14px; overflow:hidden; display:flex; flex-direction:column; background:linear-gradient(180deg,#2a2452,#1b1738); border:1px solid rgba(232,200,126,.38); box-shadow:0 8px 24px rgba(0,0,0,.45); transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease; }
+          .svc-card.svc-violet { background:linear-gradient(180deg,#33205a,#1e1438); border-color:rgba(196,154,232,.45); }
+          .svc-card:hover { transform: translateY(-4px); border-color: rgba(232,200,126,.8); box-shadow: 0 12px 30px rgba(0,0,0,.5), 0 0 24px rgba(232,200,126,.18); }
+          .svc-img { position:relative; aspect-ratio:4/3; overflow:hidden; background:#120f2a; }
+          .svc-img img { width:100%; height:100%; object-fit:cover; display:block; transition: transform .4s ease; }
+          .svc-card:hover .svc-img img { transform: scale(1.05); }
+          .svc-badge { position:absolute; top:8px; left:8px; font-size:11px; font-weight:700; color:#1a1430; background:#E8C87E; border-radius:10px; padding:3px 9px; box-shadow:0 2px 8px rgba(0,0,0,.35); }
+          .svc-violet .svc-badge { background:#c49ae8; }
+          .svc-body { padding:12px 13px 14px; display:flex; flex-direction:column; flex:1; }
+          .svc-name { font-family:'Noto Serif KR',serif; font-size:16px; font-weight:700; color:#fff; margin-bottom:4px; }
+          .svc-desc { font-size:12px; color:rgba(237,233,242,.68); line-height:1.5; margin-bottom:10px; flex:1; }
+          .svc-foot { display:flex; align-items:center; justify-content:space-between; gap:6px; }
+          .svc-price { font-size:13px; font-weight:800; color:#1a1430; background:#E8C87E; border-radius:8px; padding:3px 9px; }
+          .svc-violet .svc-price { background:#c49ae8; }
+          .svc-price.free { background:transparent; color:#E8C87E; border:1px solid #E8C87E; }
+          .svc-violet .svc-price.free { color:#c49ae8; border-color:#c49ae8; }
+          .svc-go { font-size:11px; color:rgba(237,233,242,.55); white-space:nowrap; }
           .svc-card:active { transform: scale(.98); }
           .svc-icon { display:inline-block; transition: transform .4s ease; }
           .svc-card:hover .svc-icon { transform: scale(1.2) rotate(-8deg); }
@@ -397,80 +417,40 @@ export default function Home() {
                 <div style={{fontSize:'10px',letterSpacing:'4px',color:'rgba(232,200,126,0.4)',marginBottom:'12px'}}>SERVICES</div>
                 <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:'28px',color:'#E8C87E',fontWeight:'400'}}>천기소녀 메뉴</div>
               </div>
-              <div style={{marginBottom:'12px'}}>
-                <div style={{fontSize:'10px',letterSpacing:'3px',color:'rgba(232,200,126,0.4)',marginBottom:'14px'}}>사주 · 운세</div>
-                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px',marginBottom:'12px'}}>
-                  {[
-                    {icon:SVC_ICONS.me,tag:'완전 무료',name:'나의 운세',desc:'타고난 기질과 오행 에너지 분석',price:'무료',onClick:()=>goStart()},
-                    {icon:SVC_ICONS.match,tag:'완전 무료',name:'궁합 분석',desc:'연인·배우자·친구 궁합 점수 공개',price:'무료',onClick:()=>router.push('/gunghap')},
-                    {icon:SVC_ICONS.year,tag:'2026 병오년 · 올해',name:'올해 운세',desc:'남은 상반기·하반기 흐름을 자세히 풀이',price:'₩9,900',onClick:()=>router.push('/sinnyeon?year=2026')},
-                    {icon:SVC_ICONS.next,tag:'2027 정미년 · 내년',name:'신년운세',desc:'다가올 상반기·하반기 흐름을 미리 풀이',price:'₩9,900',onClick:()=>router.push('/sinnyeon?year=2027')},
-                    {icon:SVC_ICONS.scroll,tag:'전통 방식',name:'토정비결',desc:'괘를 뽑아 계절별 신수를 풀이',price:'₩9,900',onClick:()=>router.push('/tojeong')}
-                  ].map((p,i)=>(
-                    <div key={i} onClick={p.onClick} className="reveal svc-card" style={{'--d':`${(i%2)*120}ms`,background:'linear-gradient(180deg,rgba(40,34,72,.4),rgba(24,20,46,.5))',border:'1px solid rgba(232,200,126,0.1)',borderRadius:'4px',padding:'24px',cursor:'pointer',backdropFilter:'blur(10px)'}}>
-                      <div style={{marginBottom:'12px'}}><span className="svc-icon"><Ico d={p.icon} /></span></div>
-                      <div style={{fontSize:'10px',color:'rgba(232,200,126,0.4)',letterSpacing:'2px',marginBottom:'8px'}}>{p.tag}</div>
-                      <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:'18px',color:'#EDE9F2',marginBottom:'6px'}}>{p.name}</div>
-                      <div style={{fontSize:'12px',color:'rgba(237,233,242,0.4)',marginBottom:'14px',fontWeight:'300'}}>{p.desc}</div>
-                      <div style={{fontSize:'16px',color:'#E8C87E',fontWeight:'600'}}>{p.price}</div>
-                    </div>
-                  ))}
-                </div>
-                <div className="reveal" style={{background:'linear-gradient(180deg,rgba(40,34,72,.4),rgba(24,20,46,.5))',border:'1px solid rgba(232,200,126,0.1)',borderRadius:'4px',padding:'24px',backdropFilter:'blur(10px)',marginBottom:'32px'}}>
-                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                    <div style={{display:'flex',gap:'16px',alignItems:'center'}}><Ico d={SVC_ICONS.pdf} /><div>
-                      <div style={{fontSize:'10px',color:'rgba(232,200,126,0.4)',letterSpacing:'2px',marginBottom:'8px'}}>정밀 분석 리포트</div>
-                      <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:'18px',color:'#EDE9F2',marginBottom:'6px'}}>AI 리포트 PDF</div>
-                      <div style={{fontSize:'12px',color:'rgba(237,233,242,0.4)',fontWeight:'300'}}>30페이지 분량의 정밀 사주 리포트 · 이메일 발송</div>
-                    </div></div>
-                    <div style={{textAlign:'right'}}>
-                      <div style={{fontSize:'16px',color:'#E8C87E',fontWeight:'600',marginBottom:'4px'}}>₩29,900</div>
-                      <div style={{fontSize:'11px',color:'rgba(232,200,126,0.3)',letterSpacing:'1px'}}>준비중</div>
-                    </div>
+              {[
+                { sec:'사주 · 운세', theme:'gold', items:[
+                  {img:'me',badge:'무료',name:'나의 운세',desc:'타고난 기질과 오행 에너지 분석',price:'무료',onClick:()=>goStart()},
+                  {img:'match',badge:'무료',name:'궁합 분석',desc:'연인·배우자·친구 궁합 점수 공개',price:'무료',onClick:()=>router.push('/gunghap')},
+                  {img:'y2026',badge:'2026 병오년',name:'올해 운세',desc:'남은 상반기·하반기 흐름을 자세히',price:'₩9,900',onClick:()=>router.push('/sinnyeon?year=2026')},
+                  {img:'y2027',badge:'BEST · 2027',name:'신년운세',desc:'2027 정미년 흐름을 미리 풀이',price:'₩9,900',onClick:()=>router.push('/sinnyeon?year=2027')},
+                  {img:'tojeong',badge:'전통 방식',name:'토정비결',desc:'괘를 뽑아 계절별 신수를 풀이',price:'₩9,900',onClick:()=>router.push('/tojeong')},
+                ]},
+                { sec:'타로', theme:'violet', items:[
+                  {img:'tarot',badge:'무료',name:'오늘의 타로',desc:'지금 나에게 필요한 메시지 한 장',price:'무료',onClick:()=>router.push('/tarot?cat=daily')},
+                  {img:'love',badge:'무료',name:'연애 타로',desc:'그 사람의 마음과 우리의 앞날',price:'무료',onClick:()=>router.push('/tarot?cat=love')},
+                  {img:'wealth',badge:'무료',name:'재물 타로',desc:'지금 흐름과 다가올 재물운',price:'무료',onClick:()=>router.push('/tarot?cat=wealth')},
+                  {img:'tonghap',badge:'가장 정밀',name:'사주+타로 통합',desc:'사주로 흐름, 타로로 지금을 짚는 분석',price:'₩24,900',onClick:()=>router.push('/tonghap')},
+                ]},
+              ].map(g=>(
+                <div key={g.sec} style={{marginBottom:'32px'}}>
+                  <div className={`svc-sec svc-${g.theme}`}>{g.sec}</div>
+                  <div className="svc-grid">
+                    {g.items.map((p,i)=>(
+                      <div key={p.name} onClick={p.onClick} className={`reveal svc-card svc-${g.theme}`} style={{'--d':`${(i%2)*120}ms`}}>
+                        <div className="svc-img">
+                          <img src={`/svc/${p.img}.webp`} alt={p.name} loading="lazy" decoding="async" width="640" height="482" />
+                          <span className="svc-badge">{p.badge}</span>
+                        </div>
+                        <div className="svc-body">
+                          <div className="svc-name">{p.name}</div>
+                          <div className="svc-desc">{p.desc}</div>
+                          <div className="svc-foot"><span className={`svc-price${p.price==='무료' ? ' free' : ''}`}>{p.price}</span><span className="svc-go">보러가기 →</span></div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              </div>
-              <div>
-                <div style={{fontSize:'10px',letterSpacing:'3px',color:'rgba(155,109,214,0.5)',marginBottom:'14px'}}>타로</div>
-                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px',marginBottom:'12px'}}>
-                  {[
-                    {icon:SVC_ICONS.card,tag:'오늘의 한 장 · 무료',name:'오늘의 운세',desc:'지금 이 순간 나에게 필요한 메시지',price:'무료',onClick:()=>router.push('/tarot?cat=daily')},
-                    {icon:SVC_ICONS.heart,tag:'연애·관계 · 무료',name:'연애 타로',desc:'그 사람의 마음과 우리의 앞날',price:'무료',onClick:()=>router.push('/tarot?cat=love')}
-                  ].map((p,i)=>(
-                    <div key={i} onClick={p.onClick} className="reveal svc-card" style={{'--d':`${(i%2)*120}ms`,background:'linear-gradient(180deg,rgba(60,34,100,.4),rgba(36,20,60,.5))',border:'1px solid rgba(155,109,214,0.15)',borderRadius:'4px',padding:'24px',cursor:'pointer',backdropFilter:'blur(10px)'}}>
-                      <div style={{marginBottom:'12px'}}><span className="svc-icon"><Ico d={p.icon} color="#c49ae8" /></span></div>
-                      <div style={{fontSize:'10px',color:'rgba(155,109,214,0.5)',letterSpacing:'2px',marginBottom:'8px'}}>{p.tag}</div>
-                      <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:'18px',color:'#EDE9F2',marginBottom:'6px'}}>{p.name}</div>
-                      <div style={{fontSize:'12px',color:'rgba(237,233,242,0.4)',marginBottom:'14px',fontWeight:'300'}}>{p.desc}</div>
-                      <div style={{fontSize:'16px',color:'#c49ae8',fontWeight:'600'}}>{p.price}</div>
-                    </div>
-                  ))}
-                </div>
-                <div onClick={()=>router.push('/tarot?cat=wealth')} className="reveal svc-card" style={{background:'linear-gradient(180deg,rgba(60,34,100,.4),rgba(36,20,60,.5))',border:'1px solid rgba(155,109,214,0.15)',borderRadius:'4px',padding:'24px',backdropFilter:'blur(10px)',marginBottom:'32px',cursor:'pointer'}}>
-                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                    <div style={{display:'flex',gap:'16px',alignItems:'center'}}><span className="svc-icon"><Ico d={SVC_ICONS.coin} color="#c49ae8" /></span><div>
-                      <div style={{fontSize:'10px',color:'rgba(155,109,214,0.5)',letterSpacing:'2px',marginBottom:'8px'}}>재물 · 투자 · 무료</div>
-                      <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:'18px',color:'#EDE9F2',marginBottom:'6px'}}>재물 타로</div>
-                      <div style={{fontSize:'12px',color:'rgba(237,233,242,0.4)',fontWeight:'300'}}>지금 흐름과 다가올 재물운을 세 장으로 짚어드려요</div>
-                    </div></div>
-                    <div style={{textAlign:'right'}}>
-                      <div style={{fontSize:'16px',color:'#c49ae8',fontWeight:'600'}}>무료</div>
-                    </div>
-                  </div>
-                </div>
-                <div onClick={()=>router.push('/tonghap')} className="reveal svc-card" style={{background:'linear-gradient(180deg,rgba(60,34,100,.4),rgba(36,20,60,.5))',border:'1px solid rgba(155,109,214,0.15)',borderRadius:'4px',padding:'24px',backdropFilter:'blur(10px)',cursor:'pointer'}}>
-                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                    <div style={{display:'flex',gap:'16px',alignItems:'center'}}><span className="svc-icon"><Ico d={SVC_ICONS.eye} color="#c49ae8" /></span><div>
-                      <div style={{fontSize:'10px',color:'rgba(155,109,214,0.5)',letterSpacing:'2px',marginBottom:'8px'}}>통합 분석 · 가장 정밀</div>
-                      <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:'18px',color:'#EDE9F2',marginBottom:'6px'}}>사주 + 타로 통합 분석</div>
-                      <div style={{fontSize:'12px',color:'rgba(237,233,242,0.4)',fontWeight:'300'}}>사주로 흐름을 보고 타로로 현재를 짚는 가장 정밀한 분석</div>
-                    </div></div>
-                    <div style={{textAlign:'right'}}>
-                      <div style={{fontSize:'16px',color:'#c49ae8',fontWeight:'600'}}>₩24,900</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
           <div style={{background:'rgba(11,10,31,0.95)',borderTop:'1px solid rgba(232,200,126,0.1)',borderBottom:'1px solid rgba(232,200,126,0.1)'}}>
