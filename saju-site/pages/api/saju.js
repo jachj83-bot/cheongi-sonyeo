@@ -83,6 +83,17 @@ function calculateSaju(y, m, d, h, calendar) {
   return calcSolar(s.year, s.month, s.day, h);
 }
 
+// 태어난 시간을 모르면 시주를 비운다 (낮 12시로 가정해서 틀린 시주로 풀이하지 않도록)
+const isUnknownHour = (h) => !h || h === '모름';
+function sajuOf(y, m, d, hour, calendar) {
+  const s = calculateSaju(parseInt(y), parseInt(m), parseInt(d), isUnknownHour(hour) ? 12 : getHourNumber(hour), calendar);
+  return isUnknownHour(hour) ? { ...s, hourPillar: '' } : s;
+}
+const HOUR_UNKNOWN_TEXT = '모름 (태어난 시간을 몰라 시주는 빼고 년·월·일 세 기둥으로만 풀이하세요. 자녀운·말년운처럼 시주로 보는 내용은 단정하지 마세요)';
+const hp = (saju) => saju.hourPillar || HOUR_UNKNOWN_TEXT;
+// 비겁+인성 점수로 신강/신약을 나눈다. 시주가 없으면 기둥이 3개라 기준도 3/4로 낮춘다.
+const singangOf = (score, hasHour) => (score >= (hasHour ? 3.0 : 2.25) ? '신강' : '신약');
+
 function getHourNumber(hourLabel) {
   const map = {
     '자시':0,'축시':2,'인시':4,'묘시':6,'진시':8,'사시':10,
@@ -101,7 +112,9 @@ function systemContext() {
   return `오늘은 ${y}년 ${m}월 ${d}일(한국 시간)입니다. 올해는 ${y}년, 내년은 ${y + 1}년입니다. `
     + `연도를 말할 때는 반드시 이 날짜를 기준으로 하고, 이미 지난 연도(${y - 1}년 이전)를 앞으로 다가올 해처럼 쓰지 마세요. `
     + `특정 연도를 꼭 말할 필요가 없으면 '올해', '내년', '앞으로'처럼 표현하세요. `
-    + `답변에는 마크다운 기호(**, ##, ###, 백틱)를 절대 쓰지 말고, 강조가 필요하면 이모지나 문장으로만 표현하세요.`;
+    + `답변에는 마크다운 기호(**, ##, ###, 백틱)를 절대 쓰지 말고, 강조가 필요하면 이모지나 문장으로만 표현하세요. `
+    + `사주와 타로는 타고난 경향과 흐름을 읽는 참고 자료입니다. 미래의 일을 "반드시", "100%", "무조건" 일어난다고 단정하지 말고 "~한 흐름이에요", "~할 가능성이 커요", "~하면 좋아요"처럼 흐름과 조언으로 말하세요. `
+    + `특히 건강은 병명이나 질병을 예언하지 말고 컨디션 관리와 생활 습관 조언으로만 말하세요. 투자 수익이나 금액을 약속하지 말고, 상대방의 실제 마음이나 연락 여부를 사실처럼 말하지 마세요. 사고·이별·죽음처럼 겁을 주는 표현은 쓰지 마세요.`;
 }
 
 // AI 응답을 실시간 스트리밍으로 전송 (체감 속도 개선). extraHeader가 있으면
@@ -263,8 +276,8 @@ ${theme.tone} 톤으로 한국어로 작성해주세요.`;
 
     // 궁합 분석
     if (type === 'gunghap') {
-      const meSaju = calculateSaju(parseInt(me.year), parseInt(me.month), parseInt(me.day), 12, me.calendar);
-      const partnerSaju = calculateSaju(parseInt(partner.year), parseInt(partner.month), parseInt(partner.day), 12, partner.calendar);
+      const meSaju = sajuOf(me.year, me.month, me.day, me.hour, me.calendar);
+      const partnerSaju = sajuOf(partner.year, partner.month, partner.day, partner.hour, partner.calendar);
       const mePillars = [meSaju.yearPillar, meSaju.monthPillar, meSaju.dayPillar, meSaju.hourPillar];
       const partnerPillars = [partnerSaju.yearPillar, partnerSaju.monthPillar, partnerSaju.dayPillar, partnerSaju.hourPillar];
       const meStrength = calcOhaengStrength(mePillars);
@@ -277,12 +290,12 @@ ${theme.tone} 톤으로 한국어로 작성해주세요.`;
       const prompt = `당신은 30년 경력의 명리학 전문가입니다.
 
 [${meName}님의 사주팔자]
-년주: ${meSaju.yearPillar} / 월주: ${meSaju.monthPillar} / 일주: ${meSaju.dayPillar} / 시주: ${meSaju.hourPillar}
+년주: ${meSaju.yearPillar} / 월주: ${meSaju.monthPillar} / 일주: ${meSaju.dayPillar} / 시주: ${hp(meSaju)}
 일간: ${meIlgan}(${CHEONGAN_OHAENG[meIlgan]})
 오행: 목${meStrength['목']} 화${meStrength['화']} 토${meStrength['토']} 금${meStrength['금']} 수${meStrength['수']}
 
 [${partnerName}님의 사주팔자]
-년주: ${partnerSaju.yearPillar} / 월주: ${partnerSaju.monthPillar} / 일주: ${partnerSaju.dayPillar} / 시주: ${partnerSaju.hourPillar}
+년주: ${partnerSaju.yearPillar} / 월주: ${partnerSaju.monthPillar} / 일주: ${partnerSaju.dayPillar} / 시주: ${hp(partnerSaju)}
 일간: ${partnerIlgan}(${CHEONGAN_OHAENG[partnerIlgan]})
 오행: 목${partnerStrength['목']} 화${partnerStrength['화']} 토${partnerStrength['토']} 금${partnerStrength['금']} 수${partnerStrength['수']}
 
@@ -309,7 +322,7 @@ ${meName}님과 ${partnerName}님, 두 분의 궁합을 봐주세요. 아래 형
       const fy = SINNYEON_YEAR_INFO[forecastYear] ? forecastYear : '2026';
       const yearInfo = SINNYEON_YEAR_INFO[fy];
       const hourNum = hour === '모름' ? 12 : getHourNumber(hour);
-      const saju = calculateSaju(parseInt(year), parseInt(month), parseInt(day), hourNum, calendar);
+      const saju = sajuOf(year, month, day, hour, calendar);
       const ilgan = getIlgan(saju.dayPillar);
       const pillars = [saju.yearPillar, saju.monthPillar, saju.dayPillar, saju.hourPillar];
       const strength = calcOhaengStrength(pillars);
@@ -318,7 +331,7 @@ ${meName}님과 ${partnerName}님, 두 분의 궁합을 봐주세요. 아래 형
       const prompt = `당신은 30년 경력의 명리학 전문가입니다. ${name || '의뢰인'}님의 ${fy}년 ${yearInfo.ganji} 신년운세를 상세히 봐주세요.
 
 [${name || '의뢰인'}님 사주팔자]
-년주: ${saju.yearPillar} / 월주: ${saju.monthPillar} / 일주: ${saju.dayPillar} / 시주: ${saju.hourPillar}
+년주: ${saju.yearPillar} / 월주: ${saju.monthPillar} / 일주: ${saju.dayPillar} / 시주: ${hp(saju)}
 성별: ${gender}자 / 일간: ${ilgan}(${ilganOhaeng})
 오행 강약: 목${strength['목']} 화${strength['화']} 토${strength['토']} 금${strength['금']} 수${strength['수']}
 
@@ -331,7 +344,7 @@ ${yearInfo.emoji} ${fy} ${yearInfo.ganji} 총운
 📅 하반기 흐름 (7~12월)
 💰 재물운
 ❤️ 애정 · 인간관계운
-🩺 건강운
+🩺 건강 · 컨디션 관리
 🍀 올해의 행운 포인트 (색 · 방향 · 아이템)
 ⚠️ 조심해야 할 시기와 이유
 
@@ -351,7 +364,7 @@ ${yearInfo.emoji} ${fy} ${yearInfo.ganji} 총운
     // 이번 달 나의 운세 (1,900원) — 이번 달 월운과 날마다의 일진을 함께 넘겨서 좋은 날·조심할 날을 날짜로 고르게 한다
     if (type === 'wolun') {
       const hourNum = hour === '모름' ? 12 : getHourNumber(hour);
-      const saju = calculateSaju(parseInt(year), parseInt(month), parseInt(day), hourNum, calendar);
+      const saju = sajuOf(year, month, day, hour, calendar);
       const ilgan = getIlgan(saju.dayPillar);
       const pillars = [saju.yearPillar, saju.monthPillar, saju.dayPillar, saju.hourPillar];
       const strength = calcOhaengStrength(pillars);
@@ -375,7 +388,7 @@ ${yearInfo.emoji} ${fy} ${yearInfo.ganji} 총운
       const prompt = `당신은 30년 경력의 명리학 전문가입니다. ${name || '의뢰인'}님의 ${ty}년 ${tm}월 한 달 운세를 봐주세요.
 
 [${name || '의뢰인'}님 사주팔자]
-년주: ${saju.yearPillar} / 월주: ${saju.monthPillar} / 일주: ${saju.dayPillar} / 시주: ${saju.hourPillar}
+년주: ${saju.yearPillar} / 월주: ${saju.monthPillar} / 일주: ${saju.dayPillar} / 시주: ${hp(saju)}
 성별: ${gender}자 / 일간: ${ilgan}(${ilganOhaeng})
 오행 강약: 목${strength['목']} 화${strength['화']} 토${strength['토']} 금${strength['금']} 수${strength['수']}
 
@@ -408,7 +421,7 @@ ${days.join(' / ')}
     // 토정비결
     if (type === 'tojeong') {
       const hourNum = hour === '모름' ? 12 : getHourNumber(hour);
-      const saju = calculateSaju(parseInt(year), parseInt(month), parseInt(day), hourNum, calendar);
+      const saju = sajuOf(year, month, day, hour, calendar);
       const ilgan = getIlgan(saju.dayPillar);
       const pillars = [saju.yearPillar, saju.monthPillar, saju.dayPillar, saju.hourPillar];
       const strength = calcOhaengStrength(pillars);
@@ -423,7 +436,7 @@ ${days.join(' / ')}
       const prompt = `당신은 전통 토정비결(土亭秘訣) 풀이에 능한 30년 경력의 명리학 전문가입니다. ${name || '의뢰인'}님의 2027년 신수(身數)를 토정비결 형식을 빌려 풀이해주세요.
 
 [${name || '의뢰인'}님 사주팔자]
-년주: ${saju.yearPillar} / 월주: ${saju.monthPillar} / 일주: ${saju.dayPillar} / 시주: ${saju.hourPillar}
+년주: ${saju.yearPillar} / 월주: ${saju.monthPillar} / 일주: ${saju.dayPillar} / 시주: ${hp(saju)}
 일간: ${ilgan}(${ilganOhaeng})
 오행 강약: 목${strength['목']} 화${strength['화']} 토${strength['토']} 금${strength['금']} 수${strength['수']}
 괘상 번호: ${sanggwae}-${junggwae}-${hagwae}괘
@@ -452,7 +465,7 @@ ${days.join(' / ')}
     // 사주 + 타로 통합 분석
     if (type === 'tonghap_tarot') {
       const hourNum = hour === '모름' ? 12 : getHourNumber(hour);
-      const saju = calculateSaju(parseInt(year), parseInt(month), parseInt(day), hourNum, calendar);
+      const saju = sajuOf(year, month, day, hour, calendar);
       const ilgan = getIlgan(saju.dayPillar);
       const pillars = [saju.yearPillar, saju.monthPillar, saju.dayPillar, saju.hourPillar];
       const strength = calcOhaengStrength(pillars);
@@ -460,13 +473,13 @@ ${days.join(' / ')}
       const singangCheck = (() => {
         const inseongOhaeng = { '목':'수', '화':'목', '토':'화', '금':'토', '수':'금' }[ilganOhaeng];
         const bigyeopScore = (strength[ilganOhaeng] || 0) + (strength[inseongOhaeng] || 0);
-        return bigyeopScore >= 3.0 ? '신강' : '신약';
+        return singangOf(bigyeopScore, !!saju.hourPillar);
       })();
 
       const prompt = `당신은 사주와 타로를 함께 보는 30년 경력의 명리학 전문가이자 타로 마스터입니다. ${name || '의뢰인'}님을 위해 사주로 큰 흐름을 짚고, 타로로 지금 이 순간의 기운을 겹쳐서 하나의 통합된 리딩을 해주세요.
 
 [사주팔자]
-년주: ${saju.yearPillar} / 월주: ${saju.monthPillar} / 일주: ${saju.dayPillar} / 시주: ${saju.hourPillar}
+년주: ${saju.yearPillar} / 월주: ${saju.monthPillar} / 일주: ${saju.dayPillar} / 시주: ${hp(saju)}
 일간: ${ilgan}(${ilganOhaeng}) / ${singangCheck} 사주
 오행 강약: 목${strength['목']} 화${strength['화']} 토${strength['토']} 금${strength['금']} 수${strength['수']}
 
@@ -519,7 +532,7 @@ ${card} (${cardEn || ''}) — ${reversed ? '역방향' : '정방향'}
 
     // 사주 분석
     const hourNum = hour === '모름' ? 12 : getHourNumber(hour);
-    const saju = calculateSaju(parseInt(year), parseInt(month), parseInt(day), hourNum, calendar);
+    const saju = sajuOf(year, month, day, hour, calendar);
     const ilgan = getIlgan(saju.dayPillar);
     const pillars = [saju.yearPillar, saju.monthPillar, saju.dayPillar, saju.hourPillar];
     const strength = calcOhaengStrength(pillars);
@@ -532,7 +545,7 @@ ${card} (${cardEn || ''}) — ${reversed ? '역방향' : '정방향'}
     const ilganOhaeng = CHEONGAN_OHAENG[ilgan];
     const inseongOhaeng = { '목':'수', '화':'목', '토':'화', '금':'토', '수':'금' }[ilganOhaeng];
     const bigyeopScore = (strength[ilganOhaeng] || 0) + (strength[inseongOhaeng] || 0);
-    const singang = bigyeopScore >= 3.0 ? '신강' : '신약';
+    const singang = singangOf(bigyeopScore, !!saju.hourPillar);
     const sorted = Object.entries(strength).sort((a, b) => b[1] - a[1]);
     const strongest = sorted[0][0];
     const weakest = sorted[sorted.length - 1][0];
@@ -540,7 +553,7 @@ ${card} (${cardEn || ''}) — ${reversed ? '역방향' : '정방향'}
     const prompt = `당신은 30년 경력의 명리학 전문가입니다.
 
 [${name || '의뢰인'}님 사주팔자]
-년주: ${saju.yearPillar} / 월주: ${saju.monthPillar} / 일주: ${saju.dayPillar} / 시주: ${saju.hourPillar}
+년주: ${saju.yearPillar} / 월주: ${saju.monthPillar} / 일주: ${saju.dayPillar} / 시주: ${hp(saju)}
 성별: ${gender}자 / 일간: ${ilgan}(${ilganOhaeng}) / ${singang} 사주
 
 오행 강약:
@@ -568,7 +581,8 @@ ${singang} 사주 특성에 맞게, 장점과 단점을 6:4로 균형있게, 따
       singang,
       ilgan,
       solar: toSolar(parseInt(year), parseInt(month), parseInt(day), calendar),
-      hourNum
+      hourNum,
+      hourUnknown: !saju.hourPillar
     };
 
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
