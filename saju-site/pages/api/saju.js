@@ -1,4 +1,4 @@
-import { calculateSaju } from '@fullstackfamily/manseryeok';
+import { calculateSaju as calcSolar, lunarToSolar } from '@fullstackfamily/manseryeok';
 import { setJSON } from '../../lib/redis';
 
 const CHEONGAN_OHAENG = {
@@ -31,15 +31,17 @@ const CHEONGAN_UMYANG = {
   '기':'음','경':'양','신':'음','임':'양','계':'음'
 };
 
-function getSipsin(ilgan, target) {
+function getSipsin(ilgan, target, isJi) {
   const ohaengOrder = ['목','화','토','금','수'];
   const ilOhaeng = CHEONGAN_OHAENG[ilgan];
-  const targetOhaeng = CHEONGAN_OHAENG[target] || JIJI_OHAENG[target];
+  const targetOhaeng = isJi ? JIJI_OHAENG[target] : (CHEONGAN_OHAENG[target] || JIJI_OHAENG[target]);
   if (!ilOhaeng || !targetOhaeng) return '';
   const ilIdx = ohaengOrder.indexOf(ilOhaeng);
   const targetIdx = ohaengOrder.indexOf(targetOhaeng);
   const diff = (targetIdx - ilIdx + 5) % 5;
-  const sameUmyang = CHEONGAN_UMYANG[ilgan] === CHEONGAN_UMYANG[target];
+  const JIJI_UMYANG = { '자':'음','축':'음','인':'양','묘':'음','진':'양','사':'양','오':'음','미':'음','신':'양','유':'음','술':'양','해':'양' };
+  const targetUmyang = isJi ? JIJI_UMYANG[target] : (CHEONGAN_UMYANG[target] || JIJI_UMYANG[target]);
+  const sameUmyang = CHEONGAN_UMYANG[ilgan] === targetUmyang;
   if (diff === 0) return sameUmyang ? '비견' : '겁재';
   if (diff === 1) return sameUmyang ? '식신' : '상관';
   if (diff === 2) return sameUmyang ? '편재' : '정재';
@@ -69,6 +71,16 @@ function calcOhaengStrength(pillars) {
 
 function getIlgan(dayPillar) {
   return dayPillar ? dayPillar[0] : '';
+}
+
+// 음력으로 입력하면 양력으로 바꿔서 계산한다 (윤달은 평달로 본다)
+function toSolar(y, m, d, calendar) {
+  if (calendar !== '음력') return { year: y, month: m, day: d };
+  try { const r = lunarToSolar(y, m, d, false); return r.solar; } catch { return { year: y, month: m, day: d }; }
+}
+function calculateSaju(y, m, d, h, calendar) {
+  const s = toSolar(y, m, d, calendar);
+  return calcSolar(s.year, s.month, s.day, h);
 }
 
 function getHourNumber(hourLabel) {
@@ -180,7 +192,7 @@ function splitPreview(fullText, previewSections = 2) {
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { name, year, month, day, hour, gender, type, me, partner, card, cardEn, reversed, question, orderId, forecastYear } = req.body;
+  const { name, year, month, day, hour, gender, type, me, partner, card, cardEn, reversed, question, orderId, forecastYear, calendar } = req.body;
 
   try {
 
@@ -251,8 +263,8 @@ ${theme.tone} 톤으로 한국어로 작성해주세요.`;
 
     // 궁합 분석
     if (type === 'gunghap') {
-      const meSaju = calculateSaju(parseInt(me.year), parseInt(me.month), parseInt(me.day), 12);
-      const partnerSaju = calculateSaju(parseInt(partner.year), parseInt(partner.month), parseInt(partner.day), 12);
+      const meSaju = calculateSaju(parseInt(me.year), parseInt(me.month), parseInt(me.day), 12, me.calendar);
+      const partnerSaju = calculateSaju(parseInt(partner.year), parseInt(partner.month), parseInt(partner.day), 12, partner.calendar);
       const mePillars = [meSaju.yearPillar, meSaju.monthPillar, meSaju.dayPillar, meSaju.hourPillar];
       const partnerPillars = [partnerSaju.yearPillar, partnerSaju.monthPillar, partnerSaju.dayPillar, partnerSaju.hourPillar];
       const meStrength = calcOhaengStrength(mePillars);
@@ -297,7 +309,7 @@ ${meName}님과 ${partnerName}님, 두 분의 궁합을 봐주세요. 아래 형
       const fy = SINNYEON_YEAR_INFO[forecastYear] ? forecastYear : '2026';
       const yearInfo = SINNYEON_YEAR_INFO[fy];
       const hourNum = hour === '모름' ? 12 : getHourNumber(hour);
-      const saju = calculateSaju(parseInt(year), parseInt(month), parseInt(day), hourNum);
+      const saju = calculateSaju(parseInt(year), parseInt(month), parseInt(day), hourNum, calendar);
       const ilgan = getIlgan(saju.dayPillar);
       const pillars = [saju.yearPillar, saju.monthPillar, saju.dayPillar, saju.hourPillar];
       const strength = calcOhaengStrength(pillars);
@@ -339,7 +351,7 @@ ${yearInfo.emoji} ${fy} ${yearInfo.ganji} 총운
     // 토정비결
     if (type === 'tojeong') {
       const hourNum = hour === '모름' ? 12 : getHourNumber(hour);
-      const saju = calculateSaju(parseInt(year), parseInt(month), parseInt(day), hourNum);
+      const saju = calculateSaju(parseInt(year), parseInt(month), parseInt(day), hourNum, calendar);
       const ilgan = getIlgan(saju.dayPillar);
       const pillars = [saju.yearPillar, saju.monthPillar, saju.dayPillar, saju.hourPillar];
       const strength = calcOhaengStrength(pillars);
@@ -383,7 +395,7 @@ ${yearInfo.emoji} ${fy} ${yearInfo.ganji} 총운
     // 사주 + 타로 통합 분석
     if (type === 'tonghap_tarot') {
       const hourNum = hour === '모름' ? 12 : getHourNumber(hour);
-      const saju = calculateSaju(parseInt(year), parseInt(month), parseInt(day), hourNum);
+      const saju = calculateSaju(parseInt(year), parseInt(month), parseInt(day), hourNum, calendar);
       const ilgan = getIlgan(saju.dayPillar);
       const pillars = [saju.yearPillar, saju.monthPillar, saju.dayPillar, saju.hourPillar];
       const strength = calcOhaengStrength(pillars);
@@ -450,14 +462,14 @@ ${card} (${cardEn || ''}) — ${reversed ? '역방향' : '정방향'}
 
     // 사주 분석
     const hourNum = hour === '모름' ? 12 : getHourNumber(hour);
-    const saju = calculateSaju(parseInt(year), parseInt(month), parseInt(day), hourNum);
+    const saju = calculateSaju(parseInt(year), parseInt(month), parseInt(day), hourNum, calendar);
     const ilgan = getIlgan(saju.dayPillar);
     const pillars = [saju.yearPillar, saju.monthPillar, saju.dayPillar, saju.hourPillar];
     const strength = calcOhaengStrength(pillars);
 
     const sipsinData = pillars.map(p => {
       if (!p || p.length < 2) return null;
-      return { pillar: p, ganSipsin: getSipsin(ilgan, p[0]), jiSipsin: getSipsin(ilgan, p[1]) };
+      return { pillar: p, ganSipsin: getSipsin(ilgan, p[0]), jiSipsin: getSipsin(ilgan, p[1], true) };
     });
 
     const ilganOhaeng = CHEONGAN_OHAENG[ilgan];
@@ -497,7 +509,9 @@ ${singang} 사주 특성에 맞게, 장점과 단점을 6:4로 균형있게, 따
       sipsin: sipsinData,
       strength,
       singang,
-      ilgan
+      ilgan,
+      solar: toSolar(parseInt(year), parseInt(month), parseInt(day), calendar),
+      hourNum
     };
 
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
