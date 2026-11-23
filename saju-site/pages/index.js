@@ -379,7 +379,7 @@ export default function Home() {
                 </button>
                 </div>
                 <p className="hero-desc" style={{fontSize:'13px',color:'rgba(237,233,242,0.45)',lineHeight:'1.8',marginTop:'16px',maxWidth:'400px',fontWeight:'300'}}>
-                  생년월일 하나로 타고난 기질과 올해 흐름을 정통 명리학으로 풀어드려요.
+                  생년월일 하나로 타고난 기질과 10년 대운 흐름을 정통 명리학으로 풀어드려요.
                 </p>
               </div>
               <div className="hero-image fade-up" style={{display:'flex',justifyContent:'center',alignItems:'center'}}>
@@ -546,10 +546,11 @@ export default function Home() {
                 <div style={{fontSize:'10px',letterSpacing:'4px',color:'rgba(232,200,126,0.4)',marginBottom:'12px'}}>PREVIEW</div>
                 <div style={{fontFamily:"'Cormorant Garamond', 'Noto Serif KR', serif",fontSize:'28px',color:'#E8C87E',marginBottom:'14px',lineHeight:'1.4'}}>결과는 이렇게 나와요</div>
                 <ul style={{listStyle:'none',fontSize:'14px',color:'rgba(237,233,242,0.6)',lineHeight:'2.1'}}>
-                  <li>· 나의 일간 타입과 스토리용 이미지</li>
-                  <li>· 네 기둥 사주원국표와 십성</li>
+                  <li>· 나의 일간 타입 캐릭터와 스토리용 이미지</li>
+                  <li>· 사주원국표 (십성·지장간·12운성·신살)</li>
+                  <li>· 10년 대운 흐름과 올해 월운표</li>
                   <li>· 오행 강약 그래프와 신강·신약</li>
-                  <li>· 천기소녀의 풀이와 1:1 질문</li>
+                  <li>· 항목별 풀이와 천기소녀 1:1 질문</li>
                 </ul>
                 <button onClick={()=>goStart()} className="hero-cta" style={{marginTop:'22px',background:'rgba(232,200,126,0.15)',border:'1px solid rgba(232,200,126,0.5)',color:'#E8C87E',padding:'14px 30px',fontSize:'14px',letterSpacing:'2px',cursor:'pointer',fontFamily:'inherit',borderRadius:'2px',fontWeight:'600'}}>내 결과 보기 →</button>
               </div>

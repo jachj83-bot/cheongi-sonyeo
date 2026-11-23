@@ -697,46 +697,57 @@ export default function Result() {
               {/* 분석 결과 — 카톡처럼 말풍선으로 하나씩 */}
               {/* 챕터 목차 — 풀이가 길어도 원하는 부분으로 바로 이동 */}
               {(() => {
-                const chs = splitIntoBubbles(result);
+                const chs = splitIntoBubbles(result).map((b, i) => ({ b, i })).filter(({ b }) => { const f = b.split('\n')[0].trim(); return SECTION_EMOJI.test(f) && !f.startsWith('✨') && b.split('\n').slice(1).join('').trim(); });
                 if (chs.length < 3) return null;
                 return (
                   <div className="ch-nav">
-                    {chs.map((b, i) => {
-                      const title = b.split('\n')[0].replace(SECTION_EMOJI, '').replace(/[\[\]【】]/g, '').trim().slice(0, 14);
-                      return <a key={i} href={`#ch-${i}`}>{String(i + 1).padStart(2, '0')} {title || '풀이'}</a>;
+                    {chs.map(({ b, i }, k) => {
+                      const title = b.split('\n')[0].replace(SECTION_EMOJI, '').replace(/[\[\]【】]/g, '').replace(/\(.*?\)/g, '').trim();
+                      return <a key={i} href={`#ch-${i}`}>{String(k + 1).padStart(2, '0')} {title || '풀이'}</a>;
                     })}
                   </div>
                 );
               })()}
               <div style={{display:'flex',flexDirection:'column',gap:'16px',marginBottom:'20px'}}>
-                {splitIntoBubbles(result).map((bubble, i) => {
+                {(() => { let n = 0; return splitIntoBubbles(result).map((bubble, i) => {
                   const lines = bubble.split('\n');
-                  const isSection = SECTION_EMOJI.test(lines[0].trim());
-                  const title = isSection ? lines[0].replace(SECTION_EMOJI, '').replace(/[\[\]【】]/g, '').trim() : '';
+                  const first = lines[0].trim();
+                  const isSection = SECTION_EMOJI.test(first);
                   const body = isSection ? lines.slice(1).join('\n').trim() : bubble;
-                  const emoji = isSection ? (lines[0].trim().match(SECTION_EMOJI) || [''])[0] : '';
-                  let n = 0; splitIntoBubbles(result).slice(0, i + 1).forEach(b => { if (SECTION_EMOJI.test(b.split('\n')[0].trim())) n++; });
+                  // 마지막 ✨ 한 줄 안내: 번호 카드 대신 신년운세로 가는 배너
+                  if (isSection && first.startsWith('✨') && !body) {
+                    return (
+                      <a key={i} id={`ch-${i}`} href="/sinnyeon?year=2027" className="chat-bubble" style={{display:'flex',alignItems:'center',gap:'10px',textDecoration:'none',background:'rgba(232,201,122,0.08)',border:'1px dashed #c4712a',borderRadius:'10px',padding:'12px 14px',color:'#e8c97a',fontSize:'14px',lineHeight:'1.6'}}>
+                        <span style={{flex:1}}>{first}</span><span style={{fontSize:'18px'}}>→</span>
+                      </a>
+                    );
+                  }
+                  // 인사말("하늘의 기운을 읽었습니다.")처럼 제목 없는 짧은 글: 카드 없이 한 줄
+                  if (!isSection) {
+                    return (
+                      <div key={i} id={`ch-${i}`} className="chat-bubble" style={{display:'flex',alignItems:'flex-start',gap:'10px',padding:'2px 4px'}}>
+                        <img src="/logo_symbol.png" alt="" style={{width:'24px',height:'24px',flexShrink:0,marginTop:'2px'}} />
+                        <div style={{color:'#e8c97a',fontSize:'15px',lineHeight:'1.8',whiteSpace:'pre-wrap',fontFamily:"'Noto Serif KR',serif"}}>{bubble}</div>
+                      </div>
+                    );
+                  }
+                  n += 1;
+                  const title = first.replace(SECTION_EMOJI, '').replace(/[\[\]【】]/g, '').trim();
+                  const emoji = (first.match(SECTION_EMOJI) || [''])[0];
                   return (
                     <div key={i} id={`ch-${i}`} className="chat-bubble rd-card" style={{scrollMarginTop:'120px'}}>
-                      {isSection ? (
-                        <div className="rd-head">
-                          <span className="rd-num">{String(n).padStart(2, '0')}</span>
-                          <span className="rd-title">{emoji} {title}</span>
-                        </div>
-                      ) : (
-                        <div className="rd-head">
-                          <img src="/logo_symbol.png" alt="" style={{width:'22px',height:'22px'}} />
-                          <span className="rd-title" style={{fontSize:'13px',color:'#c4956a'}}>천기소녀</span>
-                        </div>
-                      )}
+                      <div className="rd-head">
+                        <span className="rd-num">{String(n).padStart(2, '0')}</span>
+                        <span className="rd-title">{emoji} {title}</span>
+                      </div>
                       {body && <div className="rd-body">{body}</div>}
                     </div>
                   );
-                })}
+                }); })()}
               </div>
 
               {/* 로그인 안 한 사람: 이 풀이를 보관함에 남기기 */}
-              {result && !loading && needSave && (
+              {result && doneStreaming && needSave && (
                 <a href={`/login?callbackUrl=${encodeURIComponent(router.asPath)}`}
                   style={{display:'block',textDecoration:'none',background:'#FEE500',borderRadius:'12px',padding:'14px 16px',marginBottom:'12px',textAlign:'center',boxShadow:'0 8px 22px rgba(0,0,0,.35)'}}>
                   <span style={{display:'block',fontSize:'15px',fontWeight:'800',color:'rgba(0,0,0,.85)'}}>카카오로 3초 로그인하고 이 풀이 저장하기</span>
@@ -745,7 +756,7 @@ export default function Result() {
               )}
 
               {/* 무료 풀이 다음 단계: 이번 달 나의 운세 (1,900원) */}
-              {result && !loading && (
+              {result && doneStreaming && (
                 <a href={`/wolun?${new URLSearchParams(Object.fromEntries(Object.entries(router.query || {}).filter(([k]) => ['name','year','month','day','hour','gender','calendar'].includes(k)))).toString()}`}
                   style={{display:'flex',alignItems:'center',gap:'12px',textDecoration:'none',background:'linear-gradient(90deg,#3a2008,#2d1500)',border:'1px solid #c4712a',borderRadius:'12px',padding:'10px 14px 10px 10px',marginBottom:'20px',boxShadow:'0 8px 22px rgba(0,0,0,.4)'}}>
                   <img src="/svc/month.webp" alt="" width="88" height="66" style={{width:'88px',height:'66px',objectFit:'cover',borderRadius:'10px',flexShrink:0}} />
@@ -777,7 +788,7 @@ export default function Result() {
                   <div style={{display:'flex',justifyContent:'center',gap:'6px',flexWrap:'wrap',marginBottom:'16px'}}>
                     <span style={{fontSize:'11px',color:'#1a0a00',background:'#e8c97a',borderRadius:'10px',padding:'3px 10px',fontWeight:'700'}}>오늘 1회 무료</span>
                     <span style={{fontSize:'11px',color:'#e8c97a',border:'1px solid #c4712a',borderRadius:'10px',padding:'3px 10px'}}>추가 질문 1건 ₩{CHAT_EXTRA_PRICE.toLocaleString()}</span>
-                    <span style={{fontSize:'11px',color:'#e8c97a',border:'1px solid #3d1500',borderRadius:'10px',padding:'3px 10px'}}>가입 없이 바로</span>
+                    <span style={{fontSize:'11px',color:'#e8c97a',border:'1px solid #3d1500',borderRadius:'10px',padding:'3px 10px'}}>무료 1회는 로그인 없이</span>
                   </div>
                   <div style={{borderTop:'1px dashed #3d1500',marginBottom:'16px'}} />
 
@@ -875,7 +886,7 @@ export default function Result() {
                 <div style={{fontFamily:'serif',fontSize:'18px',color:'#e8c97a',marginBottom:'8px'}}>✦ 재물운·연애운·다가올 운세가 궁금하신가요? ✦</div>
                 <p style={{color:'#7a5030',fontSize:'13px',marginBottom:'20px'}}>지금 본 건 일주 성격 분석이에요 · 더 자세한 이야기는 아래에서</p>
                 <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
-                  <button onClick={()=>router.push('/sinnyeon?year=2027')} style={{background:'#8b2e00',color:'#e8c97a',padding:'14px 24px',border:'1.5px solid #c4712a',borderRadius:'4px',fontSize:'14px',fontWeight:'700',cursor:'pointer',fontFamily:'serif'}}>
+                  <button onClick={()=>router.push('/sinnyeon?year=2027')} style={{background:'#8b2e00',color:'#e8c97a',padding:'14px 24px',border:'1.5px solid #c4712a',borderRadius:'4px',fontSize:'14px',fontWeight:'700',cursor:'pointer',fontFamily:'inherit'}}>
                     2027 정미년 신년운세 보기 · ₩9,900
                   </button>
                   <button onClick={()=>router.push('/tonghap')} style={{background:'transparent',color:'#c49ae8',padding:'14px 24px',border:'1px solid #3d1560',borderRadius:'4px',fontSize:'14px',cursor:'pointer'}}>
