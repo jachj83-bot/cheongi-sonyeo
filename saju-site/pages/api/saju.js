@@ -348,6 +348,63 @@ ${yearInfo.emoji} ${fy} ${yearInfo.ganji} 총운
       return;
     }
 
+    // 이번 달 나의 운세 (1,900원) — 이번 달 월운과 날마다의 일진을 함께 넘겨서 좋은 날·조심할 날을 날짜로 고르게 한다
+    if (type === 'wolun') {
+      const hourNum = hour === '모름' ? 12 : getHourNumber(hour);
+      const saju = calculateSaju(parseInt(year), parseInt(month), parseInt(day), hourNum, calendar);
+      const ilgan = getIlgan(saju.dayPillar);
+      const pillars = [saju.yearPillar, saju.monthPillar, saju.dayPillar, saju.hourPillar];
+      const strength = calcOhaengStrength(pillars);
+      const ilganOhaeng = CHEONGAN_OHAENG[ilgan];
+      const kst = new Date(Date.now() + 9 * 60 * 60 * 1000);
+      let ty = kst.getUTCFullYear();
+      let tm = kst.getUTCMonth() + 1;
+      if (kst.getUTCDate() >= 21) { tm += 1; if (tm > 12) { tm = 1; ty += 1; } } // 21일부터는 다음 달
+      const lastDay = new Date(Date.UTC(ty, tm, 0)).getUTCDate();
+      const midPillar = calcSolar(ty, tm, 15, 12).monthPillar; // 이번 달 대부분을 차지하는 월주
+      const dayJi = saju.dayPillar[1];
+      const CHUNG = { '자':'오','오':'자','축':'미','미':'축','인':'신','신':'인','묘':'유','유':'묘','진':'술','술':'진','사':'해','해':'사' };
+      const days = [];
+      for (let d = 1; d <= lastDay; d++) {
+        const dp = calcSolar(ty, tm, d, 12).dayPillar;
+        const tag = [getSipsin(ilgan, dp[0])];
+        if (CHUNG[dayJi] === dp[1]) tag.push('일지충');
+        days.push(`${d}일 ${dp}(${tag.join('·')})`);
+      }
+
+      const prompt = `당신은 30년 경력의 명리학 전문가입니다. ${name || '의뢰인'}님의 ${ty}년 ${tm}월 한 달 운세를 봐주세요.
+
+[${name || '의뢰인'}님 사주팔자]
+년주: ${saju.yearPillar} / 월주: ${saju.monthPillar} / 일주: ${saju.dayPillar} / 시주: ${saju.hourPillar}
+성별: ${gender}자 / 일간: ${ilgan}(${ilganOhaeng})
+오행 강약: 목${strength['목']} 화${strength['화']} 토${strength['토']} 금${strength['금']} 수${strength['수']}
+
+[${tm}월 월운] ${midPillar} (천간 십성: ${getSipsin(ilgan, midPillar[0])}, 지지 십성: ${getSipsin(ilgan, midPillar[1], true)})
+[${tm}월 날짜별 일진과 일간 기준 십성]
+${days.join(' / ')}
+
+첫 문장은 반드시 "하늘의 기운을 읽었습니다."로 시작하고 아래 여섯 항목을 순서대로 써주세요. 항목 제목 줄은 이모지와 짧은 제목만 쓰세요.
+
+🌙 ${tm}월 한 줄 요약 — 이번 달을 한 문장으로 정의하고, 왜 그런지 월운과 사주로 2~3문장 설명
+💰 돈 흐름 — 들어오는 돈과 나가는 돈, 써도 되는 것과 아껴야 할 것
+❤️ 연애·관계 — 솔로와 연애 중인 사람 각각, 가족·친구 관계
+💼 일·공부 — 잘 풀리는 일과 미뤄야 할 일
+📅 좋은 날과 조심할 날 — 위 일진 목록에서 좋은 날 3개와 조심할 날 2개를 날짜로 골라, 날짜마다 무엇을 하면 좋은지(조심할지) 한 줄씩. 일지충이 있는 날은 조심할 날 후보로 보세요. 목록에 없는 날짜는 쓰지 마세요.
+🍀 ${tm}월 행운 포인트 — 행운 컬러, 행운 숫자, 작은 개운 습관 하나
+
+각 항목은 3~5문장으로, 일상 장면을 넣어 구체적으로 쓰고, 장점과 주의점을 6:4로 균형 있게 따뜻한 톤으로 한국어로 써주세요. 마크다운 기호는 쓰지 마세요.`;
+
+      const fullText = await generateFullText({ prompt, maxTokens: 2400, fallback: '분석 결과를 가져올 수 없습니다.' });
+      const { preview, locked } = splitPreview(fullText, 2);
+
+      if (locked && orderId) {
+        await setJSON(`payapp:stash:${orderId}`, { full: fullText, meta: { name, year, month, day, target: `${ty}-${tm}` } }, 60 * 60 * 24);
+      }
+
+      res.status(200).json({ preview, full: (locked && orderId) ? null : fullText, locked: !!(locked && orderId), target: { year: ty, month: tm } });
+      return;
+    }
+
     // 토정비결
     if (type === 'tojeong') {
       const hourNum = hour === '모름' ? 12 : getHourNumber(hour);
