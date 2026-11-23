@@ -169,13 +169,6 @@ export default function Home() {
           @keyframes revealUp { from{opacity:0;translate:0 36px} to{opacity:1;translate:0 0} }
           .reveal { opacity:0; }
           .reveal.in { animation: revealUp .9s cubic-bezier(.23,1,.32,1) forwards; animation-delay: var(--d, 0ms); }
-          .month-banner { display:flex; align-items:center; gap:12px; text-align:left; margin-top:16px; max-width:440px; padding:10px 14px 10px 10px; border-radius:14px; text-decoration:none; background:linear-gradient(90deg,#3a2a14,#231a3e); border:1px solid rgba(232,200,126,.55); box-shadow:0 8px 22px rgba(0,0,0,.45), 0 0 18px rgba(232,200,126,.12); }
-          .month-banner img { width:96px; height:72px; object-fit:cover; border-radius:10px; flex-shrink:0; }
-          .month-banner .mb-txt { display:flex; flex-direction:column; gap:2px; min-width:0; flex:1; }
-          .month-banner em { font-style:normal; font-size:10.5px; font-weight:700; color:#1a1430; background:#E8C87E; border-radius:8px; padding:1px 7px; align-self:flex-start; }
-          .month-banner b { font-size:16px; color:#fff; font-family:'Noto Serif KR',serif; }
-          .month-banner small { font-size:11.5px; color:rgba(237,233,242,.65); }
-          .month-banner .mb-go { color:#E8C87E; font-size:20px; }
           .svc-sec { font-size:13px; font-weight:700; letter-spacing:2px; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
           .svc-sec::after { content:''; flex:1; height:1px; background:currentColor; opacity:.25; }
           .svc-sec.svc-gold { color:#E8C87E; } .svc-sec.svc-violet { color:#c49ae8; }
@@ -388,15 +381,6 @@ export default function Home() {
                 <p className="hero-desc" style={{fontSize:'13px',color:'rgba(237,233,242,0.45)',lineHeight:'1.8',marginTop:'16px',maxWidth:'400px',fontWeight:'300'}}>
                   생년월일 하나로 타고난 기질과 올해 흐름을 정통 명리학으로 풀어드려요.
                 </p>
-                <a href="/wolun" className="month-banner">
-                  <img src="/svc/month.webp" alt="" width="96" height="72" />
-                  <span className="mb-txt">
-                    <em>NEW · ₩1,900</em>
-                    <b>이번 달 나의 운세는?</b>
-                    <small>{mon ? `${mon}월` : '이번 달'} 돈·연애·일 흐름과 조심할 날까지</small>
-                  </span>
-                  <span className="mb-go">→</span>
-                </a>
               </div>
               <div className="hero-image fade-up" style={{display:'flex',justifyContent:'center',alignItems:'center'}}>
                 <div className="oracle-wrap">
