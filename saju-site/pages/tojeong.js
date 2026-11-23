@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
+import PageHero from '../lib/PageHero';
 
 const HOURS = [
   { label: '자시', desc: '23:30~01:30', value: '자시' },
@@ -122,7 +123,8 @@ export default function Tojeong() {
 
       {step === 'input' && (
         <div style={{minHeight:'100vh',background:'#0B0A1F'}}>
-          <div style={{maxWidth:'480px',margin:'0 auto',padding:'40px 20px 80px'}}>
+          <div style={{maxWidth:'480px',margin:'0 auto',padding:'24px 20px 80px'}}>
+            <PageHero img="tojeong" alt="토정비결" />
             <div style={{fontSize:'10px',letterSpacing:'4px',color:'rgba(232,200,126,0.4)',marginBottom:'12px'}}>전통 방식으로 보는 신수</div>
             <h2 style={{fontFamily:"'Cormorant Garamond', 'Noto Serif KR', serif",fontSize:'30px',fontWeight:'600',marginBottom:'8px',color:'#E8C87E',letterSpacing:'-0.5px'}}>올 한 해<br/>나의 신수를 봅니다</h2>
             <p style={{fontSize:'12px',color:'rgba(237,233,242,0.3)',marginBottom:'36px',letterSpacing:'1px'}}>사주를 바탕으로 괘를 뽑아 계절별 신수를 풀어드려요</p>

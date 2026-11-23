@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import PageHero from '../lib/PageHero';
 import { CardBack, CARD_BACK_CSS } from '../lib/CardBack';
 
 const HOURS = [
@@ -239,7 +240,8 @@ export default function Tonghap() {
 
       {step === 'input' && (
         <div style={{minHeight:'100vh',background:'#0B0A1F'}}>
-          <div style={{maxWidth:'480px',margin:'0 auto',padding:'40px 20px 80px'}}>
+          <div style={{maxWidth:'480px',margin:'0 auto',padding:'24px 20px 80px'}}>
+            <PageHero img="tonghap" alt="사주+타로 통합 분석" accent="#c49ae8" />
             <div style={{fontSize:'10px',letterSpacing:'4px',color:'rgba(196,154,232,0.5)',marginBottom:'12px'}}>가장 정밀한 통합 분석</div>
             <h2 style={{fontFamily:"'Cormorant Garamond', 'Noto Serif KR', serif",fontSize:'30px',fontWeight:'600',marginBottom:'8px',color:'#E8C87E',letterSpacing:'-0.5px'}}>사주로 흐름을,<br/>타로로 지금을 봅니다</h2>
             <p style={{fontSize:'12px',color:'rgba(237,233,242,0.3)',marginBottom:'36px',letterSpacing:'1px'}}>생년월일시를 넣고, 카드 한 장을 뽑아 통합 리딩을 받아보세요</p>

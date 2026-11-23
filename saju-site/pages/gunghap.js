@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
+import PageHero from '../lib/PageHero';
 
 const HOURS = [
   { label: '자시', desc: '23:30~01:30', value: '자시' },
@@ -150,7 +151,8 @@ export default function Gunghap() {
         <div style={{fontSize:'14px',color:'rgba(232,224,208,0.5)'}}>💑 궁합</div>
       </div>
 
-      <div style={{padding:'28px 20px 80px',maxWidth:'480px',margin:'0 auto'}}>
+      <div style={{padding:'24px 20px 80px',maxWidth:'480px',margin:'0 auto'}}>
+        <PageHero img="match" alt="궁합 분석" accent="#9b7ee8" />
         <h2 style={{fontSize:'24px',fontWeight:'800',marginBottom:'8px',letterSpacing:'-0.5px'}}>궁합 분석</h2>
         <p style={{fontSize:'14px',color:'rgba(232,224,208,0.45)',marginBottom:'28px',lineHeight:'1.7'}}>두 사람의 사주로 궁합을 분석해드려요</p>
 

@@ -29,9 +29,9 @@ const TAROT_CARDS = [
 ];
 
 const CATEGORIES = [
-  { id: 'daily', label: '오늘의 운세', desc: '지금 이 순간 나에게 필요한 메시지', price: '무료', count: 1, positions: ['현재'] },
-  { id: 'love', label: '연애 타로', desc: '그 사람의 마음과 우리의 앞날', price: '무료', count: 3, positions: ['그 사람의 마음', '나의 마음', '우리의 앞날'] },
-  { id: 'wealth', label: '재물 타로', desc: '지금 흐름과 다가올 재물운', price: '무료', count: 3, positions: ['현재 재물 상황', '다가올 기회', '조언'] },
+  { id: 'daily', img: 'tarot', label: '오늘의 운세', desc: '지금 이 순간 나에게 필요한 메시지', price: '무료', count: 1, positions: ['현재'] },
+  { id: 'love', img: 'love', label: '연애 타로', desc: '그 사람의 마음과 우리의 앞날', price: '무료', count: 3, positions: ['그 사람의 마음', '나의 마음', '우리의 앞날'] },
+  { id: 'wealth', img: 'wealth', label: '재물 타로', desc: '지금 흐름과 다가올 재물운', price: '무료', count: 3, positions: ['현재 재물 상황', '다가올 기회', '조언'] },
 ];
 
 function shuffle(arr) {
@@ -187,12 +187,13 @@ export default function Tarot() {
                 <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
                   {CATEGORIES.map(c => (
                     <button key={c.id} onClick={() => startReading(c)}
-                      style={{padding:'14px 16px',background:category.id===c.id?'rgba(120,50,200,0.3)':'rgba(120,50,200,0.08)',border:`1.5px solid ${category.id===c.id?'#9060d0':'#2d1560'}`,borderRadius:'8px',color:category.id===c.id?'#e8c97a':'#9070b0',cursor:'pointer',textAlign:'left',display:'flex',alignItems:'center',justifyContent:'space-between',gap:'10px'}}>
-                      <div>
+                      style={{padding:'10px 14px 10px 10px',background:category.id===c.id?'linear-gradient(180deg,#3d2370,#26164a)':'linear-gradient(180deg,#2c1a52,#1c1036)',border:`1.5px solid ${category.id===c.id?'#c49ae8':'rgba(196,154,232,0.35)'}`,borderRadius:'12px',boxShadow:'0 6px 18px rgba(0,0,0,0.4)',color:category.id===c.id?'#e8c97a':'#d8c4f0',cursor:'pointer',textAlign:'left',display:'flex',alignItems:'center',justifyContent:'space-between',gap:'12px'}}>
+                      <img src={`/svc/${c.img}.webp`} alt="" width="84" height="63" style={{width:'84px',height:'63px',objectFit:'cover',borderRadius:'8px',flexShrink:0,border:'1px solid rgba(196,154,232,0.3)'}} />
+                      <div style={{flex:1,minWidth:0}}>
                         <div style={{fontSize:'14px',fontWeight:category.id===c.id?'700':'400',marginBottom:'3px'}}>{c.label}</div>
-                        <div style={{fontSize:'11px',color:category.id===c.id?'rgba(232,200,126,0.6)':'rgba(144,112,176,0.6)'}}>{c.desc}</div>
+                        <div style={{fontSize:'11px',color:category.id===c.id?'rgba(232,200,126,0.75)':'rgba(216,196,240,0.6)'}}>{c.desc}</div>
                       </div>
-                      <div style={{fontSize:'13px',fontWeight:'700',color:category.id===c.id?'#e8c97a':'#9070b0',whiteSpace:'nowrap'}}>{c.price}</div>
+                      <div style={{fontSize:'12px',fontWeight:'700',color:'#c49ae8',border:'1px solid #c49ae8',borderRadius:'8px',padding:'2px 8px',whiteSpace:'nowrap'}}>{c.price}</div>
                     </button>
                   ))}
                 </div>

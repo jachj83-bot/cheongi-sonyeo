@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import PageHero from '../lib/PageHero';
 
 const HOURS = [
   { label: '자시', desc: '23:30~01:30', value: '자시' },
@@ -199,7 +200,8 @@ export default function Sinnyeon() {
 
       {step === 'input' && (
         <div style={{minHeight:'100vh',background:'#0B0A1F'}}>
-          <div style={{maxWidth:'480px',margin:'0 auto',padding:'40px 20px 80px'}}>
+          <div style={{maxWidth:'480px',margin:'0 auto',padding:'24px 20px 80px'}}>
+            <PageHero img={forecastYear === '2027' ? 'y2027' : 'y2026'} alt={`${YEAR_INFO[forecastYear].label} 신년운세`} />
             <div style={{fontSize:'10px',letterSpacing:'4px',color:'rgba(232,200,126,0.4)',marginBottom:'12px'}}>{YEAR_INFO[forecastYear].label}</div>
             <h2 style={{fontFamily:"'Cormorant Garamond', 'Noto Serif KR', serif",fontSize:'30px',fontWeight:'600',marginBottom:'8px',color:'#E8C87E',letterSpacing:'-0.5px'}}>나의 운은<br/>어떻게 흘러갈까요</h2>
             <p style={{fontSize:'12px',color:'rgba(237,233,242,0.3)',marginBottom:'36px',letterSpacing:'1px'}}>생년월일시로 상반기·하반기 흐름을 자세히 풀어드려요</p>
