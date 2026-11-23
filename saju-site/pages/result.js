@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { DAY_TYPES, ELEMENT_COLOR, typeImg, helperTypes, drawStoryCard } from '../lib/dayTypes';
 import NewYearPopup from '../lib/NewYearPopup';
+import { buildChart, GAN_HANJA, JI_HANJA, ganOhaeng, jiOhaeng, hourNumber } from '../lib/myeongri';
 
 const OHAENG_COLOR = {
   '목': '#4a9e4a', '화': '#e05a2b', '토': '#c4962a',
@@ -376,6 +377,19 @@ export default function Result() {
     }
   };
 
+  // 원국 상세(지장간·12운성·신살), 10년 대운, 월운 — 계산만으로 나오는 표
+  const chart = useMemo(() => {
+    if (!sajuData?.pillars) return null;
+    const q = router.query || {};
+    const sol = sajuData.solar || { year: q.year, month: q.month, day: q.day };
+    try {
+      return buildChart({
+        pillarsObj: sajuData.pillars,
+        birth: { year: +sol.year, month: +sol.month, day: +sol.day, hour: sajuData.hourNum ?? hourNumber(q.hour), gender: q.gender },
+      });
+    } catch { return null; }
+  }, [sajuData, router.query]);
+
   const strongestOhaeng = sajuData ? Object.entries(sajuData.strength).sort((a, b) => b[1] - a[1])[0][0] : null;
   const openingLine = sajuData
     ? `${name || '의뢰인'}님은 오행 중 ${strongestOhaeng} 기운이 유독 강한 ${sajuData.singang} 사주예요. 오늘은 뭐가 제일 궁금해요?`
@@ -451,6 +465,33 @@ export default function Result() {
           .use-card:hover, .use-card:active { border-color:#c4712a !important; background:rgba(232,200,126,0.12) !important; transform:translateY(-2px); }
           .use-card:disabled { opacity:.5; cursor:default; }
           @media (max-width:760px) { .ny-chip { display:none !important; } }
+          .mr-col { border:1px solid #3d1500; border-radius:8px; padding:8px 3px 7px; text-align:center; background:rgba(255,255,255,0.02); min-width:0; }
+          .mr-lab { font-size:11px; color:#7a5030; margin-bottom:3px; white-space:nowrap; }
+          .mr-ss { font-size:11px; font-weight:700; margin:2px 0; }
+          .mr-char { font-family:'Noto Serif KR',serif; font-size:26px; font-weight:900; line-height:1.1; border-radius:6px; padding:6px 0 4px; margin:3px 2px; }
+          .mr-char small { display:block; font-family:'Noto Sans KR',sans-serif; font-size:10px; font-weight:500; opacity:.85; margin-top:2px; }
+          .mr-meta { font-size:11px; color:#e0c9a8; margin-top:4px; font-family:'Noto Serif KR',serif; }
+          .mr-meta span { display:block; font-family:'Noto Sans KR',sans-serif; font-size:9.5px; color:#7a5030; }
+          .mr-sal { margin-top:5px; min-height:16px; display:flex; flex-direction:column; gap:2px; align-items:center; }
+          .mr-sal em { font-style:normal; font-size:9.5px; color:#e8c97a; background:rgba(196,113,42,0.18); border-radius:8px; padding:1px 5px; white-space:nowrap; }
+          .mr-sal i { font-style:normal; font-size:10px; color:#5a3a20; }
+          .mr-card { background:#1f0a00; border:1px solid #3d1500; border-radius:6px; padding:18px 14px; margin-bottom:20px; }
+          .mr-title { text-align:center; font-family:serif; font-size:14px; color:#e8c97a; letter-spacing:2px; margin-bottom:6px; }
+          .mr-sub { text-align:center; font-size:11.5px; color:#a08060; margin-bottom:14px; line-height:1.6; }
+          .mr-grid5 { display:grid; grid-template-columns:repeat(5,1fr); gap:5px; }
+          .mr-grid4 { display:grid; grid-template-columns:repeat(4,1fr); gap:5px; }
+          .mr-cell { position:relative; border:1px solid #3d1500; border-radius:8px; padding:8px 2px 7px; text-align:center; background:rgba(255,255,255,0.02); }
+          .mr-cell.on { border:1.5px solid #e8c97a; background:rgba(232,201,122,0.08); }
+          .mr-now { position:absolute; top:-8px; left:50%; transform:translateX(-50%); font-size:9px; background:#e8c97a; color:#1a0a00; border-radius:6px; padding:1px 6px; }
+          .mr-age { font-size:11px; color:#a08060; margin-bottom:2px; }
+          .mr-pil { font-family:'Noto Serif KR',serif; font-size:19px; font-weight:900; line-height:1.2; }
+          .mr-s1 { font-size:10.5px; color:#e0c9a8; margin-top:3px; }
+          .mr-s2 { font-size:10px; color:#7a5030; }
+          .rd-card { background:#1f0a00; border:1px solid #3d1500; border-radius:10px; overflow:hidden; }
+          .rd-head { display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid #3d1500; background:linear-gradient(90deg,#2d1500,#1f0a00); }
+          .rd-num { font-family:'Noto Serif KR',serif; font-size:13px; font-weight:900; color:#1a0a00; background:#e8c97a; border-radius:6px; padding:2px 7px; }
+          .rd-title { font-size:16px; font-weight:700; color:#e8c97a; }
+          .rd-body { padding:14px 16px 16px; color:#f0e6d3; font-size:15px; line-height:1.85; white-space:pre-wrap; }
           .ch-nav { position:sticky; top:57px; z-index:50; display:flex; gap:6px; overflow-x:auto; margin:0 -20px 16px; padding:10px 20px; background:rgba(26,10,0,0.96); border-bottom:1px solid #3d1500; scrollbar-width:none; }
           .ch-nav::-webkit-scrollbar { display:none; }
           .ch-nav a { flex:0 0 auto; font-size:12px; color:#e8c97a; text-decoration:none; border:1px solid #5a2a08; border-radius:14px; padding:5px 11px; white-space:nowrap; background:#2d1500; }
@@ -526,17 +567,45 @@ export default function Result() {
                 <div style={{background:'#1f0a00',border:'1px solid #3d1500',borderRadius:'6px',padding:'20px',marginBottom:'20px'}}>
                   <div style={{textAlign:'center',fontFamily:'serif',fontSize:'14px',color:'#e8c97a',marginBottom:'16px',letterSpacing:'2px'}}>✦ 사주원국 ✦</div>
 
-                  {/* 천간/지지 카드 */}
-                  <div style={{display:'flex',gap:'8px',marginBottom:'16px'}}>
-                    {[
-                      {label:'시주', pillar:sajuData.pillars.hour, sipsin:sajuData.sipsin?.[3]},
-                      {label:'일주', pillar:sajuData.pillars.day, sipsin:sajuData.sipsin?.[2]},
-                      {label:'월주', pillar:sajuData.pillars.month, sipsin:sajuData.sipsin?.[1]},
-                      {label:'년주', pillar:sajuData.pillars.year, sipsin:sajuData.sipsin?.[0]},
-                    ].map((p,i)=>(
-                      <div key={i} className="pillar-in" style={{flex:1,minWidth:0,display:'flex',animationDelay:`${0.15 + i*0.18}s`}}><PillarCard {...p} /></div>
-                    ))}
-                  </div>
+                  {/* 원국 상세 표: 십성 · 천간 · 지지 · 지장간 · 12운성 · 신살 */}
+                  {chart ? (
+                    <>
+                      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'6px',marginBottom:'10px'}}>
+                        {[3,2,1,0].map((ci,i)=>{ const c = chart.cols[ci]; const label = ['년주','월주','일주(나)','시주'][ci];
+                          if (!c) return <div key={ci} />;
+                          const go = ganOhaeng(c.gan), jo = jiOhaeng(c.ji);
+                          return (
+                            <div key={ci} className="pillar-in mr-col" style={{animationDelay:`${0.15 + i*0.15}s`,borderColor: ci===2 ? '#c4712a' : '#3d1500'}}>
+                              <div className="mr-lab">{label}</div>
+                              <div className="mr-ss" style={{color: ci===2 ? '#e8c97a' : '#c4956a'}}>{c.ganSipsin}</div>
+                              <div className="mr-char" style={{color:OHAENG_COLOR[go],background:`${OHAENG_COLOR[go]}1f`}}>{GAN_HANJA[c.gan]}<small>{c.gan}·{go}</small></div>
+                              <div className="mr-char" style={{color:OHAENG_COLOR[jo],background:`${OHAENG_COLOR[jo]}1f`}}>{JI_HANJA[c.ji]}<small>{c.ji}·{jo}</small></div>
+                              <div className="mr-ss" style={{color:'#b48cc8'}}>{c.jiSipsin}</div>
+                              <div className="mr-meta"><span>지장간</span>{c.jijanggan.map(g=>GAN_HANJA[g]).join('')}</div>
+                              <div className="mr-meta"><span>12운성</span>{c.unseong}</div>
+                              <div className="mr-sal">{c.sinsal.length ? c.sinsal.map(x=><em key={x}>{x}</em>) : <i>-</i>}</div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div style={{fontSize:'12px',color:'#c4956a',textAlign:'center',lineHeight:'1.7',marginBottom:'16px'}}>
+                        {chart.daeun && chart.daeun.current >= 0 && <>현재 대운 {chart.daeun.list[chart.daeun.current].age}~{chart.daeun.list[chart.daeun.current].age + 9}세 {GAN_HANJA[chart.daeun.list[chart.daeun.current].pillar[0]]}{JI_HANJA[chart.daeun.list[chart.daeun.current].pillar[1]]} · </>}
+                        {chart.flow.year} 세운 {GAN_HANJA[chart.flow.pillar[0]]}{JI_HANJA[chart.flow.pillar[1]]}({chart.flow.pillar})
+                        <br />합충 {chart.relations.length ? chart.relations.join(' · ') : '없음'}
+                      </div>
+                    </>
+                  ) : (
+                    <div style={{display:'flex',gap:'8px',marginBottom:'16px'}}>
+                      {[
+                        {label:'시주', pillar:sajuData.pillars.hour, sipsin:sajuData.sipsin?.[3]},
+                        {label:'일주', pillar:sajuData.pillars.day, sipsin:sajuData.sipsin?.[2]},
+                        {label:'월주', pillar:sajuData.pillars.month, sipsin:sajuData.sipsin?.[1]},
+                        {label:'년주', pillar:sajuData.pillars.year, sipsin:sajuData.sipsin?.[0]},
+                      ].map((p,i)=>(
+                        <div key={i} className="pillar-in" style={{flex:1,minWidth:0,display:'flex',animationDelay:`${0.15 + i*0.18}s`}}><PillarCard {...p} /></div>
+                      ))}
+                    </div>
+                  )}
 
                   {/* 오행 강약 바 */}
                   <div style={{borderTop:'1px solid #3d1500',paddingTop:'14px'}}>
@@ -562,6 +631,43 @@ export default function Result() {
                       <p style={{fontSize:'13px',color:'#e0c9a8',lineHeight:'1.6',textAlign:'center'}}>{iljuBlurb}</p>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* 10년 대운 흐름 */}
+              {chart?.daeun && (
+                <div className="mr-card">
+                  <div className="mr-title">✦ 10년 대운 흐름 ✦</div>
+                  <div className="mr-sub">{chart.daeun.forward ? '순행' : '역행'} · 대운수 {chart.daeun.su} · 10년마다 바뀌는 큰 운</div>
+                  <div className="mr-grid5">
+                    {chart.daeun.list.map((d,i)=>(
+                      <div key={i} className={`mr-cell${i===chart.daeun.current ? ' on' : ''}`}>
+                        {i===chart.daeun.current && <b className="mr-now">지금</b>}
+                        <div className="mr-age">{d.age}세</div>
+                        <div className="mr-pil"><span style={{color:OHAENG_COLOR[ganOhaeng(d.pillar[0])]}}>{GAN_HANJA[d.pillar[0]]}</span><span style={{color:OHAENG_COLOR[jiOhaeng(d.pillar[1])]}}>{JI_HANJA[d.pillar[1]]}</span></div>
+                        <div className="mr-s1">{d.ganSipsin}</div>
+                        <div className="mr-s2">{d.unseong}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 연도 월운표 */}
+              {chart?.flow && (
+                <div className="mr-card">
+                  <div className="mr-title">✦ {chart.flow.year}년 월운표 ✦</div>
+                  <div className="mr-sub">{chart.flow.year} 세운 {GAN_HANJA[chart.flow.pillar[0]]}{JI_HANJA[chart.flow.pillar[1]]}({chart.flow.pillar}) · {chart.flow.ganSipsin}의 해 · 달마다 절기(5일 전후)부터 바뀌어요</div>
+                  <div className="mr-grid4">
+                    {chart.flow.months.map(m=>(
+                      <div key={m.month} className="mr-cell">
+                        <div className="mr-age">{m.month}월</div>
+                        <div className="mr-pil"><span style={{color:OHAENG_COLOR[ganOhaeng(m.pillar[0])]}}>{GAN_HANJA[m.pillar[0]]}</span><span style={{color:OHAENG_COLOR[jiOhaeng(m.pillar[1])]}}>{JI_HANJA[m.pillar[1]]}</span></div>
+                        <div className="mr-s1">{m.ganSipsin}</div>
+                        <div className="mr-s2">{m.unseong}</div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
@@ -593,17 +699,30 @@ export default function Result() {
                 );
               })()}
               <div style={{display:'flex',flexDirection:'column',gap:'16px',marginBottom:'20px'}}>
-                {splitIntoBubbles(result).map((bubble, i) => (
-                  <div key={i} id={`ch-${i}`} className="chat-bubble" style={{display:'flex',gap:'10px',alignItems:'flex-start',scrollMarginTop:'120px'}}>
-                    <img src="/logo_symbol.png" alt="" style={{width:'30px',height:'30px',borderRadius:'50%',border:'1px solid #3d1500',background:'#2d1500',objectFit:'contain',padding:'4px',flexShrink:0,marginTop:'2px'}} />
-                    <div style={{minWidth:0}}>
-                      <div style={{fontSize:'11px',color:'#7a5030',marginBottom:'4px',paddingLeft:'2px'}}>천기소녀</div>
-                      <div style={{background:'#2d1500',border:'1px solid #3d1500',borderRadius:'4px 14px 14px 14px',padding:'14px 16px',color:'#f0e6d3',fontSize:'15px',lineHeight:'1.8',whiteSpace:'pre-wrap'}}>
-                        {bubble}
-                      </div>
+                {splitIntoBubbles(result).map((bubble, i) => {
+                  const lines = bubble.split('\n');
+                  const isSection = SECTION_EMOJI.test(lines[0].trim());
+                  const title = isSection ? lines[0].replace(SECTION_EMOJI, '').replace(/[\[\]【】]/g, '').trim() : '';
+                  const body = isSection ? lines.slice(1).join('\n').trim() : bubble;
+                  const emoji = isSection ? (lines[0].trim().match(SECTION_EMOJI) || [''])[0] : '';
+                  let n = 0; splitIntoBubbles(result).slice(0, i + 1).forEach(b => { if (SECTION_EMOJI.test(b.split('\n')[0].trim())) n++; });
+                  return (
+                    <div key={i} id={`ch-${i}`} className="chat-bubble rd-card" style={{scrollMarginTop:'120px'}}>
+                      {isSection ? (
+                        <div className="rd-head">
+                          <span className="rd-num">{String(n).padStart(2, '0')}</span>
+                          <span className="rd-title">{emoji} {title}</span>
+                        </div>
+                      ) : (
+                        <div className="rd-head">
+                          <img src="/logo_symbol.png" alt="" style={{width:'22px',height:'22px'}} />
+                          <span className="rd-title" style={{fontSize:'13px',color:'#c4956a'}}>천기소녀</span>
+                        </div>
+                      )}
+                      {body && <div className="rd-body">{body}</div>}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* 천기소녀와 대화하기 */}
