@@ -582,7 +582,15 @@ export default function Result() {
                     <>
                       <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'6px',marginBottom:'10px'}}>
                         {[3,2,1,0].map((ci,i)=>{ const c = chart.cols[ci]; const label = ['년주','월주','일주(나)','시주'][ci];
-                          if (!c) return <div key={ci} />;
+                          if (!c) return (
+                            <div key={ci} className="pillar-in mr-col" style={{animationDelay:`${0.15 + i*0.15}s`,borderColor:'#3d1500',borderStyle:'dashed'}}>
+                              <div className="mr-lab">{label}</div>
+                              <div className="mr-ss" style={{color:'#7a5030'}}>-</div>
+                              <div className="mr-char" style={{color:'#7a5030',background:'rgba(255,255,255,0.04)'}}>?<small>시간 모름</small></div>
+                              <div className="mr-char" style={{color:'#7a5030',background:'rgba(255,255,255,0.04)'}}>?<small>시간 모름</small></div>
+                              <div className="mr-meta" style={{display:'block',textAlign:'center',lineHeight:'1.5',fontSize:'10px',color:'#7a5030'}}>세 기둥으로<br />풀이했어요</div>
+                            </div>
+                          );
                           const go = ganOhaeng(c.gan), jo = jiOhaeng(c.ji);
                           return (
                             <div key={ci} className="pillar-in mr-col" style={{animationDelay:`${0.15 + i*0.15}s`,borderColor: ci===2 ? '#c4712a' : '#3d1500'}}>
