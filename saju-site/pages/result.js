@@ -725,6 +725,20 @@ export default function Result() {
                 })}
               </div>
 
+              {/* 무료 풀이 다음 단계: 이번 달 나의 운세 (1,900원) */}
+              {result && !loading && (
+                <a href={`/wolun?${new URLSearchParams(Object.fromEntries(Object.entries(router.query || {}).filter(([k]) => ['name','year','month','day','hour','gender','calendar'].includes(k)))).toString()}`}
+                  style={{display:'flex',alignItems:'center',gap:'12px',textDecoration:'none',background:'linear-gradient(90deg,#3a2008,#2d1500)',border:'1px solid #c4712a',borderRadius:'12px',padding:'10px 14px 10px 10px',marginBottom:'20px',boxShadow:'0 8px 22px rgba(0,0,0,.4)'}}>
+                  <img src="/svc/month.webp" alt="" width="88" height="66" style={{width:'88px',height:'66px',objectFit:'cover',borderRadius:'10px',flexShrink:0}} />
+                  <span style={{flex:1,minWidth:0}}>
+                    <span style={{display:'inline-block',fontSize:'10.5px',fontWeight:'700',color:'#1a0a00',background:'#e8c97a',borderRadius:'8px',padding:'1px 7px',marginBottom:'3px'}}>₩1,900</span>
+                    <span style={{display:'block',fontSize:'15px',fontWeight:'700',color:'#e8c97a'}}>이번 달 나의 운세는?</span>
+                    <span style={{display:'block',fontSize:'12px',color:'#c4956a'}}>생년월일 다시 안 넣어도 돼요 · 좋은 날과 조심할 날까지</span>
+                  </span>
+                  <span style={{color:'#e8c97a',fontSize:'20px'}}>→</span>
+                </a>
+              )}
+
               {/* 천기소녀와 대화하기 */}
               {sajuData && (
                 <div id="ask" style={{background:'#1f0a00',border:'1px solid #c4712a',borderRadius:'10px',padding:'20px',marginBottom:'20px',scrollMarginTop:'70px'}}>
