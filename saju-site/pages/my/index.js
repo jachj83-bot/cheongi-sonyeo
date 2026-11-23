@@ -65,6 +65,7 @@ export default function My() {
         {status === 'loading' && <p className="my-dim">불러오는 중...</p>}
         {status === 'unauthenticated' && (
           <div className="my-card">
+            <img src="/svc/me.webp" alt="" width="640" height="482" style={{ width: '100%', aspectRatio: '16 / 9', objectFit: 'cover', borderRadius: 10, marginBottom: 14, display: 'block' }} />
             <p className="my-dim" style={{ marginBottom: 12 }}>로그인하면 내가 본 풀이가 여기에 계속 남아요.</p>
             <a className="my-btn" href="/login?callbackUrl=%2Fmy">로그인하기</a>
           </div>
