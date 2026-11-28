@@ -414,7 +414,7 @@ ${yearInfo.emoji} ${fy} ${yearInfo.ganji} 총운
         await setJSON(`payapp:stash:${orderId}`, { full: fullText, meta: { name, year, month, day, forecastYear: fy } }, 60 * 60 * 24);
       }
 
-      res.status(200).json({ preview, full: (locked && orderId) ? null : fullText, locked: !!(locked && orderId) });
+      res.status(200).json({ preview, full: locked ? null : fullText, locked });
       return;
     }
 
@@ -471,7 +471,7 @@ ${days.join(' / ')}
         await setJSON(`payapp:stash:${orderId}`, { full: fullText, meta: { name, year, month, day, target: `${ty}-${tm}` } }, 60 * 60 * 24);
       }
 
-      res.status(200).json({ preview, full: (locked && orderId) ? null : fullText, locked: !!(locked && orderId), target: { year: ty, month: tm } });
+      res.status(200).json({ preview, full: locked ? null : fullText, locked, target: { year: ty, month: tm } });
       return;
     }
 
@@ -562,7 +562,7 @@ ${card} (${cardEn || ''}) — ${reversed ? '역방향' : '정방향'}
         await setJSON(`payapp:stash:${orderId}`, { full: fullText, meta: { name, year, month, day, card, cardEn, reversed } }, 60 * 60 * 24);
       }
 
-      res.status(200).json({ preview, full: (locked && orderId) ? null : fullText, locked: !!(locked && orderId) });
+      res.status(200).json({ preview, full: locked ? null : fullText, locked });
       return;
     }
 
