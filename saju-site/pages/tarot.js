@@ -133,9 +133,9 @@ export default function Tarot() {
           const { done, value } = await reader.read();
           if (done) break;
           acc += decoder.decode(value, { stream: true });
-          setResult(acc);
-          if (first) { setLoading(false); first = false; }
         }
+        // 풀이가 끝까지 다 써진 뒤에 한 번에 보여준다
+        setResult(acc);
         setLoading(false);
       } catch {
         setResult('잠시 후 다시 시도해주세요.');
