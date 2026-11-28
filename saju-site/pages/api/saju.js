@@ -363,11 +363,14 @@ ${sec}
 각 항목은 ${P.price >= 5000 ? '4~6' : '2~3'}문장으로, 사주 근거(어떤 글자, 어떤 십성 때문인지)를 한 번씩 짚고, 일상 장면을 넣어 구체적으로 써주세요. 장점과 주의점을 6:4로, 따뜻하고 신비로운 톤의 한국어로 써주세요. 마크다운 기호는 쓰지 마세요.`;
 
       const fullText = await generateFullText({ prompt, maxTokens: P.price >= 5000 ? 2800 : 1400, fallback: '분석 결과를 가져올 수 없습니다.' });
-      const { preview, locked } = splitPreview(fullText, P.preview);
+      // 첫 줄 "하늘의 기운을 읽었습니다." 같은 인사말은 항목 수에 세지 않는다
+      const introFirst = !SECTION_EMOJI_RE.test((fullText || '').trim());
+      const { preview, locked } = splitPreview(fullText, P.preview + (introFirst ? 1 : 0));
       if (locked && orderId) {
         await setJSON(`payapp:stash:${orderId}`, { full: fullText, meta: { name, year, month, day, hour, gender, calendar, kind: req.body.kind, price: P.price } }, 60 * 60 * 24);
       }
-      res.status(200).json({ preview, full: (locked && orderId) ? null : fullText, locked: !!(locked && orderId) });
+      // 주문번호 없이 부르면 전체 풀이를 돌려주지 않는다 (결제 없이 전체를 받아가는 것 방지)
+      res.status(200).json({ preview, full: locked ? null : fullText, locked });
       return;
     }
 
