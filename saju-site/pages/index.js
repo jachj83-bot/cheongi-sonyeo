@@ -59,12 +59,14 @@ const HOURS = [
 
 export default function Home() {
   const router = useRouter();
-  const [form, setForm] = useState({ name: '', year: '', month: '', day: '', hour: '', gender: '', calendar: '양력' });
+  const [form, setForm] = useState({ name: '', year: '', month: '', day: '', hour: '', gender: '', calendar: '양력', mbti: '' });
   const [error, setError] = useState('');
   const [sharedType, setSharedType] = useState(null);
   const { data: session, status: authStatus } = useSession();
   const [savedBirth, setSavedBirth] = useState(null);
   const [mon, setMon] = useState(null);
+  const [dday, setDday] = useState(null);
+  useEffect(() => { const k = Date.now() + 9 * 3600000; const t = Date.UTC(2027, 0, 1); setDday(Math.max(0, Math.ceil((t - k) / 86400000))); }, []);
   useEffect(() => { const k = new Date(Date.now() + 9 * 3600000); const m = k.getUTCMonth() + 1; setMon(k.getUTCDate() >= 21 ? (m % 12) + 1 : m); }, []);
 
   // 로그인한 회원이면 저장해 둔 생년월일을 불러와 입력칸을 미리 채운다
@@ -115,7 +117,8 @@ export default function Home() {
     if (authStatus === 'authenticated' && !savedBirth) {
       fetch('/api/me', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) }).catch(() => {});
     }
-    router.push('/result?' + new URLSearchParams(form).toString());
+    const q = { ...form }; if (!q.mbti) delete q.mbti;
+    router.push('/result?' + new URLSearchParams(q).toString());
   };
 
   const S = {
@@ -133,11 +136,11 @@ export default function Home() {
         <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Noto+Serif+KR:wght@300;400;700&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet" />
         <style>{`
           * { box-sizing: border-box; margin: 0; padding: 0; }
-          body { background: #0B0A1F; color: #EDE9F2; font-family: 'Noto Sans KR', sans-serif; word-break: keep-all; }
+          body { background: #0c0c0f; color: #EDE9F2; font-family: 'Noto Sans KR', sans-serif; word-break: keep-all; }
           input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
           @keyframes fadeUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
           .fade-up { animation: fadeUp 0.8s cubic-bezier(0.23,1,0.32,1) forwards; }
-          select option { background: #0B0A1F; color: #EDE9F2; }
+          select option { background: #0c0c0f; color: #EDE9F2; }
 
           /* ── 움직임 ── */
           @keyframes twinkle { 0%,100%{opacity:.15;transform:scale(.8)} 50%{opacity:1;transform:scale(1.2)} }
@@ -151,7 +154,8 @@ export default function Home() {
           @keyframes lineUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
           @keyframes shootingStar { 0%{transform:translate(0,0) rotate(-35deg);opacity:0} 5%{opacity:1} 20%{transform:translate(-360px,250px) rotate(-35deg);opacity:0} 100%{opacity:0} }
 
-          .hero-bg { animation: slowZoom 24s ease-in-out infinite alternate; transform-origin: 70% 50%; }
+          .hero-bg { animation: slowZoom 24s ease-in-out infinite alternate; transform-origin: 70% 50%; opacity:.35; }
+          .star, .shooting { display:none !important; }
           .star { position:absolute; border-radius:50%; background:#fff6dc; animation-name:twinkle; animation-iteration-count:infinite; animation-timing-function:ease-in-out; }
           .shooting { position:absolute; top:12%; right:8%; width:140px; height:1px; background:linear-gradient(90deg,rgba(255,246,220,0),rgba(255,246,220,.9)); animation: shootingStar 9s ease-out infinite 2s; }
           .title-line { display:inline-block; opacity:0; animation: lineUp .9s cubic-bezier(.23,1,.32,1) forwards; }
@@ -171,27 +175,31 @@ export default function Home() {
           .reveal.in { animation: revealUp .9s cubic-bezier(.23,1,.32,1) forwards; animation-delay: var(--d, 0ms); }
           .svc-sec { font-size:13px; font-weight:700; letter-spacing:2px; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
           .svc-sec::after { content:''; flex:1; height:1px; background:currentColor; opacity:.25; }
-          .svc-sec.svc-gold { color:#E8C87E; } .svc-sec.svc-violet { color:#c49ae8; }
+          .svc-sec.svc-gold, .svc-sec.svc-violet { color:rgba(237,233,242,.85); }
           .svc-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
           @media (min-width:900px) { .svc-grid { grid-template-columns:repeat(3,1fr); gap:16px; } }
-          .svc-card { cursor:pointer; border-radius:14px; overflow:hidden; display:flex; flex-direction:column; background:linear-gradient(180deg,#2a2452,#1b1738); border:1px solid rgba(232,200,126,.38); box-shadow:0 8px 24px rgba(0,0,0,.45); transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease; }
-          .svc-card.svc-violet { background:linear-gradient(180deg,#33205a,#1e1438); border-color:rgba(196,154,232,.45); }
-          .svc-card:hover { transform: translateY(-4px); border-color: rgba(232,200,126,.8); box-shadow: 0 12px 30px rgba(0,0,0,.5), 0 0 24px rgba(232,200,126,.18); }
+          .svc-card { cursor:pointer; border-radius:10px; overflow:hidden; display:flex; flex-direction:column; background:#17171b; border:1px solid rgba(255,255,255,.07); transition: transform .25s ease, border-color .25s ease; }
+          .svc-card.svc-violet { background:#17171b; border-color:rgba(255,255,255,.07); }
+          .svc-card:hover { transform: translateY(-3px); border-color: rgba(232,200,126,.45); }
+          .svc-card.best { border-color: rgba(232,200,126,.7); }
           .svc-img { position:relative; aspect-ratio:4/3; overflow:hidden; background:#120f2a; }
-          .svc-img img { width:100%; height:100%; object-fit:cover; display:block; transition: transform .4s ease; }
+          .svc-img img { width:100%; height:100%; object-fit:cover; display:block; transition: transform .4s ease; filter: saturate(.82) brightness(.92); }
           .svc-card:hover .svc-img img { transform: scale(1.05); }
-          .svc-badge { position:absolute; top:8px; left:8px; font-size:11px; font-weight:700; color:#1a1430; background:#E8C87E; border-radius:10px; padding:3px 9px; box-shadow:0 2px 8px rgba(0,0,0,.35); }
-          .svc-violet .svc-badge { background:#c49ae8; }
-          .svc-body { padding:12px 13px 14px; display:flex; flex-direction:column; flex:1; }
-          .svc-name { font-family:'Noto Serif KR',serif; font-size:16px; font-weight:700; color:#fff; margin-bottom:4px; }
-          .svc-desc { font-size:12px; color:rgba(237,233,242,.68); line-height:1.5; margin-bottom:10px; flex:1; }
-          .svc-foot { display:flex; align-items:center; justify-content:space-between; gap:6px; }
-          .svc-price { font-size:13px; font-weight:800; color:#1a1430; background:#E8C87E; border-radius:8px; padding:3px 9px; }
-          .svc-violet .svc-price { background:#c49ae8; }
-          .svc-price.free { background:transparent; color:#E8C87E; border:1px solid #E8C87E; }
-          .svc-violet .svc-price.free { color:#c49ae8; border-color:#c49ae8; }
-          .svc-go { font-size:11px; color:rgba(237,233,242,.55); white-space:nowrap; }
+          .svc-badge { display:none; }
+          .svc-cat { font-size:11px; font-weight:600; color:#e0a05a; margin-bottom:4px; }
+          .svc-body { padding:12px 13px 14px; display:flex; flex-direction:column; flex:1; text-align:center; }
+          .svc-name { font-size:15px; font-weight:700; color:#fff; margin-bottom:4px; letter-spacing:-.2px; }
+          .svc-desc { font-size:12px; color:rgba(237,233,242,.55); line-height:1.5; margin-bottom:10px; flex:1; }
+          .svc-foot { display:flex; align-items:center; justify-content:center; gap:6px; }
+          .svc-price { font-size:17px; font-weight:800; color:#E8C87E; }
+          .svc-price.free { font-size:15px; color:#E8C87E; }
+          .svc-go { display:none; }
           .svc-card:active { transform: scale(.98); }
+          .svc-soon { cursor:default; }
+          .svc-soon:hover { transform:none; }
+          .svc-price.soon { font-size:13px; color:rgba(237,233,242,.45); font-weight:500; }
+          .ny-band { position:fixed; top:0; left:0; right:0; z-index:101; height:34px; display:flex; align-items:center; justify-content:center; gap:10px; background:#111114; border-bottom:1px solid rgba(232,200,126,.14); color:rgba(237,233,242,.8); font-size:12px; font-weight:500; text-decoration:none; white-space:nowrap; }
+          .ny-band b { color:#E8C87E; font-weight:600; font-size:12px; }
           .svc-icon { display:inline-block; transition: transform .4s ease; }
           .svc-card:hover .svc-icon { transform: scale(1.2) rotate(-8deg); }
 
@@ -202,7 +210,7 @@ export default function Home() {
           .step-desc { font-size:12px; color:rgba(237,233,242,.45); line-height:1.7; }
           @keyframes pillarPop { 0%,15%{opacity:0;transform:translateY(10px) rotateY(90deg)} 30%,85%{opacity:1;transform:none} 100%{opacity:0;transform:translateY(-6px)} }
           .mini-pillar { display:flex; flex-direction:column; gap:5px; animation: pillarPop 5s ease-in-out infinite; animation-delay: var(--d); }
-          .mini-pillar span { width:38px; height:38px; display:flex; align-items:center; justify-content:center; border:1.5px solid; border-radius:6px; font-family:'Noto Serif KR',serif; font-size:19px; font-weight:700; background:rgba(11,10,31,.6); }
+          .mini-pillar span { width:38px; height:38px; display:flex; align-items:center; justify-content:center; border:1.5px solid; border-radius:6px; font-family:'Noto Serif KR',serif; font-size:19px; font-weight:700; background:rgba(12,12,15,.6); }
           @keyframes nodePulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
           .ohaeng-node { animation: nodePulse 2s ease-in-out infinite; }
           .ohaeng-orbit { transform-origin:100px 100px; animation: spin 6s linear infinite; }
@@ -221,7 +229,7 @@ export default function Home() {
           .type-tile-icon { display:inline-flex; transition: transform .4s; }
           .type-tile:hover .type-tile-icon { transform: translateY(-4px) scale(1.06); }
           .phone { position:relative; max-width:300px; margin:0 auto; width:100%; background:#130f2a; border:1px solid rgba(232,200,126,.25); border-radius:22px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.5), 0 0 40px rgba(155,109,214,.15); }
-          .phone-tag { position:absolute; top:10px; right:10px; font-size:10px; color:#0B0A1F; background:#E8C87E; border-radius:8px; padding:2px 8px; z-index:2; }
+          .phone-tag { position:absolute; top:10px; right:10px; font-size:10px; color:#0c0c0f; background:#E8C87E; border-radius:8px; padding:2px 8px; z-index:2; }
           .pv-bar { transform-origin:left; animation: barFill 2.5s cubic-bezier(.23,1,.32,1) infinite alternate; }
           @keyframes barFill { from{transform:scaleX(.15)} to{transform:scaleX(1)} }
           @media (max-width: 760px) {
@@ -231,18 +239,18 @@ export default function Home() {
             .preview-grid ul { display:inline-block; text-align:left; }
           }
 
-          .birth-card { background:rgba(11,10,31,.78); border:1px solid rgba(232,200,126,.28); border-radius:12px; padding:18px 18px 20px; max-width:420px; backdrop-filter:blur(8px); scroll-margin-top:80px; text-align:left; }
+          .birth-card { background:rgba(12,12,15,.78); border:1px solid rgba(232,200,126,.28); border-radius:12px; padding:18px 18px 20px; max-width:420px; backdrop-filter:blur(8px); scroll-margin-top:80px; text-align:left; }
           .birth-card-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; font-family:'Noto Serif KR',serif; font-size:16px; font-weight:700; color:#E8C87E; }
-          .birth-card-badge { font-family:'Noto Sans KR',sans-serif; font-size:11px; font-weight:500; color:#0B0A1F; background:#E8C87E; border-radius:10px; padding:2px 9px; }
+          .birth-card-badge { font-family:'Noto Sans KR',sans-serif; font-size:11px; font-weight:500; color:#0c0c0f; background:#E8C87E; border-radius:10px; padding:2px 9px; }
           .birth-card label { margin-bottom:6px !important; }
           .birth-card > div { margin-bottom:12px !important; }
-          .free-strip { background:#0B0A1F; padding:18px 0 6px; border-bottom:1px solid rgba(232,200,126,.08); }
+          .free-strip { background:#0c0c0f; padding:18px 0 6px; border-bottom:1px solid rgba(232,200,126,.08); }
           .free-shared { order:3; display:block; width:100%; max-width:420px; margin:0 0 10px; background:rgba(232,200,126,.08); border:1px solid rgba(232,200,126,.3); color:#EDE9F2; border-radius:10px; padding:12px 14px; font-size:14px; font-family:inherit; cursor:pointer; text-align:left; }
           .free-row { display:flex; gap:8px; overflow-x:auto; padding:0 16px 12px; max-width:1132px; margin:0 auto; scrollbar-width:none; }
           .free-row::-webkit-scrollbar { display:none; }
-          .free-chip { flex:0 0 auto; display:flex; align-items:center; gap:8px; padding:10px 14px; border-radius:22px; border:1px solid rgba(155,109,214,.35); background:rgba(155,109,214,.1); color:#EDE9F2; text-decoration:none; font-size:13px; white-space:nowrap; }
-          .free-chip em { font-style:normal; font-size:11px; font-weight:700; color:#0B0A1F; background:#c49ae8; border-radius:9px; padding:1px 7px; }
-          .free-chip:last-child em { background:#E8C87E; }
+          .free-chip { flex:0 0 auto; display:flex; align-items:center; gap:8px; padding:10px 14px; border-radius:22px; border:1px solid rgba(255,255,255,.1); background:#17171b; color:#EDE9F2; text-decoration:none; font-size:13px; white-space:nowrap; }
+          .free-chip em { font-style:normal; font-size:11px; font-weight:600; color:#E8C87E; }
+          .hot-pill { font-size:12px; font-weight:700; color:#fff; background:linear-gradient(90deg,#e0482f,#f07a3a); border-radius:14px; padding:4px 11px; }
 
           @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -250,17 +258,20 @@ export default function Home() {
           }
 
           @media (max-width: 760px) {
-            .hero-grid { grid-template-columns: 1fr !important; padding: 72px 16px 24px !important; text-align: center; gap: 18px !important; min-height: auto !important; }
+            .hero-grid { grid-template-columns: 1fr !important; text-align: left !important; padding: 90px 16px 24px !important; text-align: center; gap: 18px !important; min-height: auto !important; }
             .hero-content { display: flex !important; flex-direction: column !important; }
-            .hero-eyebrow { justify-content: center !important; order: 1; }
+            .hero-eyebrow { justify-content: flex-start !important; order: 1; }
             .hero-title { font-size: 24px !important; order: 2; margin-bottom: 14px !important; }
             .hero-cta { width: 100%; }
             .birth-card { order: 3; max-width: none; margin: 0 auto; width: 100%; }
             .hero-desc { max-width: none !important; margin-left: auto; margin-right: auto; order: 4; margin-top: 14px !important; font-size: 12px !important; }
-            .hero-image { display: none !important; }
+            .hero-image { order: -1; margin: 0 -16px; }
+            .hero-image .ring-pos { display: none !important; }
+            .hero-image .oracle-wrap { max-width: 100% !important; margin: 0 !important; }
+            .hero-image img.oracle-img { max-width: 100% !important; width: 100%; height: 60vh; object-fit: cover; object-position: center 40%; border-radius: 0; animation: none !important; box-shadow: none !important; -webkit-mask-image: linear-gradient(180deg,#000 55%,transparent 98%); mask-image: linear-gradient(180deg,#000 55%,transparent 98%); }
+            .hero-content { margin-top: -190px; position: relative; z-index: 3; }
+            .hero-title { font-size: 30px !important; text-shadow: 0 2px 16px rgba(0,0,0,.6); }
             .ny-chip { display: none !important; }
-            .hero-image img { max-width: 84px !important; margin: 0 auto; }
-            .hero-image .oracle-wrap { max-width: 84px; margin: 6px auto 0; }
             .oracle-ring span { font-size: 10px !important; }
             .stats-grid { grid-template-columns: repeat(2,1fr) !important; }
             .stats-grid > div:nth-child(2) { border-right: none !important; }
@@ -276,7 +287,8 @@ export default function Home() {
         `}</style>
       </Head>
 
-      <div className="site-header" style={{position:'fixed',top:0,left:0,right:0,zIndex:100,background:'rgba(11,10,31,0.85)',backdropFilter:'blur(12px)',borderBottom:'1px solid rgba(232,200,126,0.1)',padding:'16px 24px',display:'flex',justifyContent:'space-between',alignItems:'center',gap:'10px'}}>
+      <a href="/sinnyeon?year=2027" className="ny-band">2027 정미년 신년운세{dday !== null && dday > 0 ? ` · 새해까지 D-${dday}` : ''}<b>보러가기 →</b></a>
+      <div className="site-header" style={{position:'fixed',top:'34px',left:0,right:0,zIndex:100,background:'rgba(12,12,15,0.85)',backdropFilter:'blur(12px)',borderBottom:'1px solid rgba(232,200,126,0.1)',padding:'16px 24px',display:'flex',justifyContent:'space-between',alignItems:'center',gap:'10px'}}>
         <div style={{display:'flex',alignItems:'center',gap:'10px',minWidth:0,flexShrink:1}}>
           <img src="/logo_symbol.png" alt="천기소녀" style={{width:'28px',height:'28px',objectFit:'contain',flexShrink:0}} />
           <div style={{minWidth:0}}>
@@ -294,23 +306,23 @@ export default function Home() {
       <>
           <div style={{position:'relative',minHeight:'100vh',display:'flex',alignItems:'center',overflow:'hidden'}}>
             <div className="hero-bg" style={{position:'absolute',top:0,left:0,right:0,bottom:0,backgroundImage:'url(/hero_cosmos.jpg)',backgroundSize:'cover',backgroundPosition:'center right'}} />
-            <div style={{position:'absolute',top:0,left:0,right:0,bottom:0,background:'linear-gradient(90deg, rgba(11,10,31,0.92) 0%, rgba(11,10,31,0.75) 50%, rgba(11,10,31,0.3) 100%)'}} />
+            <div style={{position:'absolute',top:0,left:0,right:0,bottom:0,background:'linear-gradient(90deg, rgba(12,12,15,0.92) 0%, rgba(12,12,15,0.75) 50%, rgba(12,12,15,0.3) 100%)'}} />
             <div aria-hidden="true" style={{position:'absolute',inset:0,zIndex:2,pointerEvents:'none',overflow:'hidden'}}>
               {STARS.map((st,i)=>(
                 <span key={i} className="star" style={{top:`${st.top}%`,left:`${st.left}%`,width:`${st.size}px`,height:`${st.size}px`,animationDelay:`${st.delay}s`,animationDuration:`${st.dur}s`}} />
               ))}
               <span className="shooting" />
             </div>
-            <div className="hero-grid" style={{position:'relative',zIndex:5,display:'grid',gridTemplateColumns:'1fr 1fr',maxWidth:'1100px',margin:'0 auto',padding:'100px 32px 60px',alignItems:'center',gap:'40px',width:'100%'}}>
+            <div className="hero-grid" style={{position:'relative',zIndex:5,display:'grid',gridTemplateColumns:'1fr 1fr',maxWidth:'1100px',margin:'0 auto',padding:'124px 32px 60px',alignItems:'center',gap:'40px',width:'100%'}}>
               <div className="hero-content fade-up">
-                <div className="hero-eyebrow" style={{fontSize:'10px',letterSpacing:'4px',color:'rgba(232,200,126,0.6)',marginBottom:'24px',display:'flex',alignItems:'center',gap:'12px'}}>
-                  <span style={{width:'24px',height:'1px',background:'rgba(232,200,126,0.4)',display:'inline-block'}} />
-                  명리학 기반 사주 분석
+                <div className="hero-eyebrow" style={{marginBottom:'18px',display:'flex',alignItems:'center',gap:'8px'}}>
+                  <span className="hot-pill">인기 · 2027 신년운세</span>
+                  <span style={{fontSize:'12px',color:'rgba(237,233,242,.85)',textShadow:'0 1px 6px rgba(0,0,0,.8)'}}>정통 명리학 × MBTI</span>
                 </div>
-                <h1 className="hero-title" style={{fontFamily:"'Cormorant Garamond', 'Noto Serif KR', serif",fontSize:'54px',fontWeight:'600',lineHeight:'1.25',color:'#EDE9F2',marginBottom:'20px',letterSpacing:'-1px'}}>
-                  <span className="title-line" style={{animationDelay:'.15s'}}>하늘의 기운을</span><br/>
-                  <span className="title-line" style={{animationDelay:'.4s'}}><span style={{color:'#E8C87E'}}>천기소녀</span>가</span><br/>
-                  <span className="title-line" style={{animationDelay:'.65s'}}>읽어드립니다</span>
+                <h1 className="hero-title" style={{fontFamily:"'Noto Sans KR', sans-serif",fontSize:'52px',fontWeight:'800',lineHeight:'1.25',color:'#fff',marginBottom:'20px',letterSpacing:'-1.5px'}}>
+                  <span className="title-line" style={{animationDelay:'.15s'}}>내 인생의</span><br/>
+                  <span className="title-line" style={{animationDelay:'.4s'}}><span style={{color:'#E8C87E'}}>황금기</span>는</span><br/>
+                  <span className="title-line" style={{animationDelay:'.65s'}}>언제 올까?</span>
                 </h1>
                 {sharedType && (
                   <div className="free-shared">
@@ -319,7 +331,7 @@ export default function Home() {
                 )}
                 <div id="start" className="birth-card">
                   <div className="birth-card-head">
-                    <span>{savedBirth ? `${savedBirth.name || session?.user?.name || ''}님, 다시 오셨네요` : '무료로 내 사주 보기'}</span>
+                    <span>{savedBirth ? `${savedBirth.name || session?.user?.name || ''}님, 다시 오셨네요` : '내 사주 무료로 먼저 보기'}</span>
                     <span className="birth-card-badge">30초면 끝</span>
                   </div>
                 <div style={{marginBottom:'20px'}}>
@@ -352,12 +364,23 @@ export default function Home() {
                   <label style={S.label}>태어난 시간</label>
                   <div style={{position:'relative'}}>
                     <select value={form.hour} onChange={e=>setForm({...form,hour:e.target.value})} style={S.select}>
-                      <option value="" style={{background:'#0B0A1F'}}>시간을 선택하세요</option>
+                      <option value="" style={{background:'#0c0c0f'}}>시간을 선택하세요</option>
                       {HOURS.map(h=>(
-                        <option key={h.value} value={h.value} style={{background:'#0B0A1F',color:'#EDE9F2'}}>
+                        <option key={h.value} value={h.value} style={{background:'#0c0c0f',color:'#EDE9F2'}}>
                           {h.label} · {h.desc}
                         </option>
                       ))}
+                    </select>
+                    <span style={{position:'absolute',right:'14px',top:'50%',transform:'translateY(-50%)',color:'rgba(232,200,126,0.4)',pointerEvents:'none',fontSize:'12px'}}>▼</span>
+                  </div>
+                </div>
+
+                <div style={{marginBottom:'20px'}}>
+                  <label style={S.label}>MBTI (선택 · 사주와 함께 풀이)</label>
+                  <div style={{position:'relative'}}>
+                    <select value={form.mbti} onChange={e=>setForm({...form,mbti:e.target.value})} style={S.select}>
+                      <option value="">선택 안 함</option>
+                      {['ENFP','ENFJ','ENTP','ENTJ','ESFP','ESFJ','ESTP','ESTJ','INFP','INFJ','INTP','INTJ','ISFP','ISFJ','ISTP','ISTJ'].map(m=>(<option key={m} value={m}>{m}</option>))}
                     </select>
                     <span style={{position:'absolute',right:'14px',top:'50%',transform:'translateY(-50%)',color:'rgba(232,200,126,0.4)',pointerEvents:'none',fontSize:'12px'}}>▼</span>
                   </div>
@@ -374,12 +397,12 @@ export default function Home() {
 
                 {error && <p style={{color:'#ff6b6b',fontSize:'13px',marginBottom:'16px',padding:'10px 14px',background:'rgba(255,107,107,0.08)',borderRadius:'4px'}}>⚠️ {error}</p>}
 
-                <button onClick={handleSubmit} style={{width:'100%',background:'rgba(232,200,126,0.1)',color:'#E8C87E',padding:'16px',border:'1px solid rgba(232,200,126,0.4)',borderRadius:'2px',fontSize:'14px',fontWeight:'500',cursor:'pointer',letterSpacing:'2px',fontFamily:'inherit'}}>
-                  사주 분석 시작하기 →
+                <button onClick={handleSubmit} style={{width:'100%',background:'linear-gradient(180deg,#e2bd62,#b8902f)',color:'#17120a',padding:'16px',border:'none',borderRadius:'10px',fontSize:'15px',fontWeight:'700',cursor:'pointer',fontFamily:'inherit'}}>
+                  무료로 먼저 보기 →
                 </button>
                 </div>
                 <p className="hero-desc" style={{fontSize:'13px',color:'rgba(237,233,242,0.45)',lineHeight:'1.8',marginTop:'16px',maxWidth:'400px',fontWeight:'300'}}>
-                  생년월일 하나로 타고난 기질과 10년 대운 흐름을 정통 명리학으로 풀어드려요.
+                  타고난 기질과 10년 대운, 2027년 달마다 흐름까지. 정통 명리학에 내 MBTI를 겹쳐 천기소녀가 풀어드려요.
                 </p>
               </div>
               <div className="hero-image fade-up" style={{display:'flex',justifyContent:'center',alignItems:'center'}}>
@@ -393,7 +416,7 @@ export default function Home() {
                     </div>
                   </div>
                   <div className="ring-pos ring-pos2" aria-hidden="true"><div className="oracle-ring2" /></div>
-                  <img className="oracle-img" src="/oracle_girl.jpg" alt="천기소녀" />
+                  <img className="oracle-img" src="/hero_girl.webp" alt="천기소녀" />
                 </div>
               </div>
             </div>
@@ -413,20 +436,30 @@ export default function Home() {
             </div>
           </div>
 
-          <div style={{background:'rgba(11,10,31,0.98)',padding:'60px 24px',borderTop:'1px solid rgba(232,200,126,0.08)'}}>
+          <div style={{background:'rgba(12,12,15,0.98)',padding:'60px 24px',borderTop:'1px solid rgba(232,200,126,0.08)'}}>
             <div style={{maxWidth:'1100px',margin:'0 auto'}}>
-              <div className="reveal" style={{textAlign:'center',marginBottom:'40px'}}>
-                <div style={{fontSize:'10px',letterSpacing:'4px',color:'rgba(232,200,126,0.4)',marginBottom:'12px'}}>SERVICES</div>
-                <div style={{fontFamily:"'Cormorant Garamond', serif",fontSize:'28px',color:'#E8C87E',fontWeight:'400'}}>천기소녀 메뉴</div>
+              <div className="reveal" style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:'22px'}}>
+                <div style={{fontSize:'20px',color:'#fff',fontWeight:'800',letterSpacing:'-.5px'}}>전체 운세 메뉴</div>
+                <div style={{fontSize:'12px',color:'#E8C87E'}}>16종 한눈에 보기</div>
               </div>
               {[
-                { sec:'사주 · 운세', theme:'gold', items:[
-                  {img:'month',badge:'NEW · ₩1,900',name:'이번 달 나의 운세는?',desc:`${mon ? `${mon}월` : '이번 달'} 한 달, 돈·연애·일 흐름과 조심할 날까지`,price:'₩1,900',onClick:()=>router.push('/wolun')},
-                  {img:'me',badge:'무료',name:'나의 운세',desc:'타고난 기질과 오행 에너지 분석',price:'무료',onClick:()=>goStart()},
-                  {img:'match',badge:'무료',name:'궁합 분석',desc:'연인·배우자·친구 궁합 점수 공개',price:'무료',onClick:()=>router.push('/gunghap')},
-                  {img:'y2026',badge:'2026 병오년',name:'올해 운세',desc:'남은 상반기·하반기 흐름을 자세히',price:'₩9,900',onClick:()=>router.push('/sinnyeon?year=2026')},
-                  {img:'y2027',badge:'BEST · 2027',name:'신년운세',desc:'2027 정미년 흐름을 미리 풀이',price:'₩9,900',onClick:()=>router.push('/sinnyeon?year=2027')},
+                { sec:'2027 · 이번 달', theme:'gold', items:[
+                  {img:'y2027',badge:'BEST · 2027',name:'2027 신년운세',desc:'정미년 열두 달, 돈·사람·일이 들어오는 때',price:'₩9,900',onClick:()=>router.push('/sinnyeon?year=2027')},
+                  {img:'month',badge:'NEW · 이번 달',name:'이번 달 나의 운세는?',desc:`${mon ? `${mon}월` : '이번 달'} 한 달, 돈·연애·일 흐름과 조심할 날까지`,price:'₩1,900',onClick:()=>router.push('/wolun')},
+                  {img:'y2026',badge:'2026 병오년',name:'올해 운세',desc:'남은 한 달, 올해 흐름 마무리',price:'₩9,900',onClick:()=>router.push('/sinnyeon?year=2026')},
                   {img:'tojeong',badge:'전통 방식',name:'토정비결',desc:'괘를 뽑아 계절별 신수를 풀이',price:'₩9,900',onClick:()=>router.push('/tojeong')},
+                ]},
+                { sec:'연애 · 인연', theme:'violet', items:[
+                  {img:'lovemarry',badge:'연애 · 결혼',name:'연애 · 결혼운',desc:'내 평생 인연은 언제, 어떤 사람?',price:'₩9,900',onClick:()=>router.push('/unse/love')},
+                  {img:'reunion',badge:'재회',name:'재회운',desc:'헤어진 그 사람, 다시 올까?',price:'₩9,900',onClick:()=>router.push('/unse/reunion')},
+                  {img:'pair',badge:'2인 정밀',name:'2인 정밀 궁합',desc:'궁합 점수 너머, 둘의 속궁합과 앞날',price:'₩9,900',onClick:()=>router.push('/unse/pair')},
+                  {img:'match',badge:'무료',name:'궁합 점수',desc:'연인·배우자·친구 궁합 점수 공개',price:'무료',onClick:()=>router.push('/gunghap')},
+                ]},
+                { sec:'재물 · 개운', theme:'gold', items:[
+                  {img:'vessel',badge:'재물',name:'타고난 재물 그릇',desc:'내 돈복은 몇 그릇? 돈이 모이는 길',price:'₩9,900',onClick:()=>router.push('/unse/vessel')},
+                  {img:'today',badge:'오늘의 일진',name:'오늘의 운세',desc:'오늘 하루, 조심할 것과 챙길 것',price:'₩1,000',onClick:()=>router.push('/unse/today')},
+                  {img:'lucky',badge:'개운',name:'행운 컬러 · 숫자',desc:'내 사주에 부족한 기운 채우기',price:'₩1,000',onClick:()=>router.push('/unse/lucky')},
+                  {img:'me',badge:'무료',name:'나의 운세',desc:'타고난 기질과 오행 에너지 분석',price:'무료',onClick:()=>goStart()},
                 ]},
                 { sec:'타로', theme:'violet', items:[
                   {img:'tarot',badge:'무료',name:'오늘의 타로',desc:'지금 나에게 필요한 메시지 한 장',price:'무료',onClick:()=>router.push('/tarot?cat=daily')},
@@ -439,15 +472,16 @@ export default function Home() {
                   <div className={`svc-sec svc-${g.theme}`}>{g.sec}</div>
                   <div className="svc-grid">
                     {g.items.map((p,i)=>(
-                      <div key={p.name} onClick={p.onClick} className={`reveal svc-card svc-${g.theme}`} style={{'--d':`${(i%2)*120}ms`}}>
+                      <div key={p.name} onClick={p.soon ? undefined : p.onClick} className={`reveal svc-card svc-${g.theme}${p.soon ? ' svc-soon' : ''}${p.badge.startsWith('BEST') ? ' best' : ''}`} style={{'--d':`${(i%2)*120}ms`}}>
                         <div className="svc-img">
-                          <img src={`/svc/${p.img}.webp`} alt={p.name} loading="lazy" decoding="async" width="640" height="482" />
+                          <img src={`/svc3/${p.img}.webp`} alt={p.name} loading="lazy" decoding="async" width="640" height="482" />
                           <span className="svc-badge">{p.badge}</span>
                         </div>
                         <div className="svc-body">
+                          <div className="svc-cat">{p.badge}</div>
                           <div className="svc-name">{p.name}</div>
                           <div className="svc-desc">{p.desc}</div>
-                          <div className="svc-foot"><span className={`svc-price${p.price==='무료' ? ' free' : ''}`}>{p.price}</span><span className="svc-go">보러가기 →</span></div>
+                          {p.soon ? <div className="svc-foot"><span className="svc-price soon">곧 열려요</span></div> : <div className="svc-foot"><span className={`svc-price${p.price==='무료' ? ' free' : ''}`}>{p.price}</span><span className="svc-go">보러가기 →</span></div>}
                         </div>
                       </div>
                     ))}
@@ -456,7 +490,7 @@ export default function Home() {
               ))}
             </div>
           </div>
-          <div style={{background:'rgba(11,10,31,0.95)',borderTop:'1px solid rgba(232,200,126,0.1)',borderBottom:'1px solid rgba(232,200,126,0.1)'}}>
+          <div style={{background:'rgba(12,12,15,0.95)',borderTop:'1px solid rgba(232,200,126,0.1)',borderBottom:'1px solid rgba(232,200,126,0.1)'}}>
             <div className="stats-grid reveal" style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',maxWidth:'1100px',margin:'0 auto'}}>
               {[['만세력','천문 데이터로 계산'],['10타입','일간 성향 분석'],['22장','메이저 아르카나'],['무료','가입 없이 바로']].map(([n,l],i)=>(
                 <div key={i} style={{padding:'28px 20px',textAlign:'center',borderRight:i<3?'1px solid rgba(232,200,126,0.08)':'none'}}>
@@ -467,7 +501,7 @@ export default function Home() {
             </div>
           </div>
           {/* 이렇게 읽어요 — 3단계 그래픽 */}
-          <div style={{background:'#0B0A1F',padding:'64px 24px 40px'}}>
+          <div style={{background:'#0c0c0f',padding:'64px 24px 40px'}}>
             <div style={{maxWidth:'1100px',margin:'0 auto'}}>
               <div className="reveal" style={{textAlign:'center',marginBottom:'36px'}}>
                 <div style={{fontSize:'10px',letterSpacing:'4px',color:'rgba(232,200,126,0.4)',marginBottom:'12px'}}>HOW IT WORKS</div>
@@ -497,7 +531,7 @@ export default function Home() {
                       <g className="ohaeng-orbit"><circle cx="100" cy="30" r="4" fill="#E8C87E" /></g>
                       {OH.map((p,i)=>(
                         <g key={p.el} className="ohaeng-node" style={{animationDelay:`${i*0.4}s`,transformOrigin:`${p.x}px ${p.y}px`}}>
-                          <circle cx={p.x} cy={p.y} r="17" fill="#0B0A1F" stroke={ELEMENT_COLOR[p.el]} strokeWidth="2" />
+                          <circle cx={p.x} cy={p.y} r="17" fill="#0c0c0f" stroke={ELEMENT_COLOR[p.el]} strokeWidth="2" />
                           <text x={p.x} y={p.y+5} textAnchor="middle" fontSize="15" fill={ELEMENT_COLOR[p.el]} fontFamily="'Noto Serif KR', serif">{p.el}</text>
                         </g>
                       ))}
@@ -521,7 +555,7 @@ export default function Home() {
             </div>
           </div>
           {/* 10가지 타입 */}
-          <div style={{background:'linear-gradient(180deg,#0B0A1F,#120f2e 50%,#0B0A1F)',padding:'56px 24px'}}>
+          <div style={{background:'linear-gradient(180deg,#0c0c0f,#120f2e 50%,#0c0c0f)',padding:'56px 24px'}}>
             <div style={{maxWidth:'1100px',margin:'0 auto'}}>
               <div className="reveal" style={{textAlign:'center',marginBottom:'32px'}}>
                 <div style={{fontSize:'10px',letterSpacing:'4px',color:'rgba(232,200,126,0.4)',marginBottom:'12px'}}>10 TYPES</div>
@@ -540,7 +574,7 @@ export default function Home() {
             </div>
           </div>
           {/* 결과 미리보기 */}
-          <div style={{background:'#0B0A1F',padding:'56px 24px'}}>
+          <div style={{background:'#0c0c0f',padding:'56px 24px'}}>
             <div className="preview-grid" style={{maxWidth:'900px',margin:'0 auto',display:'grid',gridTemplateColumns:'1fr 1fr',gap:'36px',alignItems:'center'}}>
               <div className="reveal">
                 <div style={{fontSize:'10px',letterSpacing:'4px',color:'rgba(232,200,126,0.4)',marginBottom:'12px'}}>PREVIEW</div>

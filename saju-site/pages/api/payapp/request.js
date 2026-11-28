@@ -1,5 +1,5 @@
 import { requestPayment } from '../../../lib/payapp';
-import { setJSON } from '../../../lib/redis';
+import { setJSON, getJSON } from '../../../lib/redis';
 import { getUid, authEnabled } from '../../../lib/auth';
 
 // 결제 요청 생성.
@@ -27,16 +27,23 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: '결제하려면 로그인이 필요해요.', needLogin: true });
     }
 
+    // 서버가 만들어 둔 풀이에 정해진 가격이 있으면 그 가격으로만 결제한다 (화면에서 보낸 가격은 믿지 않음)
+    let payPrice = price;
+    try {
+      const saved = await getJSON(`payapp:stash:${orderId}`);
+      if (saved && saved.meta && saved.meta.price) payPrice = saved.meta.price;
+    } catch {}
+
     if (stash) {
       await setJSON(`payapp:stash:${orderId}`, stash, 60 * 60 * 24); // 24시간 보관
     }
 
     // 이 주문이 누구 건지 적어 두고, 결제가 끝나면 보관함에 영구 저장한다
     if (uid) {
-      await setJSON(`payapp:owner:${orderId}`, { uid, goodname, price }, 60 * 60 * 24 * 7);
+      await setJSON(`payapp:owner:${orderId}`, { uid, goodname, price: payPrice }, 60 * 60 * 24 * 7);
     }
 
-    const result = await requestPayment({ goodname, price, recvphone: phoneDigits, orderId, returnPath });
+    const result = await requestPayment({ goodname, price: payPrice, recvphone: phoneDigits, orderId, returnPath });
 
     if (result.state !== '1') {
       return res.status(400).json({ error: result.errorMessage || '결제 요청에 실패했어요.' });

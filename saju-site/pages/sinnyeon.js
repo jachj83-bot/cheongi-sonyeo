@@ -69,6 +69,9 @@ export default function Sinnyeon() {
     if (!router.isReady) return;
     const y = router.query.year;
     if (y === '2026' || y === '2027') setForecastYear(y);
+    // 다른 결과 화면에서 넘어오면 생년월일을 미리 채운다 (by·bm·bd = 태어난 해·달·날)
+    const q = router.query;
+    if (q.by && q.bm && q.bd) setForm(f => ({ ...f, name: q.name || f.name, year: q.by, month: q.bm, day: q.bd, hour: q.hour || f.hour, gender: q.gender || f.gender, calendar: q.calendar || f.calendar }));
   }, [router.isReady, router.query.year]);
 
   // 결제창에서 돌아왔을 때 (returnurl에 orderId가 붙어서 돌아옴) 결제 확인 폴링

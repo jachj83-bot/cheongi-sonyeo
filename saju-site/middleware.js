@@ -30,5 +30,5 @@ export async function middleware(req) {
 }
 
 export const config = {
-  matcher: ['/sinnyeon/:path*', '/wolun/:path*', '/tojeong/:path*', '/tonghap/:path*'],
+  matcher: ['/sinnyeon/:path*', '/wolun/:path*', '/tojeong/:path*', '/tonghap/:path*', '/unse/:path*'],
 };

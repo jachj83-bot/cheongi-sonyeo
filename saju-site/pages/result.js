@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import CrossSell from '../lib/CrossSell';
 import { DAY_TYPES, ELEMENT_COLOR, typeImg, helperTypes, drawStoryCard } from '../lib/dayTypes';
 import NewYearPopup from '../lib/NewYearPopup';
 import { buildChart, GAN_HANJA, JI_HANJA, ganOhaeng, jiOhaeng, hourNumber } from '../lib/myeongri';
@@ -214,7 +215,7 @@ export default function Result() {
 
   useEffect(() => {
     if (!router.isReady) return;
-    const { name, year, month, day, hour, gender, calendar } = router.query;
+    const { name, year, month, day, hour, gender, calendar, mbti } = router.query;
     if (!name) return;
 
     (async () => {
@@ -222,7 +223,7 @@ export default function Result() {
         const res = await fetch('/api/saju', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, year, month, day, hour, gender, calendar })
+          body: JSON.stringify({ name, year, month, day, hour, gender, calendar, mbti })
         });
 
         const sajuHeader = res.headers.get('X-Saju-Data');
@@ -765,7 +766,7 @@ export default function Result() {
 
               {/* 무료 풀이 다음 단계: 이번 달 나의 운세 (1,900원) */}
               {result && doneStreaming && (
-                <a href={`/wolun?${new URLSearchParams(Object.fromEntries(Object.entries(router.query || {}).filter(([k]) => ['name','year','month','day','hour','gender','calendar'].includes(k)))).toString()}`}
+                <a href={`/wolun?${new URLSearchParams(Object.fromEntries(Object.entries(router.query || {}).filter(([k]) => ['name','year','month','day','hour','gender','calendar','mbti'].includes(k)))).toString()}`}
                   style={{display:'flex',alignItems:'center',gap:'12px',textDecoration:'none',background:'linear-gradient(90deg,#3a2008,#2d1500)',border:'1px solid #c4712a',borderRadius:'12px',padding:'10px 14px 10px 10px',marginBottom:'20px',boxShadow:'0 8px 22px rgba(0,0,0,.4)'}}>
                   <img src="/svc/month.webp" alt="" width="88" height="66" style={{width:'88px',height:'66px',objectFit:'cover',borderRadius:'10px',flexShrink:0}} />
                   <span style={{flex:1,minWidth:0}}>
@@ -888,6 +889,8 @@ export default function Result() {
                   )}
                 </div>
               )}
+
+              <div style={{marginBottom:'20px'}}><CrossSell birth={router.query || {}} items={['vessel','love','sinnyeon','reunion']} /></div>
 
               {/* 유료 CTA */}
               <div style={{background:'#2d0f00',border:'1px solid #8b2e00',borderRadius:'6px',padding:'24px',textAlign:'center',marginBottom:'16px'}}>

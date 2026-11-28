@@ -1,5 +1,6 @@
 import { calculateSaju as calcSolar, lunarToSolar } from '@fullstackfamily/manseryeok';
 import { setJSON } from '../../lib/redis';
+import { PRODUCTS } from '../../lib/products';
 
 const CHEONGAN_OHAENG = {
   '갑':'목','을':'목','병':'화','정':'화','무':'토',
@@ -206,6 +207,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { name, year, month, day, hour, gender, type, me, partner, card, cardEn, reversed, question, orderId, forecastYear, calendar } = req.body;
+  const mbti = /^[EI][SN][TF][JP]$/.test(String(req.body.mbti || '').toUpperCase()) ? String(req.body.mbti).toUpperCase() : '';
 
   try {
 
@@ -314,6 +316,58 @@ ${meName}님과 ${partnerName}님, 두 분의 궁합을 봐주세요. 아래 형
 두 분의 이름을 자연스럽게 불러가며, 장점과 단점을 6:4로 균형있게, 따뜻한 톤으로 한국어로 작성해주세요.`;
 
       await streamAnthropic(res, { prompt, maxTokens: 2800, fallback: '분석 결과를 가져올 수 없습니다.' });
+      return;
+    }
+
+    // 새 유료 메뉴 6종 (연애·결혼운, 재회운, 재물 그릇, 2인 궁합, 오늘의 운세, 행운 컬러·숫자)
+    if (type === 'product') {
+      const P = PRODUCTS[req.body.kind];
+      if (!P) return res.status(400).json({ error: '없는 메뉴예요.' });
+      const pillarText = (sj, nm, gd) => {
+        const ig = getIlgan(sj.dayPillar);
+        const st = calcOhaengStrength([sj.yearPillar, sj.monthPillar, sj.dayPillar, sj.hourPillar]);
+        const sp = [['년주', sj.yearPillar], ['월주', sj.monthPillar], ['일주', sj.dayPillar], ['시주', sj.hourPillar]]
+          .filter(([, v]) => v).map(([k, v]) => `${k} ${v}: 천간 ${getSipsin(ig, v[0])} / 지지 ${getSipsin(ig, v[1], true)}`).join('\n');
+        return { ig, st, text: `[${nm}님 사주팔자]\n년주: ${sj.yearPillar} / 월주: ${sj.monthPillar} / 일주: ${sj.dayPillar} / 시주: ${hp(sj)}\n성별: ${gd}자 / 일간: ${ig}(${CHEONGAN_OHAENG[ig]})\n오행 강약: 목${st['목']} 화${st['화']} 토${st['토']} 금${st['금']} 수${st['수']}\n십성:\n${sp}` };
+      };
+      const who = name || '의뢰인';
+      const saju = sajuOf(year, month, day, hour, calendar);
+      const me = pillarText(saju, who, gender);
+      const extra = [];
+      extra.push(`[해의 흐름] 2026년 병오(丙午): 천간 ${getSipsin(me.ig, '병')} / 지지 ${getSipsin(me.ig, '오', true)}. 2027년 정미(丁未): 천간 ${getSipsin(me.ig, '정')} / 지지 ${getSipsin(me.ig, '미', true)}.`);
+      if (mbti) extra.push(`[참고 MBTI] ${mbti} — 사주를 중심에 두고, 어울리는 곳에서 한두 문장만 겹쳐 풀어 주세요.`);
+      if (P.askWhen && req.body.when) extra.push(`[헤어진 시기] ${String(req.body.when).slice(0, 20)}`);
+      if (P.today) {
+        const k = new Date(Date.now() + 9 * 3600000);
+        const td = calcSolar(k.getUTCFullYear(), k.getUTCMonth() + 1, k.getUTCDate(), 12).dayPillar;
+        extra.push(`[오늘] ${k.getUTCMonth() + 1}월 ${k.getUTCDate()}일 일진 ${td}: 일간 기준 천간 ${getSipsin(me.ig, td[0])} / 지지 ${getSipsin(me.ig, td[1], true)}`);
+      }
+      let partnerText = '';
+      if (P.needPartner) {
+        const pb = req.body.partner || {};
+        if (!pb.year || !pb.month || !pb.day || !pb.gender) return res.status(400).json({ error: '상대방 생년월일과 성별을 입력해 주세요.' });
+        const ps = sajuOf(pb.year, pb.month, pb.day, pb.hour || '모름', pb.calendar || '양력');
+        partnerText = '\n\n' + pillarText(ps, pb.name || '상대방', pb.gender).text;
+      }
+      const sec = P.sections.map(([e, t, d]) => `${e} ${t} — ${d}`).join('\n');
+      const prompt = `당신은 30년 경력의 명리학 전문가 '천기소녀'입니다. ${who}님의 「${P.title}」 풀이를 써주세요.
+
+${me.text}${partnerText}
+
+${extra.join('\n')}
+
+첫 문장은 반드시 "하늘의 기운을 읽었습니다."로 시작하고, 아래 ${P.sections.length}개 항목을 순서대로 써주세요. 항목 제목 줄에는 이모지와 짧은 제목만 쓰고(— 뒤 설명은 쓰지 말 것), 설명은 본문으로 풀어 주세요.
+
+${sec}
+
+각 항목은 ${P.price >= 5000 ? '4~6' : '2~3'}문장으로, 사주 근거(어떤 글자, 어떤 십성 때문인지)를 한 번씩 짚고, 일상 장면을 넣어 구체적으로 써주세요. 장점과 주의점을 6:4로, 따뜻하고 신비로운 톤의 한국어로 써주세요. 마크다운 기호는 쓰지 마세요.`;
+
+      const fullText = await generateFullText({ prompt, maxTokens: P.price >= 5000 ? 2800 : 1400, fallback: '분석 결과를 가져올 수 없습니다.' });
+      const { preview, locked } = splitPreview(fullText, P.preview);
+      if (locked && orderId) {
+        await setJSON(`payapp:stash:${orderId}`, { full: fullText, meta: { name, year, month, day, hour, gender, calendar, kind: req.body.kind, price: P.price } }, 60 * 60 * 24);
+      }
+      res.status(200).json({ preview, full: (locked && orderId) ? null : fullText, locked: !!(locked && orderId) });
       return;
     }
 
@@ -563,14 +617,15 @@ ${card} (${cardEn || ''}) — ${reversed ? '역방향' : '정방향'}
 십신:
 ${sipsinData.map(s => s ? `${s.pillar}: 천간(${s.ganSipsin}) 지지(${s.jiSipsin})` : '').join('\n')}
 
-첫 문장은 반드시 "하늘의 기운을 읽었습니다."로 시작하고, 아래 다섯 항목을 순서대로 자세하게 풀어주세요. 무료 리포트지만 "나를 정말 잘 안다"는 느낌이 들 만큼 구체적으로 써주세요:
+첫 문장은 반드시 "하늘의 기운을 읽었습니다."로 시작하고, 아래 ${mbti ? '여섯' : '다섯'} 항목을 순서대로 자세하게 풀어주세요. 무료 리포트지만 "나를 정말 잘 안다"는 느낌이 들 만큼 구체적으로 써주세요:
 
 🌟 일주 분석 (${saju.dayPillar}) — 타고난 본성과 겉으로 보이는 모습과 속마음의 차이
 🔥 오행 에너지 — 가장 강한 ${strongest}와 가장 약한 ${weakest}가 일상에서 어떻게 드러나는지, 부족한 기운을 채우는 생활 습관 하나
 💫 십신으로 본 성격과 재능 — 남들보다 잘하는 것과 스스로 놓치기 쉬운 강점
 🤝 사람을 대하는 방식 — 친구, 동료, 연인에게 보이는 모습과 관계에서 반복되는 패턴
 🧭 잘 맞는 일과 환경 — 힘이 나는 일의 방식과 피하면 좋은 환경
-
+${mbti ? `🧩 사주 × MBTI (${mbti}) — 사주로 본 기질과 ${mbti} 성향이 겹치는 점 하나, 다르게 나타나는 점 하나. 다르다면 "겉으로는 ${mbti}처럼 보여도 사주 속에는 이런 면이 있다"처럼 풀어 주세요. MBTI는 본인이 고른 참고 정보이니 단정하지 말고 사주를 중심에 두세요.
+` : ''}
 ${singang} 사주 특성에 맞게, 장점과 단점을 6:4로 균형있게, 따뜻하고 신비로운 톤으로 한국어로 작성해주세요. 각 항목은 4~5문장으로, 일상에서 바로 떠오르는 구체적인 장면(예: "약속 장소를 정할 때", "단톡방에서")을 하나씩 넣어 주세요. 마크다운 기호(**, #)는 쓰지 말고, 각 항목 제목 줄에는 "🌟 일주 분석 (${saju.dayPillar})", "🔥 오행 에너지"처럼 이모지와 짧은 제목만 쓰세요. 제목 뒤의 설명(— 이후)은 제목에 쓰지 말고 본문으로 풀어 주세요. 연애운과 재물운의 시기, 다가오는 해의 흐름은 무료 리포트에서 다루지 마세요. 마지막에 줄바꿈 후 "✨"로 시작하는 한 줄로, 재물운·연애운·2027 정미년의 흐름은 신년운세에서 훨씬 자세히 볼 수 있다는 걸 궁금증이 생기게 자연스럽게 안내해주세요. 연도는 2027 정미년 외에 다른 연도를 쓰지 마세요.`;
 
     // sajuData를 먼저 헤더로 보내고, AI 해석은 실시간 스트리밍으로 전송 (체감 속도 개선)
