@@ -51,9 +51,9 @@ const JIJI_TRAIT = {
 };
 
 const LOADING_MESSAGES = [
-  '천기소녀가 하늘의 기운을 읽고 있어요...',
-  '사주팔자를 하나하나 짚어보는 중이에요...',
-  '거의 다 왔어요, 조금만 기다려주세요...',
+  '풀이 중 · 천기소녀가 하늘의 기운을 읽고 있어요...',
+  '풀이 중 · 사주팔자를 하나하나 짚어보는 중이에요...',
+  '풀이 중 · 거의 다 왔어요. 다 쓰면 한 번에 보여드릴게요...',
 ];
 
 // 스트리밍되는 해석 텍스트를 섹션(이모지로 시작하는 줄) 단위로 잘라
@@ -255,9 +255,9 @@ export default function Result() {
           const { done, value } = await reader.read();
           if (done) break;
           acc += decoder.decode(value, { stream: true });
-          setResult(acc);
-          if (first) { setLoading(false); first = false; }
         }
+        // 풀이가 끝까지 다 써진 뒤에 한 번에 보여준다
+        setResult(acc);
         setLoading(false);
         setDoneStreaming(true);
       } catch {
@@ -328,17 +328,13 @@ export default function Result() {
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let acc = '';
-      setChatMessages(prev => [...prev, { role: 'char', text: '' }]);
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
         acc += decoder.decode(value, { stream: true });
-        setChatMessages(prev => {
-          const next = [...prev];
-          next[next.length - 1] = { role: 'char', text: acc };
-          return next;
-        });
       }
+      // 답이 다 써진 뒤에 한 번에 보여준다
+      setChatMessages(prev => [...prev, { role: 'char', text: acc || '지금은 답하기 어려워요.' }]);
       setChatLoading(false);
       markFreeUsed();
     } catch {
@@ -421,7 +417,7 @@ export default function Result() {
     const jiOhaeng = JIJI_OHAENG[ji];
     return (
       <div style={{flex:1,textAlign:'center',minWidth:0}}>
-        <div style={{fontSize:'11px',color:'#7a5030',marginBottom:'6px',letterSpacing:'1px'}}>{label}</div>
+        <div style={{fontSize:'11px',color:'#7a7a85',marginBottom:'6px',letterSpacing:'1px'}}>{label}</div>
         {sipsin && <div style={{fontSize:'11px',color:'#c4956a',marginBottom:'4px'}}>{sipsin.ganSipsin}</div>}
         <div style={{background:`${OHAENG_COLOR[ganOhaeng]}22`,border:`1.5px solid ${OHAENG_COLOR[ganOhaeng]}`,borderRadius:'6px',padding:'10px 4px',marginBottom:'4px'}}>
           <div style={{fontSize:'22px',fontWeight:'900',color:OHAENG_COLOR[ganOhaeng],fontFamily:'serif'}}>{gan}</div>
@@ -443,7 +439,7 @@ export default function Result() {
         <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
         <style>{`
           * {box-sizing:border-box;margin:0;padding:0;}
-          body {background:#1a0a00;color:#f0e6d3;font-family:'Noto Sans KR',sans-serif;word-break:keep-all;}
+          body {background:#0c0c0f;color:#f0e6d3;font-family:'Noto Sans KR',sans-serif;word-break:keep-all;}
           @keyframes bubbleIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
           @keyframes orbit { to{transform:rotate(360deg)} }
           @keyframes orbitRev { to{transform:rotate(-360deg)} }
@@ -466,61 +462,61 @@ export default function Result() {
           .chat-bubble { animation: bubbleIn 0.4s ease forwards; }
           @keyframes typeSpin { to{transform:rotate(360deg)} }
           @keyframes typeFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
-          @keyframes askGlow { 0%,100%{box-shadow:0 0 0 0 rgba(196,113,42,.0)} 50%{box-shadow:0 0 18px 0 rgba(196,113,42,.45)} }
+          @keyframes askGlow { 0%,100%{box-shadow:0 0 0 0 rgba(232,200,126,.0)} 50%{box-shadow:0 0 18px 0 rgba(232,200,126,.35)} }
           .type-ring { position:absolute; inset:0; border-radius:50%; border:1.5px dashed var(--tc); opacity:.6; animation: typeSpin 18s linear infinite; }
           .type-char img { animation: typeFloat 4s ease-in-out infinite; }
           .ask-jump { animation: askGlow 2.6s ease-in-out infinite; }
           .story-btn { transition: transform .2s, filter .2s; }
           .story-btn:hover { transform: translateY(-2px); filter: brightness(1.08); }
           .use-card { transition: transform .15s, border-color .15s, background .15s; }
-          .use-card:hover, .use-card:active { border-color:#c4712a !important; background:rgba(232,200,126,0.12) !important; transform:translateY(-2px); }
+          .use-card:hover, .use-card:active { border-color:#b8975a !important; background:rgba(232,200,126,0.12) !important; transform:translateY(-2px); }
           .use-card:disabled { opacity:.5; cursor:default; }
           @media (max-width:760px) { .ny-chip { display:none !important; } }
-          .mr-col { border:1px solid #3d1500; border-radius:8px; padding:8px 3px 7px; text-align:center; background:rgba(255,255,255,0.02); min-width:0; }
-          .mr-lab { font-size:11px; color:#7a5030; margin-bottom:3px; white-space:nowrap; }
+          .mr-col { border:1px solid #2a2a31; border-radius:8px; padding:8px 3px 7px; text-align:center; background:rgba(255,255,255,0.02); min-width:0; }
+          .mr-lab { font-size:11px; color:#7a7a85; margin-bottom:3px; white-space:nowrap; }
           .mr-ss { font-size:11px; font-weight:700; margin:2px 0; }
           .mr-char { font-family:'Noto Serif KR',serif; font-size:26px; font-weight:900; line-height:1.1; border-radius:6px; padding:6px 0 4px; margin:3px 2px; }
           .mr-char small { display:block; font-family:'Noto Sans KR',sans-serif; font-size:10px; font-weight:500; opacity:.85; margin-top:2px; }
           .mr-meta { font-size:11px; color:#e0c9a8; margin-top:4px; font-family:'Noto Serif KR',serif; }
-          .mr-meta span { display:block; font-family:'Noto Sans KR',sans-serif; font-size:9.5px; color:#7a5030; }
+          .mr-meta span { display:block; font-family:'Noto Sans KR',sans-serif; font-size:9.5px; color:#7a7a85; }
           .mr-sal { margin-top:5px; min-height:16px; display:flex; flex-direction:column; gap:2px; align-items:center; }
-          .mr-sal em { font-style:normal; font-size:9.5px; color:#e8c97a; background:rgba(196,113,42,0.18); border-radius:8px; padding:1px 5px; white-space:nowrap; }
-          .mr-sal i { font-style:normal; font-size:10px; color:#5a3a20; }
-          .mr-card { background:#1f0a00; border:1px solid #3d1500; border-radius:6px; padding:18px 14px; margin-bottom:20px; }
+          .mr-sal em { font-style:normal; font-size:9.5px; color:#e8c97a; background:rgba(232,200,126,0.14); border-radius:8px; padding:1px 5px; white-space:nowrap; }
+          .mr-sal i { font-style:normal; font-size:10px; color:#6a6a74; }
+          .mr-card { background:#17171b; border:1px solid #2a2a31; border-radius:6px; padding:18px 14px; margin-bottom:20px; }
           .mr-title { text-align:center; font-family:serif; font-size:14px; color:#e8c97a; letter-spacing:2px; margin-bottom:6px; }
-          .mr-sub { text-align:center; font-size:11.5px; color:#a08060; margin-bottom:14px; line-height:1.6; }
+          .mr-sub { text-align:center; font-size:11.5px; color:#8a8a95; margin-bottom:14px; line-height:1.6; }
           .mr-grid5 { display:grid; grid-template-columns:repeat(5,1fr); gap:5px; }
           .mr-grid4 { display:grid; grid-template-columns:repeat(4,1fr); gap:5px; }
-          .mr-cell { position:relative; border:1px solid #3d1500; border-radius:8px; padding:8px 2px 7px; text-align:center; background:rgba(255,255,255,0.02); }
+          .mr-cell { position:relative; border:1px solid #2a2a31; border-radius:8px; padding:8px 2px 7px; text-align:center; background:rgba(255,255,255,0.02); }
           .mr-cell.on { border:1.5px solid #e8c97a; background:rgba(232,201,122,0.08); }
-          .mr-now { position:absolute; top:-8px; left:50%; transform:translateX(-50%); font-size:9px; background:#e8c97a; color:#1a0a00; border-radius:6px; padding:1px 6px; }
-          .mr-age { font-size:11px; color:#a08060; margin-bottom:2px; }
+          .mr-now { position:absolute; top:-8px; left:50%; transform:translateX(-50%); font-size:9px; background:#e8c97a; color:#0c0c0f; border-radius:6px; padding:1px 6px; }
+          .mr-age { font-size:11px; color:#8a8a95; margin-bottom:2px; }
           .mr-pil { font-family:'Noto Serif KR',serif; font-size:19px; font-weight:900; line-height:1.2; }
           .mr-s1 { font-size:10.5px; color:#e0c9a8; margin-top:3px; }
-          .mr-s2 { font-size:10px; color:#7a5030; }
-          .rd-card { background:#1f0a00; border:1px solid #3d1500; border-radius:10px; overflow:hidden; }
-          .rd-head { display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid #3d1500; background:linear-gradient(90deg,#2d1500,#1f0a00); }
-          .rd-num { font-family:'Noto Serif KR',serif; font-size:13px; font-weight:900; color:#1a0a00; background:#e8c97a; border-radius:6px; padding:2px 7px; }
+          .mr-s2 { font-size:10px; color:#7a7a85; }
+          .rd-card { background:#17171b; border:1px solid #2a2a31; border-radius:10px; overflow:hidden; }
+          .rd-head { display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid #2a2a31; background:linear-gradient(90deg,#1f1f25,#17171b); }
+          .rd-num { font-family:'Noto Serif KR',serif; font-size:13px; font-weight:900; color:#0c0c0f; background:#e8c97a; border-radius:6px; padding:2px 7px; }
           .rd-title { font-size:16px; font-weight:700; color:#e8c97a; }
           .rd-body { padding:14px 16px 16px; color:#f0e6d3; font-size:15px; line-height:1.85; white-space:pre-wrap; }
-          .ch-nav { position:sticky; top:57px; z-index:50; display:flex; gap:6px; overflow-x:auto; margin:0 -20px 16px; padding:10px 20px; background:rgba(26,10,0,0.96); border-bottom:1px solid #3d1500; scrollbar-width:none; }
+          .ch-nav { position:sticky; top:57px; z-index:50; display:flex; gap:6px; overflow-x:auto; margin:0 -20px 16px; padding:10px 20px; background:rgba(12,12,15,0.96); border-bottom:1px solid #2a2a31; scrollbar-width:none; }
           .ch-nav::-webkit-scrollbar { display:none; }
-          .ch-nav a { flex:0 0 auto; font-size:12px; color:#e8c97a; text-decoration:none; border:1px solid #5a2a08; border-radius:14px; padding:5px 11px; white-space:nowrap; background:#2d1500; }
+          .ch-nav a { flex:0 0 auto; font-size:12px; color:#e8c97a; text-decoration:none; border:1px solid #3a3a44; border-radius:14px; padding:5px 11px; white-space:nowrap; background:#1f1f25; }
         `}</style>
       </Head>
 
-      <div style={{minHeight:'100vh',background:'#1a0a00'}}>
+      <div style={{minHeight:'100vh',background:'#0c0c0f'}}>
         {/* 헤더 */}
-        <div style={{position:'sticky',top:0,zIndex:100,background:'rgba(26,10,0,0.97)',backdropFilter:'blur(10px)',borderBottom:'1px solid #3d1500',padding:'14px 20px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+        <div style={{position:'sticky',top:0,zIndex:100,background:'rgba(12,12,15,0.97)',backdropFilter:'blur(10px)',borderBottom:'1px solid #2a2a31',padding:'14px 20px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
           <a href="/" style={{display:'flex',alignItems:'center',gap:'8px',color:'#e8c97a',fontSize:'18px',fontWeight:'900',textDecoration:'none',fontFamily:'serif',letterSpacing:'2px'}}><img src="/logo_symbol.png" alt="" style={{width:'24px',height:'24px',objectFit:'contain'}} />천기소녀</a>
         </div>
 
         <div style={{maxWidth:'600px',margin:'0 auto',padding:'28px 20px 80px'}}>
 
           {/* 이름/날짜 */}
-          <div style={{background:'#1f0a00',border:'1px solid #3d1500',borderRadius:'6px',padding:'20px',marginBottom:'20px'}}>
+          <div style={{background:'#17171b',border:'1px solid #2a2a31',borderRadius:'6px',padding:'20px',marginBottom:'20px'}}>
             <h2 style={{fontFamily:'serif',fontSize:'20px',color:'#e8c97a',marginBottom:'4px'}}>{name}님의 사주</h2>
-            <p style={{color:'#7a5030',fontSize:'14px'}}>{year}년 {month}월 {day}일생</p>
+            <p style={{color:'#7a7a85',fontSize:'14px'}}>{year}년 {month}월 {day}일생</p>
           </div>
 
           {loading ? (
@@ -545,7 +541,7 @@ export default function Result() {
                 const col = ELEMENT_COLOR[t.el];
                 const helpers = helperTypes(gan);
                 return (
-                  <div className="soft-in type-card" style={{'--tc':col,position:'relative',overflow:'hidden',background:`radial-gradient(circle at 50% 0%, ${col}33, transparent 60%), #1f0a00`,border:`1px solid ${col}66`,borderRadius:'10px',padding:'22px 20px 20px',marginBottom:'20px',textAlign:'center'}}>
+                  <div className="soft-in type-card" style={{'--tc':col,position:'relative',overflow:'hidden',background:`radial-gradient(circle at 50% 0%, ${col}33, transparent 60%), #17171b`,border:`1px solid ${col}66`,borderRadius:'10px',padding:'22px 20px 20px',marginBottom:'20px',textAlign:'center'}}>
                     <div style={{fontSize:'18px',fontWeight:'700',letterSpacing:'1px',color:'#e0b486',marginBottom:'10px'}}>궁중에 태어났다면 나는</div>
                     <div className="type-char" style={{position:'relative',height:'270px',margin:'0 auto 10px',display:'flex',justifyContent:'center',alignItems:'flex-end'}}>
                       <div aria-hidden="true" style={{position:'absolute',left:'50%',bottom:'6px',width:'190px',height:'26px',transform:'translateX(-50%)',borderRadius:'50%',background:`radial-gradient(ellipse, ${col}55, transparent 70%)`}} />
@@ -558,8 +554,8 @@ export default function Result() {
                     <div style={{display:'flex',gap:'6px',justifyContent:'center',flexWrap:'wrap',marginBottom:'14px'}}>
                       {t.tags.map(tg => <span key={tg} style={{fontSize:'12px',color:col,border:`1px solid ${col}88`,borderRadius:'14px',padding:'4px 10px'}}>#{tg}</span>)}
                     </div>
-                    {helpers.length > 0 && <div style={{fontSize:'12px',color:'#a08060',marginBottom:'16px'}}>나를 살려주는 타입 · {helpers.join(', ')}</div>}
-                    <button onClick={()=>saveStoryCard(gan)} className="story-btn" style={{background:col,color:'#1a0a00',border:'none',borderRadius:'24px',padding:'12px 22px',fontSize:'14px',fontWeight:'700',cursor:'pointer',fontFamily:'inherit'}}>
+                    {helpers.length > 0 && <div style={{fontSize:'12px',color:'#8a8a95',marginBottom:'16px'}}>나를 살려주는 타입 · {helpers.join(', ')}</div>}
+                    <button onClick={()=>saveStoryCard(gan)} className="story-btn" style={{background:col,color:'#0c0c0f',border:'none',borderRadius:'24px',padding:'12px 22px',fontSize:'14px',fontWeight:'700',cursor:'pointer',fontFamily:'inherit'}}>
                       {storyState === 'saving' ? '이미지 만드는 중...' : '인스타 스토리용 이미지 저장'}
                     </button>
                     {storyState === 'done' && <div style={{fontSize:'12px',color:'#c4956a',marginTop:'8px'}}>저장됐어요. 스토리에 올리고 친구 타입도 물어보세요</div>}
@@ -575,7 +571,7 @@ export default function Result() {
 
               {/* 사주원국 표 */}
               {sajuData && (
-                <div style={{background:'#1f0a00',border:'1px solid #3d1500',borderRadius:'6px',padding:'20px',marginBottom:'20px'}}>
+                <div style={{background:'#17171b',border:'1px solid #2a2a31',borderRadius:'6px',padding:'20px',marginBottom:'20px'}}>
                   <div style={{textAlign:'center',fontFamily:'serif',fontSize:'14px',color:'#e8c97a',marginBottom:'16px',letterSpacing:'2px'}}>✦ 사주원국 ✦</div>
 
                   {/* 원국 상세 표: 십성 · 천간 · 지지 · 지장간 · 12운성 · 신살 */}
@@ -584,17 +580,17 @@ export default function Result() {
                       <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'6px',marginBottom:'10px'}}>
                         {[3,2,1,0].map((ci,i)=>{ const c = chart.cols[ci]; const label = ['년주','월주','일주(나)','시주'][ci];
                           if (!c) return (
-                            <div key={ci} className="pillar-in mr-col" style={{animationDelay:`${0.15 + i*0.15}s`,borderColor:'#3d1500',borderStyle:'dashed'}}>
+                            <div key={ci} className="pillar-in mr-col" style={{animationDelay:`${0.15 + i*0.15}s`,borderColor:'#2a2a31',borderStyle:'dashed'}}>
                               <div className="mr-lab">{label}</div>
-                              <div className="mr-ss" style={{color:'#7a5030'}}>-</div>
-                              <div className="mr-char" style={{color:'#7a5030',background:'rgba(255,255,255,0.04)'}}>?<small>시간 모름</small></div>
-                              <div className="mr-char" style={{color:'#7a5030',background:'rgba(255,255,255,0.04)'}}>?<small>시간 모름</small></div>
-                              <div className="mr-meta" style={{display:'block',textAlign:'center',lineHeight:'1.5',fontSize:'10px',color:'#7a5030'}}>세 기둥으로<br />풀이했어요</div>
+                              <div className="mr-ss" style={{color:'#7a7a85'}}>-</div>
+                              <div className="mr-char" style={{color:'#7a7a85',background:'rgba(255,255,255,0.04)'}}>?<small>시간 모름</small></div>
+                              <div className="mr-char" style={{color:'#7a7a85',background:'rgba(255,255,255,0.04)'}}>?<small>시간 모름</small></div>
+                              <div className="mr-meta" style={{display:'block',textAlign:'center',lineHeight:'1.5',fontSize:'10px',color:'#7a7a85'}}>세 기둥으로<br />풀이했어요</div>
                             </div>
                           );
                           const go = ganOhaeng(c.gan), jo = jiOhaeng(c.ji);
                           return (
-                            <div key={ci} className="pillar-in mr-col" style={{animationDelay:`${0.15 + i*0.15}s`,borderColor: ci===2 ? '#c4712a' : '#3d1500'}}>
+                            <div key={ci} className="pillar-in mr-col" style={{animationDelay:`${0.15 + i*0.15}s`,borderColor: ci===2 ? '#b8975a' : '#2a2a31'}}>
                               <div className="mr-lab">{label}</div>
                               <div className="mr-ss" style={{color: ci===2 ? '#e8c97a' : '#c4956a'}}>{c.ganSipsin}</div>
                               <div className="mr-char" style={{color:OHAENG_COLOR[go],background:`${OHAENG_COLOR[go]}1f`}}>{GAN_HANJA[c.gan]}<small>{c.gan}·{go}</small></div>
@@ -627,8 +623,8 @@ export default function Result() {
                   )}
 
                   {/* 오행 강약 바 */}
-                  <div style={{borderTop:'1px solid #3d1500',paddingTop:'14px'}}>
-                    <div style={{fontSize:'11px',color:'#7a5030',marginBottom:'10px',letterSpacing:'1px',textAlign:'center'}}>오행 강약</div>
+                  <div style={{borderTop:'1px solid #2a2a31',paddingTop:'14px'}}>
+                    <div style={{fontSize:'11px',color:'#7a7a85',marginBottom:'10px',letterSpacing:'1px',textAlign:'center'}}>오행 강약</div>
                     {Object.entries(sajuData.strength).map(([k,v])=>(
                       <div key={k} style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'6px'}}>
                         <div style={{width:'20px',fontSize:'12px',color:OHAENG_COLOR[k],fontWeight:'700'}}>{k}</div>
@@ -639,14 +635,14 @@ export default function Result() {
                       </div>
                     ))}
                     <div style={{textAlign:'center',marginTop:'10px'}}>
-                      <span style={{fontSize:'12px',color:'#e8c97a',background:'rgba(139,46,0,0.3)',padding:'3px 12px',borderRadius:'10px',border:'1px solid #3d1500'}}>{sajuData.singang} 사주</span>
+                      <span style={{fontSize:'12px',color:'#e8c97a',background:'rgba(232,200,126,0.12)',padding:'3px 12px',borderRadius:'10px',border:'1px solid #2a2a31'}}>{sajuData.singang} 사주</span>
                     </div>
                   </div>
 
                   {/* 일주 한 줄 성향 — AI 해석이 뜨기 전에도 바로 보이는 즉시 표시 블러브 */}
                   {iljuBlurb && (
-                    <div className="soft-in" style={{borderTop:'1px solid #3d1500',marginTop:'14px',paddingTop:'14px',animationDelay:'1.5s'}}>
-                      <div style={{fontSize:'11px',color:'#7a5030',marginBottom:'8px',letterSpacing:'1px',textAlign:'center'}}>일주로 보는 바탕 성향</div>
+                    <div className="soft-in" style={{borderTop:'1px solid #2a2a31',marginTop:'14px',paddingTop:'14px',animationDelay:'1.5s'}}>
+                      <div style={{fontSize:'11px',color:'#7a7a85',marginBottom:'8px',letterSpacing:'1px',textAlign:'center'}}>일주로 보는 바탕 성향</div>
                       <p style={{fontSize:'13px',color:'#e0c9a8',lineHeight:'1.6',textAlign:'center'}}>{iljuBlurb}</p>
                     </div>
                   )}
@@ -691,7 +687,7 @@ export default function Result() {
               )}
 
               {sajuData && (
-                <a href="#ask" className="ask-jump" style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'10px',background:'linear-gradient(90deg,#3a1600,#2d0f00)',border:'1px solid #c4712a',borderRadius:'10px',padding:'14px 16px',marginBottom:'20px',textDecoration:'none'}}>
+                <a href="#ask" className="ask-jump" style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'10px',background:'linear-gradient(90deg,#22222a,#1a1a1f)',border:'1px solid #b8975a',borderRadius:'10px',padding:'14px 16px',marginBottom:'20px',textDecoration:'none'}}>
                   <span style={{display:'flex',alignItems:'center',gap:'10px'}}>
                     <img src="/logo_symbol.png" alt="" style={{width:'28px',height:'28px'}} />
                     <span style={{textAlign:'left'}}>
@@ -726,7 +722,7 @@ export default function Result() {
                   // 마지막 ✨ 한 줄 안내: 번호 카드 대신 신년운세로 가는 배너
                   if (isSection && first.startsWith('✨') && !body) {
                     return (
-                      <a key={i} id={`ch-${i}`} href="/sinnyeon?year=2027" className="chat-bubble" style={{display:'flex',alignItems:'center',gap:'10px',textDecoration:'none',background:'rgba(232,201,122,0.08)',border:'1px dashed #c4712a',borderRadius:'10px',padding:'12px 14px',color:'#e8c97a',fontSize:'14px',lineHeight:'1.6'}}>
+                      <a key={i} id={`ch-${i}`} href="/sinnyeon?year=2027" className="chat-bubble" style={{display:'flex',alignItems:'center',gap:'10px',textDecoration:'none',background:'rgba(232,201,122,0.08)',border:'1px dashed #b8975a',borderRadius:'10px',padding:'12px 14px',color:'#e8c97a',fontSize:'14px',lineHeight:'1.6'}}>
                         <span style={{flex:1}}>{first}</span><span style={{fontSize:'18px'}}>→</span>
                       </a>
                     );
@@ -767,10 +763,10 @@ export default function Result() {
               {/* 무료 풀이 다음 단계: 이번 달 나의 운세 (1,900원) */}
               {result && doneStreaming && (
                 <a href={`/wolun?${new URLSearchParams(Object.fromEntries(Object.entries(router.query || {}).filter(([k]) => ['name','year','month','day','hour','gender','calendar','mbti'].includes(k)))).toString()}`}
-                  style={{display:'flex',alignItems:'center',gap:'12px',textDecoration:'none',background:'linear-gradient(90deg,#3a2008,#2d1500)',border:'1px solid #c4712a',borderRadius:'12px',padding:'10px 14px 10px 10px',marginBottom:'20px',boxShadow:'0 8px 22px rgba(0,0,0,.4)'}}>
+                  style={{display:'flex',alignItems:'center',gap:'12px',textDecoration:'none',background:'linear-gradient(90deg,#22222a,#1f1f25)',border:'1px solid #b8975a',borderRadius:'12px',padding:'10px 14px 10px 10px',marginBottom:'20px',boxShadow:'0 8px 22px rgba(0,0,0,.4)'}}>
                   <img src="/svc/month.webp" alt="" width="88" height="66" style={{width:'88px',height:'66px',objectFit:'cover',borderRadius:'10px',flexShrink:0}} />
                   <span style={{flex:1,minWidth:0}}>
-                    <span style={{display:'inline-block',fontSize:'10.5px',fontWeight:'700',color:'#1a0a00',background:'#e8c97a',borderRadius:'8px',padding:'1px 7px',marginBottom:'3px'}}>₩1,900</span>
+                    <span style={{display:'inline-block',fontSize:'10.5px',fontWeight:'700',color:'#0c0c0f',background:'#e8c97a',borderRadius:'8px',padding:'1px 7px',marginBottom:'3px'}}>₩1,900</span>
                     <span style={{display:'block',fontSize:'15px',fontWeight:'700',color:'#e8c97a'}}>이번 달 나의 운세는?</span>
                     <span style={{display:'block',fontSize:'12px',color:'#c4956a'}}>생년월일 다시 안 넣어도 돼요 · 좋은 날과 조심할 날까지</span>
                   </span>
@@ -780,7 +776,7 @@ export default function Result() {
 
               {/* 천기소녀와 대화하기 */}
               {sajuData && (
-                <div id="ask" style={{background:'#1f0a00',border:'1px solid #c4712a',borderRadius:'10px',padding:'20px',marginBottom:'20px',scrollMarginTop:'70px'}}>
+                <div id="ask" style={{background:'#17171b',border:'1px solid #b8975a',borderRadius:'10px',padding:'20px',marginBottom:'20px',scrollMarginTop:'70px'}}>
                   <div style={{textAlign:'center',marginBottom:'16px'}}>
                     <div style={{fontSize:'11px',letterSpacing:'3px',color:'#c4956a',marginBottom:'6px'}}>1:1 사주 상담</div>
                     <div style={{fontFamily:'serif',fontSize:'20px',color:'#e8c97a',fontWeight:'700',marginBottom:'6px'}}>천기소녀에게 직접 물어보기</div>
@@ -788,24 +784,24 @@ export default function Result() {
                   </div>
                   <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'6px',marginBottom:'14px'}}>
                     {CHAT_USES.map(u => (
-                      <button key={u.k} type="button" className="use-card" onClick={()=>askTopic(u.q)} disabled={chatLoading} style={{background:'rgba(232,200,126,0.05)',border:'1px solid #3d1500',borderRadius:'8px',padding:'10px 4px',textAlign:'center',cursor:'pointer',fontFamily:'inherit'}}>
+                      <button key={u.k} type="button" className="use-card" onClick={()=>askTopic(u.q)} disabled={chatLoading} style={{background:'rgba(232,200,126,0.05)',border:'1px solid #2a2a31',borderRadius:'8px',padding:'10px 4px',textAlign:'center',cursor:'pointer',fontFamily:'inherit'}}>
                         <div style={{fontSize:'13px',color:'#e8c97a',fontWeight:'700',marginBottom:'3px'}}>{u.k}</div>
-                        <div style={{fontSize:'10px',color:'#a08060',lineHeight:'1.4'}}>{u.d}</div>
+                        <div style={{fontSize:'10px',color:'#8a8a95',lineHeight:'1.4'}}>{u.d}</div>
                       </button>
                     ))}
                   </div>
                   <div style={{display:'flex',justifyContent:'center',gap:'6px',flexWrap:'wrap',marginBottom:'16px'}}>
-                    <span style={{fontSize:'11px',color:'#1a0a00',background:'#e8c97a',borderRadius:'10px',padding:'3px 10px',fontWeight:'700'}}>오늘 1회 무료</span>
-                    <span style={{fontSize:'11px',color:'#e8c97a',border:'1px solid #c4712a',borderRadius:'10px',padding:'3px 10px'}}>추가 질문 1건 ₩{CHAT_EXTRA_PRICE.toLocaleString()}</span>
-                    <span style={{fontSize:'11px',color:'#e8c97a',border:'1px solid #3d1500',borderRadius:'10px',padding:'3px 10px'}}>무료 1회는 로그인 없이</span>
+                    <span style={{fontSize:'11px',color:'#0c0c0f',background:'#e8c97a',borderRadius:'10px',padding:'3px 10px',fontWeight:'700'}}>오늘 1회 무료</span>
+                    <span style={{fontSize:'11px',color:'#e8c97a',border:'1px solid #b8975a',borderRadius:'10px',padding:'3px 10px'}}>추가 질문 1건 ₩{CHAT_EXTRA_PRICE.toLocaleString()}</span>
+                    <span style={{fontSize:'11px',color:'#e8c97a',border:'1px solid #2a2a31',borderRadius:'10px',padding:'3px 10px'}}>무료 1회는 로그인 없이</span>
                   </div>
-                  <div style={{borderTop:'1px dashed #3d1500',marginBottom:'16px'}} />
+                  <div style={{borderTop:'1px dashed #2a2a31',marginBottom:'16px'}} />
 
                   <div className="chat-bubble" style={{display:'flex',gap:'10px',alignItems:'flex-start',marginBottom:'14px'}}>
-                    <img src="/logo_symbol.png" alt="" style={{width:'30px',height:'30px',borderRadius:'50%',border:'1px solid #3d1500',background:'#2d1500',objectFit:'contain',padding:'4px',flexShrink:0,marginTop:'2px'}} />
+                    <img src="/logo_symbol.png" alt="" style={{width:'30px',height:'30px',borderRadius:'50%',border:'1px solid #2a2a31',background:'#1f1f25',objectFit:'contain',padding:'4px',flexShrink:0,marginTop:'2px'}} />
                     <div style={{minWidth:0}}>
-                      <div style={{fontSize:'11px',color:'#7a5030',marginBottom:'4px',paddingLeft:'2px'}}>천기소녀</div>
-                      <div style={{background:'#2d1500',border:'1px solid #3d1500',borderRadius:'4px 14px 14px 14px',padding:'14px 16px',color:'#f0e6d3',fontSize:'15px',lineHeight:'1.8'}}>
+                      <div style={{fontSize:'11px',color:'#7a7a85',marginBottom:'4px',paddingLeft:'2px'}}>천기소녀</div>
+                      <div style={{background:'#1f1f25',border:'1px solid #2a2a31',borderRadius:'4px 14px 14px 14px',padding:'14px 16px',color:'#f0e6d3',fontSize:'15px',lineHeight:'1.8'}}>
                         {openingLine}
                       </div>
                     </div>
@@ -813,10 +809,10 @@ export default function Result() {
 
                   {chatMessages.map((m, i) => (
                     <div key={i} className="chat-bubble" style={{display:'flex',gap:'10px',alignItems:'flex-start',marginBottom:'14px',flexDirection:m.role==='user'?'row-reverse':'row'}}>
-                      {m.role==='char' && <img src="/logo_symbol.png" alt="" style={{width:'30px',height:'30px',borderRadius:'50%',border:'1px solid #3d1500',background:'#2d1500',objectFit:'contain',padding:'4px',flexShrink:0,marginTop:'2px'}} />}
+                      {m.role==='char' && <img src="/logo_symbol.png" alt="" style={{width:'30px',height:'30px',borderRadius:'50%',border:'1px solid #2a2a31',background:'#1f1f25',objectFit:'contain',padding:'4px',flexShrink:0,marginTop:'2px'}} />}
                       <div style={{minWidth:0,maxWidth:'80%'}}>
-                        {m.role==='char' && <div style={{fontSize:'11px',color:'#7a5030',marginBottom:'4px',paddingLeft:'2px'}}>천기소녀</div>}
-                        <div style={{background:m.role==='user'?'#8b2e00':'#2d1500',border:'1px solid #3d1500',borderRadius:m.role==='user'?'14px 4px 14px 14px':'4px 14px 14px 14px',padding:'14px 16px',color:'#f0e6d3',fontSize:'15px',lineHeight:'1.8',whiteSpace:'pre-wrap'}}>
+                        {m.role==='char' && <div style={{fontSize:'11px',color:'#7a7a85',marginBottom:'4px',paddingLeft:'2px'}}>천기소녀</div>}
+                        <div style={{background:m.role==='user'?'#3a3020':'#1f1f25',border:'1px solid #2a2a31',borderRadius:m.role==='user'?'14px 4px 14px 14px':'4px 14px 14px 14px',padding:'14px 16px',color:'#f0e6d3',fontSize:'15px',lineHeight:'1.8',whiteSpace:'pre-wrap'}}>
                           {m.text}
                         </div>
                       </div>
@@ -824,12 +820,12 @@ export default function Result() {
                   ))}
 
                   {chatLoading && (
-                    <div style={{fontSize:'13px',color:'#7a5030',paddingLeft:'40px',marginBottom:'10px'}}>천기소녀가 답하는 중...</div>
+                    <div style={{fontSize:'13px',color:'#7a7a85',paddingLeft:'40px',marginBottom:'10px'}}>풀이 중 · 천기소녀가 답을 쓰고 있어요...</div>
                   )}
                   <div id="chat-log-end" />
 
                   {!freeUsed && chatMessages.length === 0 && (
-                    <div style={{fontSize:'12px',color:'#a08060',marginBottom:'8px'}}>눌러서 바로 물어보기</div>
+                    <div style={{fontSize:'12px',color:'#8a8a95',marginBottom:'8px'}}>눌러서 바로 물어보기</div>
                   )}
                   {!freeUsed && chatMessages.length === 0 && (
                     <div style={{display:'flex',flexWrap:'wrap',gap:'8px',marginBottom:'14px'}}>
@@ -853,17 +849,17 @@ export default function Result() {
                       style={{flex:1,background:'rgba(232,200,126,0.06)',border:'1px solid rgba(232,200,126,0.2)',borderRadius:'6px',padding:'12px 14px',color:'#f0e6d3',fontSize:'14px',outline:'none',fontFamily:'inherit'}}
                     />
                     {!freeUsed && (
-                      <button onClick={()=>sendChatQuestion(chatInput)} disabled={chatLoading || !chatInput.trim()} style={{background:'#8b2e00',color:'#e8c97a',border:'1.5px solid #c4712a',borderRadius:'6px',padding:'0 18px',fontSize:'14px',fontWeight:'700',cursor:'pointer'}}>
+                      <button onClick={()=>sendChatQuestion(chatInput)} disabled={chatLoading || !chatInput.trim()} style={{background:'#3a3020',color:'#e8c97a',border:'1.5px solid #b8975a',borderRadius:'6px',padding:'0 18px',fontSize:'14px',fontWeight:'700',cursor:'pointer'}}>
                         전송
                       </button>
                     )}
                   </div>
 
                   {!freeUsed ? (
-                    <div style={{fontSize:'11px',color:'#7a5030',marginTop:'8px',textAlign:'center'}}>오늘 무료 질문 1회</div>
+                    <div style={{fontSize:'11px',color:'#7a7a85',marginTop:'8px',textAlign:'center'}}>오늘 무료 질문 1회</div>
                   ) : (
-                    <div style={{marginTop:'12px',padding:'14px',background:'rgba(232,200,126,0.04)',border:'1px solid #3d1500',borderRadius:'6px'}}>
-                      <div style={{fontSize:'12px',color:'#7a5030',marginBottom:'10px',textAlign:'center'}}>오늘 무료 질문은 다 썼어요 · 위 입력창에 새 질문을 적으시면 1건당 ₩{CHAT_EXTRA_PRICE.toLocaleString()}에 답변받을 수 있어요</div>
+                    <div style={{marginTop:'12px',padding:'14px',background:'rgba(232,200,126,0.04)',border:'1px solid #2a2a31',borderRadius:'6px'}}>
+                      <div style={{fontSize:'12px',color:'#7a7a85',marginBottom:'10px',textAlign:'center'}}>오늘 무료 질문은 다 썼어요 · 위 입력창에 새 질문을 적으시면 1건당 ₩{CHAT_EXTRA_PRICE.toLocaleString()}에 답변받을 수 있어요</div>
                       <div style={{display:'flex',flexWrap:'wrap',gap:'8px',marginBottom:'12px',justifyContent:'center'}}>
                         {QUESTION_CHIPS.map((q, i) => (
                           <button key={i} onClick={()=>setChatInput(q)} style={{background:'rgba(232,200,126,0.08)',border:'1px solid rgba(232,200,126,0.3)',color:'#e8c97a',borderRadius:'16px',padding:'7px 12px',fontSize:'12px',cursor:'pointer',fontFamily:'inherit'}}>
@@ -879,11 +875,11 @@ export default function Result() {
                         style={{width:'100%',background:'rgba(232,200,126,0.06)',border:'1px solid rgba(232,200,126,0.2)',borderRadius:'6px',padding:'12px 14px',color:'#f0e6d3',fontSize:'14px',outline:'none',fontFamily:'inherit',marginBottom:'8px'}}
                       />
                       {payError && <div style={{color:'#ff6b6b',fontSize:'12px',marginBottom:'8px',textAlign:'center'}}>{payError}</div>}
-                      <button onClick={startChatPayment} disabled={paying || !chatInput.trim()} style={{width:'100%',background:'#8b2e00',color:'#e8c97a',border:'1.5px solid #c4712a',borderRadius:'6px',padding:'12px',fontSize:'14px',fontWeight:'700',cursor:(paying || !chatInput.trim())?'default':'pointer',opacity:(paying || !chatInput.trim())?0.5:1,fontFamily:'inherit'}}>
+                      <button onClick={startChatPayment} disabled={paying || !chatInput.trim()} style={{width:'100%',background:'#3a3020',color:'#e8c97a',border:'1.5px solid #b8975a',borderRadius:'6px',padding:'12px',fontSize:'14px',fontWeight:'700',cursor:(paying || !chatInput.trim())?'default':'pointer',opacity:(paying || !chatInput.trim())?0.5:1,fontFamily:'inherit'}}>
                         {paying ? '결제창 여는 중...' : `₩${CHAT_EXTRA_PRICE.toLocaleString()} 결제하고 질문하기`}
                       </button>
                       {!chatInput.trim() && !paying && (
-                        <div style={{fontSize:'11px',color:'#c4712a',marginTop:'6px',textAlign:'center'}}>↑ 위 입력창에 질문을 먼저 적어주세요</div>
+                        <div style={{fontSize:'11px',color:'#b8975a',marginTop:'6px',textAlign:'center'}}>↑ 위 입력창에 질문을 먼저 적어주세요</div>
                       )}
                     </div>
                   )}
@@ -893,23 +889,23 @@ export default function Result() {
               <div style={{marginBottom:'20px'}}><CrossSell birth={router.query || {}} items={['vessel','love','sinnyeon','reunion']} /></div>
 
               {/* 유료 CTA */}
-              <div style={{background:'#2d0f00',border:'1px solid #8b2e00',borderRadius:'6px',padding:'24px',textAlign:'center',marginBottom:'16px'}}>
+              <div style={{background:'#1a1a1f',border:'1px solid #3a3020',borderRadius:'6px',padding:'24px',textAlign:'center',marginBottom:'16px'}}>
                 <div style={{fontFamily:'serif',fontSize:'18px',color:'#e8c97a',marginBottom:'8px'}}>✦ 재물운·연애운·다가올 운세가 궁금하신가요? ✦</div>
-                <p style={{color:'#7a5030',fontSize:'13px',marginBottom:'20px'}}>지금 본 건 일주 성격 분석이에요 · 더 자세한 이야기는 아래에서</p>
+                <p style={{color:'#7a7a85',fontSize:'13px',marginBottom:'20px'}}>지금 본 건 일주 성격 분석이에요 · 더 자세한 이야기는 아래에서</p>
                 <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
-                  <button onClick={()=>router.push('/sinnyeon?year=2027')} style={{background:'#8b2e00',color:'#e8c97a',padding:'14px 24px',border:'1.5px solid #c4712a',borderRadius:'4px',fontSize:'14px',fontWeight:'700',cursor:'pointer',fontFamily:'inherit'}}>
+                  <button onClick={()=>router.push('/sinnyeon?year=2027')} style={{background:'#3a3020',color:'#e8c97a',padding:'14px 24px',border:'1.5px solid #b8975a',borderRadius:'4px',fontSize:'14px',fontWeight:'700',cursor:'pointer',fontFamily:'inherit'}}>
                     2027 정미년 신년운세 보기 · ₩9,900
                   </button>
                   <button onClick={()=>router.push('/tonghap')} style={{background:'transparent',color:'#c49ae8',padding:'14px 24px',border:'1px solid #3d1560',borderRadius:'4px',fontSize:'14px',cursor:'pointer'}}>
                     사주+타로 통합분석 · ₩24,900
                   </button>
-                  <button onClick={()=>router.push('/gunghap')} style={{background:'transparent',color:'#7a5030',padding:'12px 24px',border:'1px solid #3d1500',borderRadius:'4px',fontSize:'13px',cursor:'pointer'}}>
+                  <button onClick={()=>router.push('/gunghap')} style={{background:'transparent',color:'#7a7a85',padding:'12px 24px',border:'1px solid #2a2a31',borderRadius:'4px',fontSize:'13px',cursor:'pointer'}}>
                     궁합 분석 보러 가기 (무료)
                   </button>
                 </div>
               </div>
 
-              <button onClick={()=>router.push('/')} style={{width:'100%',background:'none',border:'1px solid #3d1500',color:'#7a5030',padding:'14px',borderRadius:'4px',fontSize:'14px',cursor:'pointer'}}>
+              <button onClick={()=>router.push('/')} style={{width:'100%',background:'none',border:'1px solid #2a2a31',color:'#7a7a85',padding:'14px',borderRadius:'4px',fontSize:'14px',cursor:'pointer'}}>
                 처음으로 돌아가기
               </button>
             </>
@@ -917,7 +913,7 @@ export default function Result() {
         </div>
       </div>
       {storyImg && (
-        <div onClick={()=>setStoryImg(null)} style={{position:'fixed',inset:0,zIndex:2000,background:'rgba(10,4,0,0.94)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'16px'}}>
+        <div onClick={()=>setStoryImg(null)} style={{position:'fixed',inset:0,zIndex:2000,background:'rgba(8,8,10,0.94)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'16px'}}>
           <div onClick={e=>e.stopPropagation()} style={{width:'100%',maxWidth:'360px',textAlign:'center'}}>
             <div style={{fontSize:'15px',color:'#e8c97a',fontWeight:'700',marginBottom:'4px'}}>이미지를 꾹 눌러서 저장하세요</div>
             <div style={{fontSize:'12px',color:'#c4956a',marginBottom:'12px',lineHeight:1.6}}>인스타 안에서는 바로 다운로드가 안 돼요.<br/>사진을 길게 누르면 저장 메뉴가 나와요.</div>
@@ -928,11 +924,11 @@ export default function Result() {
                 window.location.href = storyImg.kakao
                   ? 'kakaotalk://web/openExternal?url=' + encodeURIComponent(href)
                   : 'intent://' + href.replace(/^https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;end';
-              }} style={{marginTop:'12px',width:'100%',height:'44px',borderRadius:'22px',border:'1px solid #c4712a',background:'transparent',color:'#e8c97a',fontSize:'14px',fontWeight:'700',fontFamily:'inherit'}}>
+              }} style={{marginTop:'12px',width:'100%',height:'44px',borderRadius:'22px',border:'1px solid #b8975a',background:'transparent',color:'#e8c97a',fontSize:'14px',fontWeight:'700',fontFamily:'inherit'}}>
                 저장 메뉴가 안 나오면 {storyImg.kakao ? '바깥 브라우저' : '크롬'}에서 열기
               </button>
             )}
-            <button onClick={()=>setStoryImg(null)} style={{marginTop:'10px',width:'100%',height:'44px',borderRadius:'22px',border:'none',background:'#e8c97a',color:'#1a0a00',fontSize:'14px',fontWeight:'700',fontFamily:'inherit'}}>닫기</button>
+            <button onClick={()=>setStoryImg(null)} style={{marginTop:'10px',width:'100%',height:'44px',borderRadius:'22px',border:'none',background:'#e8c97a',color:'#0c0c0f',fontSize:'14px',fontWeight:'700',fontFamily:'inherit'}}>닫기</button>
           </div>
         </div>
       )}
