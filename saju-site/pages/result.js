@@ -343,8 +343,15 @@ export default function Result() {
     }
   };
 
+  // 무료 질문을 다 쓴 뒤 질문 버튼을 누르면: 질문을 채우고 결제 안내로 바로 데려간다
+  const pickPaidChip = (q) => {
+    setChatInput(q);
+    setPayError('');
+    setTimeout(() => { const el = document.getElementById('pay-phone'); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus({ preventScroll: true }); } }, 50);
+  };
+
   const startChatPayment = async () => {
-    if (!chatInput.trim()) return;
+    if (!chatInput.trim()) { setPayError('먼저 위 질문 버튼을 하나 누르거나, 입력창에 질문을 적어주세요.'); return; }
     const phoneDigits = payPhone.replace(/[^0-9]/g, '');
     if (phoneDigits.length < 9) {
       setPayError('휴대폰번호를 정확히 입력해주세요.');
@@ -862,12 +869,20 @@ export default function Result() {
                       <div style={{fontSize:'12px',color:'#7a7a85',marginBottom:'10px',textAlign:'center'}}>오늘 무료 질문은 다 썼어요 · 위 입력창에 새 질문을 적으시면 1건당 ₩{CHAT_EXTRA_PRICE.toLocaleString()}에 답변받을 수 있어요</div>
                       <div style={{display:'flex',flexWrap:'wrap',gap:'8px',marginBottom:'12px',justifyContent:'center'}}>
                         {QUESTION_CHIPS.map((q, i) => (
-                          <button key={i} onClick={()=>setChatInput(q)} style={{background:'rgba(232,200,126,0.08)',border:'1px solid rgba(232,200,126,0.3)',color:'#e8c97a',borderRadius:'16px',padding:'7px 12px',fontSize:'12px',cursor:'pointer',fontFamily:'inherit'}}>
+                          <button key={i} onClick={()=>pickPaidChip(q)} style={{background:chatInput===q?'rgba(232,200,126,0.22)':'rgba(232,200,126,0.08)',border:chatInput===q?'1.5px solid #e8c97a':'1px solid rgba(232,200,126,0.3)',color:'#e8c97a',borderRadius:'16px',padding:'7px 12px',fontSize:'12px',cursor:'pointer',fontFamily:'inherit'}}>
                             {q}
                           </button>
                         ))}
                       </div>
+                      {chatInput.trim() && (
+                        <div style={{background:'rgba(232,200,126,0.1)',border:'1px solid rgba(232,200,126,0.35)',borderRadius:'8px',padding:'12px 14px',marginBottom:'10px',fontSize:'13px',lineHeight:'1.6',color:'#f0e6d3',textAlign:'center'}}>
+                          <b style={{color:'#e8c97a'}}>“{chatInput.trim()}”</b><br/>
+                          오늘 무료 질문을 이미 써서, 이 질문은 <b style={{color:'#e8c97a'}}>₩{CHAT_EXTRA_PRICE.toLocaleString()} 결제 후</b> 답변을 받을 수 있어요.<br/>
+                          휴대폰번호를 넣고 아래 결제 버튼을 눌러주세요.
+                        </div>
+                      )}
                       <input
+                        id="pay-phone"
                         type="tel"
                         value={payPhone}
                         onChange={e=>setPayPhone(e.target.value)}
@@ -875,7 +890,7 @@ export default function Result() {
                         style={{width:'100%',background:'rgba(232,200,126,0.06)',border:'1px solid rgba(232,200,126,0.2)',borderRadius:'6px',padding:'12px 14px',color:'#f0e6d3',fontSize:'14px',outline:'none',fontFamily:'inherit',marginBottom:'8px'}}
                       />
                       {payError && <div style={{color:'#ff6b6b',fontSize:'12px',marginBottom:'8px',textAlign:'center'}}>{payError}</div>}
-                      <button onClick={startChatPayment} disabled={paying || !chatInput.trim()} style={{width:'100%',background:'#3a3020',color:'#e8c97a',border:'1.5px solid #b8975a',borderRadius:'6px',padding:'12px',fontSize:'14px',fontWeight:'700',cursor:(paying || !chatInput.trim())?'default':'pointer',opacity:(paying || !chatInput.trim())?0.5:1,fontFamily:'inherit'}}>
+                      <button onClick={startChatPayment} disabled={paying} style={{width:'100%',background:'#3a3020',color:'#e8c97a',border:'1.5px solid #b8975a',borderRadius:'6px',padding:'12px',fontSize:'14px',fontWeight:'700',cursor:(paying || !chatInput.trim())?'default':'pointer',opacity:(paying || !chatInput.trim())?0.5:1,fontFamily:'inherit'}}>
                         {paying ? '결제창 여는 중...' : `₩${CHAT_EXTRA_PRICE.toLocaleString()} 결제하고 질문하기`}
                       </button>
                       {!chatInput.trim() && !paying && (
